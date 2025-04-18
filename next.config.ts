@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
+const removeImports = require("next-remove-imports")();
 
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  pageExtensions: ["ts", "tsx", "mdx", "md"],
+  experimental: {
+    mdxRs: true,
+  },
 };
 
-export default nextConfig;
+module.exports = removeImports(nextConfig);

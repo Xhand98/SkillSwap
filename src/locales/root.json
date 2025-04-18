@@ -1,0 +1,105 @@
+{
+  "WEBSITE": {
+    "NAME": "SkillSwap",
+    "DESCRIPTION": "Discubre una nueva forma de repartir tus habilidades y conocimientos.",
+    "CATEGORY": "",
+    "MAIL": "hendrickherrrera9@gmail.com",
+    "TAGS": [
+      "education",
+      "skills",
+      "learning",
+      "teaching",
+      "community",
+      "knowledge-sharing",
+      "personal-growth",
+      "collaboration",
+      "exchange",
+      "mentoring"
+    ],
+    "BANNER": "assets/images/banner/home.png"
+  },
+  "NAVBAR": {
+    "BUTTON": "Feed",
+    "LINK": "/feed",
+    "ITEMS": [
+      {
+        "TEXT": "Inicio",
+        "LINK": "/"
+      },
+      {
+        "TEXT": "Matches",
+        "LINK": "/matches",
+        "IMPORTANT": true
+      },
+      {
+        "TEXT": "Calendario",
+        "LINK": "/tecnicas"
+      },
+      {
+        "TEXT": "Mensajes",
+        "LINK": "/messages"
+      }
+    ]
+  },
+  "NETWORKS": {
+    "INSTAGRAM": "http://instagram.com/",
+    "FACEBOOK": "http://facebook.com"
+  },
+  "FOOTER": [
+    {
+      "TITLE": "Nosotros",
+      "ELEMENTS": [
+        {
+          "TEXT": "Contacto",
+          "LINK": "/contacto"
+        },
+        {
+          "TEXT": "Historia",
+          "LINK": "/nosotros"
+        },
+        {
+          "TEXT": "Ubicación",
+          "LINK": "/#ubicacion"
+        },
+        {
+          "TEXT": "Técnicas",
+          "LINK": "/tecnicas"
+        }
+      ]
+    },
+    {
+      "TITLE": "Sitio",
+      "ELEMENTS": [
+        {
+          "TEXT": "Página Principal",
+          "LINK": "/"
+        },
+        {
+          "TEXT": "Descargas",
+          "LINK": "/descargas"
+        },
+        {
+          "TEXT": "Noticias",
+          "LINK": "/noticias"
+        },
+        {
+          "TEXT": "Anuario",
+          "LINK": "/anuario"
+        }
+      ]
+    },
+    {
+      "TITLE": "Legal",
+      "ELEMENTS": [
+        {
+          "TEXT": "Términos y Condiciones",
+          "LINK": "/terminos"
+        },
+        {
+          "TEXT": "Política de Privacidad",
+          "LINK": "/privacidad"
+        }
+      ]
+    }
+  ]
+}
