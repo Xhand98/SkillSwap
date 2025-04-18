@@ -35,18 +35,19 @@ export default function RootLayout({
           href="/images/icons/favicon.ico4"
         />
       </head>
-      <HeroUIProvider>
-        <body
-          className={cn(
-            "max-w-screen overflow-x-hidden text-foreground",
-            inter.className,
-          )}
-        >
+
+      <body
+        className={cn(
+          "max-w-screen overflow-x-hidden text-foreground",
+          inter.className,
+        )}
+      >
+        <HeroUIProvider>
           <Header />
           {children}
           <Footer />
-        </body>
-      </HeroUIProvider>
+        </HeroUIProvider>
+      </body>
     </html>
   );
 }

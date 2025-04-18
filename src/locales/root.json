@@ -81,10 +81,6 @@
         {
           "TEXT": "Noticias",
           "LINK": "/noticias"
-        },
-        {
-          "TEXT": "Anuario",
-          "LINK": "/anuario"
         }
       ]
     },
