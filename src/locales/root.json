@@ -19,17 +19,30 @@
     "BANNER": "assets/images/banner/home.png"
   },
   "NAVBAR": {
-    "BUTTON": "Feed",
-    "LINK": "/feed",
+    "BUTTON": "Mi Cuenta",
+    "LINK": "/account",
     "ITEMS": [
       {
         "TEXT": "Inicio",
         "LINK": "/"
       },
       {
+        "TEXT": "Feed",
+        "LINK": "/feed",
+        "ICON": "feed"
+      },
+      {
         "TEXT": "Matches",
         "LINK": "/matches",
-        "IMPORTANT": true
+        "IMPORTANT": true,
+        "SUB_ITEMS": [
+          {
+            "TEXT": "",
+            "LINK": "",
+            "DESCRIPTION": "",
+            "IS_DISABLED": false
+          }
+        ]
       },
       {
         "TEXT": "Calendario",
