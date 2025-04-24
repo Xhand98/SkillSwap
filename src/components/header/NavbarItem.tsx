@@ -1,7 +1,8 @@
-import { cn } from "@/lib/utils";
-import { NavbarItem as NextNavbarItem } from "@heroui/navbar";
-import { forwardRef } from "react";
 import type { NavbarItemProps } from "./types.d";
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+import { NavbarItem as NextNavbarItem } from "@heroui/react";
+
 /**
  * @typedef {object} NavbarItemProps
  * @property {string} [className] - The CSS class to apply to the navbar item

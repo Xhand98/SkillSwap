@@ -1,6 +1,9 @@
 {
-	"TITLE": "Parece que la página que buscas no existe.",
-	"DESCRIPTION": "Lo sentimos, la página que estás buscando no se puede encontrar. Puede haber sido eliminada, por favor intente otra pagina.",
-	"GO_HOME": "Ir a inicio",
-	"VIEW_INSTAGRAM": "Ver Instagram"
+  "TITLE": "Parece que la página que buscas no existe.",
+  "DESCRIPTION": "Lo sentimos, la página que estás buscando no se puede encontrar. Contactenos para saber más.",
+  "GO_HOME": "Ir a inicio",
+  "IMAGE": {
+    "SRC": "/images/error-404-off.svg",
+    "ALT": "404 Not Found Icon"
+  }
 }

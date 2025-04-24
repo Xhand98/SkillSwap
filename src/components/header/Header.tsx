@@ -32,7 +32,10 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
     }, [path]);
 
     return (
-      <div className="fixed top-0 w-full max-w-screen z-50 transition-all duration-300" ref={ref}>
+      <div
+        className="fixed top-0 w-full max-w-screen z-50 transition-all duration-300"
+        ref={ref}
+      >
         {children}
         <NextNavbar
           isMenuOpen={isMenuOpen}
@@ -49,7 +52,7 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
           )}
           classNames={{
             base: "h-16 min-h-[4rem]",
-            wrapper: "max-w-7xl mx-auto w-full h-full",
+            wrapper: "mx-auto w-full h-full",
             content: "gap-2 h-full",
             brand: "gap-0 h-full",
             item: [
@@ -73,11 +76,15 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
         >
           <NavbarBrand>
             <Link href="/" type="button" className="flex items-center">
-              <SkillSwapFull width={"120"} height={"70"} className="w-[120px] sm:w-[170px] h-auto" />
+              <SkillSwapFull
+                width={"120"}
+                height={"70"}
+                className="w-[120px] sm:w-[170px] h-auto"
+              />
             </Link>
           </NavbarBrand>
           <NavbarMenu />
-          <NavbarContent justify="center" className="hidden lg:flex">
+          <NavbarContent justify="center" className="hidden  gap-2 lg:flex">
             {locale.NAVBAR.ITEMS.map((item) => {
               if (item.LINK) {
                 const itemIsActive = item.LINK === path;
@@ -87,17 +94,11 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                     isActive={itemIsActive}
                     isImportant={item.IMPORTANT}
                   >
-                    <Link href={item.LINK} scroll={false} className="flex items-center gap-2">
-                      {item.ICON === "feed" && (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
-                        </svg>
-                      )}
-                      {item.ICON === "account" && (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                        </svg>
-                      )}
+                    <Link
+                      href={item.LINK}
+                      scroll={false}
+                      className="flex items-center"
+                    >
                       {item.TEXT}
                     </Link>
                   </NavbarItem>
@@ -170,8 +171,19 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
               variant="light"
               color="primary"
               startContent={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                  />
                 </svg>
               }
             >

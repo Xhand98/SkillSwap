@@ -12,3 +12,9 @@ export interface SkillSwapFullContent extends React.HTMLAttributes {
   height?: string;
   as?: React.ReactNode | React.FC;
 }
+
+export interface RectangleIconContent extends React.HTMLAttributes {
+  className?: string;
+  width?: string | number;
+  height?: string | number;
+}
