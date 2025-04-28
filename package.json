@@ -9,11 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emailjs/browser": "",
     "@heroui/button": "^2.2.17",
     "@heroui/image": "^2.2.10",
-    "@emailjs/browser": "",
-    "emailjs": "",
-    "emailjs-com": "",
     "@heroui/link": "^2.2.14",
     "@heroui/react": "^2.7.6",
     "@heroui/system": "^2.4.13",
@@ -22,6 +20,8 @@
     "@radix-ui/react-icons": "^1.3.2",
     "@vercel/kv": "^3.0.0",
     "clsx": "^2.1.1",
+    "emailjs": "",
+    "emailjs-com": "",
     "framer-motion": "^12.8.0",
     "next": "15.3.0",
     "next-remove-imports": "^1.0.12",
@@ -29,6 +29,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.2.0",
+    "tailwind-variants": "^1.0.0",
     "vercel": "^41.6.1",
     "zod": "^3.24.3",
     "zustand": "^5.0.3"
