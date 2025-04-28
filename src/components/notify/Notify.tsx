@@ -14,15 +14,7 @@ const NavbarNotify = forwardRef<HTMLDivElement, SkillSwapContent>(
   ({ className, ...rest }, ref) => {
     const { isOpen, close, open } = useNotify();
     const handleClose = () => close();
-    const [message, setMessage] = useState(
-      {
-        value: "Test",
-        link: {
-          href: "as",
-          value: "2",
-        },
-      } || undefined,
-    );
+    const [message, setMessage] = useState<Notify | undefined>(undefined);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
@@ -42,7 +34,7 @@ const NavbarNotify = forwardRef<HTMLDivElement, SkillSwapContent>(
           ref={ref}
           className={cn(
             "print:hidden flex flex-col flex-center w-screen bg-primary py-2 px-12 text-sm font-medium z-10 text-white",
-            className,
+            className
           )}
           {...rest}
         >
@@ -73,7 +65,7 @@ const NavbarNotify = forwardRef<HTMLDivElement, SkillSwapContent>(
         </div>
       )
     );
-  },
+  }
 );
 
 NavbarNotify.displayName = "Pomaray.NavbarNotify";
