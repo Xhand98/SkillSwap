@@ -10,12 +10,12 @@ import { NavbarItem as NextNavbarItem } from "@heroui/react";
  * @property {boolean} [isImportant] - Whether to show an important indicator
  */
 const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
-  ({ className, children, isImportant, ...rest }, _) => {
+  ({ classes, children, isImportant, ...rest }, _) => {
     return (
       <NextNavbarItem
         className={cn(
           "flex flex-cols gap-1 justify-center items-center text-foreground font-medium cursor-pointer",
-          className
+          classes
         )}
         {...rest}
       >
