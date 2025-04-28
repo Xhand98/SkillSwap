@@ -35,9 +35,14 @@
       "SRC": "/images/banner/collaborate.svg",
       "ALT": "Educación de Calidad"
     },
-    "BUTTON": {
-      "TEXT": "Empezar ahora!",
-      "": ""
-    }
+    "BUTTONS": [
+      {
+        "ID": 3,
+        "TEXT": "Empezar Ahora!",
+        "TYPE": "Link",
+        "CLASSES": "inline-flex w-50 h-12 items-center bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-purple-700 transition-colors",
+        "LINK": "/register"
+      }
+    ]
   }
 }

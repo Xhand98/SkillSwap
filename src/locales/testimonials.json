@@ -1,0 +1,19 @@
+{
+  "testimonials": [
+    {
+      "name": "John Doe",
+      "title": "Software Engineer",
+      "testimonial": "This platform has completely transformed the way I learn new skills. Highly recommended!"
+    },
+    {
+      "name": "Jane Smith",
+      "title": "Graphic Designer",
+      "testimonial": "I was able to connect with amazing people and improve my design skills. Fantastic experience!"
+    },
+    {
+      "name": "Michael Brown",
+      "title": "Data Scientist",
+      "testimonial": "The skill exchange opportunities here are unparalleled. I've learned so much in such a short time."
+    }
+  ]
+}
