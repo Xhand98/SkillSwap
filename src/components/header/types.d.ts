@@ -8,6 +8,7 @@ export interface NavbarProps extends SkillSwapContent {
 export interface NavbarItemProps extends NextNavbarItemProps {
   isImportant?: boolean;
   children: ReactNode;
+  isActive?: boolean;
 }
 
 export interface NavbarNotifyProps extends SkillSwapContent {}
