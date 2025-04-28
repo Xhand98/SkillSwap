@@ -15,7 +15,7 @@ const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
       <NextNavbarItem
         className={cn(
           "flex flex-cols gap-1 justify-center items-center text-foreground font-medium cursor-pointer",
-          className,
+          className
         )}
         {...rest}
       >
@@ -28,7 +28,7 @@ const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
         )}
       </NextNavbarItem>
     );
-  },
+  }
 );
 
 NavbarItem.displayName = "SkillSwap.NavbarItem";
