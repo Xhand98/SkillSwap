@@ -33,6 +33,21 @@ const Description: React.FC<DescriptionProps> = ({}) => (
             {element.TEXT}
           </Button>
         ))}
+        <div className="mt-10 flex justify-center">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl shadow-md p-6 max-w-md w-full">
+            <p className="text-gray-700 italic mb-4">
+              “SkillSwap me permitió aprender guitarra mientras enseñaba inglés.
+              ¡Una experiencia increíble!”
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-purple-700">
+                A
+              </div>
+              <span className="font-semibold text-gray-900">Ana López</span>
+            </div>
+          </div>
+          
+        </div>
       </div>
     </div>
   </section>
