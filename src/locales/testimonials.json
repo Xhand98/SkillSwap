@@ -1,19 +1,26 @@
 {
+  "page": {
+    "title": "Testimonios",
+    "description": "Lee lo que nuestros usuarios tiene que decir sobre nosotros."
+  },
   "testimonials": [
     {
+      "id": 1,
       "name": "John Doe",
       "title": "Software Engineer",
-      "testimonial": "This platform has completely transformed the way I learn new skills. Highly recommended!"
+      "testimonial": "Esta plataforma ha cambiado mi vida profesional. He aprendido tanto y he hecho conexiones valiosas."
     },
     {
+      "id": 2,
       "name": "Jane Smith",
       "title": "Graphic Designer",
-      "testimonial": "I was able to connect with amazing people and improve my design skills. Fantastic experience!"
+      "testimonial": "Fui capaz de conocer a personas increíbles y ayudar a quienes necesitaban mis habilidades. ¡Una experiencia increíble!"
     },
     {
+      "id": 3,
       "name": "Michael Brown",
       "title": "Data Scientist",
-      "testimonial": "The skill exchange opportunities here are unparalleled. I've learned so much in such a short time."
+      "testimonial": "La propuesta de intercambiar habilidades es algo muy innovador, necesitabamos innovación en el mercado."
     }
   ]
 }
