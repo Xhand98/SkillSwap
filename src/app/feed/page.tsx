@@ -5,7 +5,7 @@ export default function FeedPage() {
   return (
     <Container>
       <div className="py-16">
-        <Text as="h1" size="heading-4" className="mb-6">
+        <Text as={"h1"} size="heading-4" className="mb-6">
           Feed de Habilidades
         </Text>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -18,7 +18,7 @@ export default function FeedPage() {
               <div className="aspect-video bg-gray-100" />
               <div className="p-4 space-y-2">
                 <Text
-                  as="h3"
+                  as={"h3"}
                   size="heading-6"
                   className="font-extrabold text-white"
                 >

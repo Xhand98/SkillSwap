@@ -13,13 +13,13 @@ const Footer = () => {
           <div className="grid grid-cols-1 grid-flow-row place-content-center gap-6">
             <div>
               <Text
-                as="h2"
+                as={"h2"}
                 className="col-span-3 text-primary"
                 size="heading-3"
               >
                 SkillSwap
               </Text>
-              <Text as="small" className="col-span-3" size="label-sm">
+              <Text as={"small"} className="col-span-3" size="label-sm">
                 © {currentYear} {locale.WEBSITE.NAME}.
               </Text>
             </div>

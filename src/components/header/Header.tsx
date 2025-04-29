@@ -33,7 +33,7 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
 
     return (
       <div
-        className="fixed top-0 w-full max-w-screen z-50 transition-all duration-300"
+        className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
         ref={ref}
       >
         {children}
