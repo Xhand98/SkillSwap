@@ -27,11 +27,11 @@ export default function HeroSection() {
           className="absolute top-30 left-0 rotate-0 w-24 h-24 object-contain"
         />
         <div className="flex items-center justify-center content-center gap-40 mt-10 pt-20 min-w-screen ">
-          {locale.SECTION1.BUTTONS.map((element) => (
+          {locale.SECTION1.BUTTONS.map((element, index) => (
             <Button
+              key={index}
               as={Link}
               className={element.CLASSES}
-              key={element.ID}
               href={element.LINK}
             >
               {element.TEXT == "Ingresar" ? (

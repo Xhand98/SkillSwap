@@ -5,19 +5,16 @@
   },
   "testimonials": [
     {
-      "id": 1,
       "name": "John Doe",
       "title": "Software Engineer",
       "testimonial": "Esta plataforma ha cambiado mi vida profesional. He aprendido tanto y he hecho conexiones valiosas."
     },
     {
-      "id": 2,
       "name": "Jane Smith",
       "title": "Graphic Designer",
       "testimonial": "Fui capaz de conocer a personas increíbles y ayudar a quienes necesitaban mis habilidades. ¡Una experiencia increíble!"
     },
     {
-      "id": 3,
       "name": "Michael Brown",
       "title": "Data Scientist",
       "testimonial": "La propuesta de intercambiar habilidades es algo muy innovador, necesitabamos innovación en el mercado."

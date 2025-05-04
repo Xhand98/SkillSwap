@@ -19,7 +19,7 @@ const Footer = () => {
               >
                 SkillSwap
               </Text>
-              <Text as={"small"} className="col-span-3" size="label-sm">
+              <Text as={"p"} className="col-span-3" size="label-sm">
                 © {currentYear} {locale.WEBSITE.NAME}.
               </Text>
             </div>

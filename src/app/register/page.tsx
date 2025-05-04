@@ -4,22 +4,26 @@ import { Input } from "@heroui/react";
 
 export default function Login() {
   return (
-    <Container
-      className="flex min-h-screen mt-16 text-purple-600 items-center "
-      size="5xl"
-    >
-      <Text as={"h1"} size="heading-4" className="max-w-screen">
-        Iniciar sesión
-      </Text>
-      <Text as={"p"} size="paragraph-xl" className="max-w-fit mt-6">
-        Inicia sesión para acceder a tu cuenta.
-      </Text>
-      <div className="flex items-center justify-center content-center gap-40 mt-10 pt-20 min-w-screen ">
-        <Input className="max-w-xs" label="Email" type="email" />
+    <Container className="flex min-h-[calc(100vh-140px)] items-center justify-center py-8">
+      <div className="w-full max-w-md space-y-6 rounded-lg border p-8 shadow-sm">
+        <Text as="h1" size="heading-4" className="text-center">
+          Iniciar sesión
+        </Text>
+
+        <Input
+          label="Email"
+          type="email"
+          fullWidth
+          className="[&>input]:bg-background"
+        />
+
+        <Text as="p" className="text-center">
+          ¿No tienes cuenta?{" "}
+          <a href="/register" className="text-primary underline">
+            Regístrate
+          </a>
+        </Text>
       </div>
-      <Text as={"p"} size="paragraph-xl" className="max-w-fit mt-6">
-        No tienes una cuenta? <a href="/register">Registrate</a>
-      </Text>
     </Container>
   );
 }

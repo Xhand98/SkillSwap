@@ -26,26 +26,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-DO">
+    <html lang="es-DO" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#6E34F3" />
-        <link
-          rel="icon"
-          type="image/x-icon"
-          href="/images/icons/favicon.ico4"
-        />
+        <link rel="icon" type="image/x-icon" href="/images/icons/favicon.ico" />
       </head>
 
       <body
         className={cn(
-          "max-w-screen overflow-x-hidden text-foreground",
-          inter.className,
+          "min-h-screen max-w-screen overflow-x-hidden bg-background text-foreground",
+          inter.className
         )}
       >
         <HeroUIProvider>
-          <Header />
-          {children}
-          <Footer />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </HeroUIProvider>
       </body>
     </html>

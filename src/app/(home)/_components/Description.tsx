@@ -23,11 +23,11 @@ const Description: React.FC<DescriptionProps> = ({}) => (
         <p className="text-lg text-gray-700 mb-6 leading-relaxed">
           {locale.SECTION2.DESCRIPTION}
         </p>
-        {locale.SECTION2.BUTTONS.map((element) => (
+        {locale.SECTION2.BUTTONS.map((element, index) => (
           <Button
+            key={index}
             as={Link}
             className={element.CLASSES}
-            key={element.ID}
             href={element.LINK}
           >
             {element.TEXT}
