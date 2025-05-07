@@ -70,7 +70,7 @@ function NavbarMenu() {
                     }}
                     aria-disabled={sub.IS_DISABLED}
                     isActive={sub.LINK === path}
-                    className="items-center gap-1 h-max w-max !list-disc opacity-60"
+                    className="items-center gap-1 h-max w-max list-disc! opacity-60"
                     key={sub.TEXT}
                   >
                     <Link href={sub.LINK} scroll={false}>

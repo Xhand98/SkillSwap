@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "tailwind.config.js",
-    "./src/*"
+    "./src/*",
+    "./node_modules/@heroui/react/**/*.{js,ts,jsx,tsx}"
   ],
   "exclude": ["node_modules"]
 }

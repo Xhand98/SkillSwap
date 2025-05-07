@@ -9,7 +9,9 @@ export default function Login() {
         <Text as="h1" size="heading-4" className="text-center">
           Iniciar sesión
         </Text>
-
+        <Text as="p" size="paragraph-base">
+          Email
+        </Text>
         <Input />
 
         <Text as="p" className="text-center">
