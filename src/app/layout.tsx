@@ -38,13 +38,10 @@ export default function RootLayout({
           inter.className
         )}
       >
-        <HeroUIProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </HeroUIProvider>
+        <Header />
+
+        <HeroUIProvider>{children}</HeroUIProvider>
+        <Footer />
       </body>
     </html>
   );

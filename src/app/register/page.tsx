@@ -10,12 +10,7 @@ export default function Login() {
           Iniciar sesión
         </Text>
 
-        <Input
-          label="Email"
-          type="email"
-          fullWidth
-          className="[&>input]:bg-background"
-        />
+        <Input />
 
         <Text as="p" className="text-center">
           ¿No tienes cuenta?{" "}
