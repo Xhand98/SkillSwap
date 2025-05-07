@@ -9,4 +9,3 @@ module.exports = {
   plugins: [customHeroui()],
   // rest of your config
 };
--
