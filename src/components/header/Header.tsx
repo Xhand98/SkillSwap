@@ -47,11 +47,11 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
             path.startsWith("/admin")
               ? "bg-white border-0"
               : "bg-primary-100/50 backdrop-blur-sm",
-            "h-16 min-h-[4rem] px-2 sm:px-4",
+            "h-16 min-h-16 px-2 sm:px-4",
             className
           )}
           classNames={{
-            base: "h-16 min-h-[4rem]",
+            base: "h-16 min-h-16",
             wrapper: "mx-auto w-full h-full",
             content: "gap-2 h-full",
             brand: "gap-0 h-full",

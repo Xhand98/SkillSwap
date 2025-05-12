@@ -7,7 +7,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   return (
     <footer className="print:hidden shadow-xl border-t-2 bg[#1a1a1a] text-white py-4">
-      <div className="sm:flex-row flex flex-col justify-between mx-auto gap-6 min-h-[10rem] sm:p-20 p-10">
+      <div className="sm:flex-row flex flex-col justify-between mx-auto gap-6 min-h-40 sm:p-20 p-10">
         <div>
           <SkillSwap size={75} />
           <div className="grid grid-cols-1 grid-flow-row place-content-center gap-6">
