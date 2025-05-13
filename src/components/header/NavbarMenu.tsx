@@ -69,11 +69,13 @@ function NavbarMenu() {
                     )}
                   >
                     <Link href={sub.LINK} scroll={false}>
-                      {sub.TEXT}
+                      <div className="flex items-center">
+                        {sub.TEXT}
+                        {sub.IS_DISABLED && (
+                          <Text size="label-xs">Próximamente</Text>
+                        )}
+                      </div>
                     </Link>
-                    {sub.IS_DISABLED && (
-                      <Text size="label-xs">Próximamente</Text>
-                    )}
                   </NavbarItem>
                 ))}
               </div>

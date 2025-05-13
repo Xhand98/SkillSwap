@@ -1,12 +1,12 @@
-"use client"
- 
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import Link from "next/link"
+"use client";
 
-import { cn } from "@/lib/utils"
- 
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import Link from "next/link";
+
+import { cn } from "@/lib/utils";
+
 const linkVariants = cva(
   "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50",
   {
@@ -29,41 +29,56 @@ const linkVariants = cva(
       size: "default",
     },
   }
-)
- 
+);
+
 export interface LinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
     VariantProps<typeof linkVariants> {
-  asChild?: boolean
-  href: string
+  asChild?: boolean;
+  href: string;
 }
- 
+
 const ShadcnLink = React.forwardRef<HTMLAnchorElement, LinkProps>(
   ({ className, variant, size, asChild = false, href, ...props }, ref) => {
-    const Comp = asChild ? Slot : "a"
-    
-    if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+    const Comp = asChild ? Slot : "a";
+
+    if (
+      href.startsWith("http") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:")
+    ) {
       return (
         <Comp
           className={cn(linkVariants({ variant, size, className }))}
           ref={ref}
           href={href}
+          target="_blank"
+          rel="noopener noreferrer"
           {...props}
         />
-      )
+      );
     }
-    
+    if (asChild) {
+      return (
+        <Comp ref={ref} {...props}>
+          <Link
+            href={href}
+            className={cn(linkVariants({ variant, size, className }))}
+          />
+        </Comp>
+      );
+    }
+
     return (
-      <Link href={href} legacyBehavior passHref>
-        <Comp
-          className={cn(linkVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        />
-      </Link>
-    )
+      <Link
+        href={href}
+        className={cn(linkVariants({ variant, size, className }))}
+        ref={ref as any}
+        {...props}
+      />
+    );
   }
-)
-ShadcnLink.displayName = "Link"
- 
-export { ShadcnLink, linkVariants }
+);
+ShadcnLink.displayName = "Link";
+
+export { ShadcnLink, linkVariants };

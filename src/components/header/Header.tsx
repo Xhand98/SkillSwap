@@ -2,7 +2,7 @@
 import SkillSwapFull from "@/icons/logoFull";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants, LinkButton } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +30,7 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
 
     return (
       <div
-        className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
+        className="fixed top-0 flex content-center w-full max-w-screen z-50 mb-20 transition-all duration-300"
         ref={ref}
       >
         {children}
@@ -42,13 +42,13 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
             path.startsWith("/admin")
               ? "bg-white border-0"
               : "bg-primary-100/50 backdrop-blur-sm",
-            "h-16 min-h-16 px-2 sm:px-4",
+            "h-16 min-h-16 px-4 sm:px-6 flex items-center",
             className
           )}
           {...rest}
         >
           <NavBrand>
-            <Link href="/" type="button" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <SkillSwapFull
                 width={"120"}
                 height={"70"}
@@ -56,8 +56,11 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
               />
             </Link>
           </NavBrand>
-          <NavbarMenu />
-          <NavContent justify="center" className="hidden gap-2 lg:flex">
+          <NavbarMenu />{" "}
+          <NavContent
+            justify="center"
+            className="hidden gap-6 lg:flex items-center"
+          >
             {locale.NAVBAR.ITEMS.map((item) => {
               if (item.LINK) {
                 const itemIsActive = item.LINK === path;
@@ -67,11 +70,12 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                     isActive={itemIsActive}
                     isImportant={item.IMPORTANT}
                     href={item.LINK}
+                    classes="px-3 mx-1"
                   >
                     <Link
                       href={item.LINK}
                       scroll={false}
-                      className="flex items-center"
+                      className="flex items-center justify-center"
                     >
                       {item.TEXT}
                     </Link>
@@ -85,33 +89,42 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                 );
                 return (
                   <DropdownMenu key={item.TEXT}>
-                    <NavbarItem isActive={itemIsActive} href="#">
-                      <DropdownMenuTrigger asChild>
+                    <NavbarItem
+                      isActive={itemIsActive}
+                      href="#"
+                      classes="px-3 mx-1"
+                    >
+                      <DropdownMenuTrigger className="flex items-center justify-center h-full">
                         <Button
                           variant="ghost"
-                          className="p-0 bg-transparent data-[hover=true]:bg-transparent font-medium text-md"
+                          className="p-0 bg-transparent data-[hover=true]:bg-transparent font-medium text-md flex items-center justify-center"
                         >
-                          {item.TEXT}
-                          <ChevronDown className="ml-1 h-4 w-4" />
+                          <span>{item.TEXT}</span>
+                          <ChevronDown className="ml-1 h-4 w-4 flex-shrink-0" />
                         </Button>
                       </DropdownMenuTrigger>
-                    </NavbarItem>
-                    <DropdownMenuContent className="max-w-[300px]">
+                    </NavbarItem>{" "}
+                    <DropdownMenuContent
+                      className="max-w-[300px]"
+                      align="center"
+                    >
                       {item.SUB_ITEMS.map((sub) => (
                         <DropdownMenuItem
                           key={sub.LINK}
                           disabled={sub.IS_DISABLED === true}
-                          asChild
+                          className="p-2"
                         >
-                          <Link href={sub.LINK} className="w-full">
-                            <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
-                              {sub.TEXT}
-                            </span>
-                            {sub.DESCRIPTION && (
-                              <p className="text-xs text-muted-foreground">
-                                {sub.DESCRIPTION}
-                              </p>
-                            )}
+                          <Link href={sub.LINK} className="w-full block">
+                            <div className="flex flex-col">
+                              <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
+                                {sub.TEXT}
+                              </span>
+                              {sub.DESCRIPTION && (
+                                <p className="text-xs text-muted-foreground">
+                                  {sub.DESCRIPTION}
+                                </p>
+                              )}
+                            </div>
                           </Link>
                         </DropdownMenuItem>
                       ))}
@@ -121,38 +134,37 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
               }
               return null;
             })}
-          </NavContent>
-          <NavContent justify="end" className="gap-2">
+          </NavContent>{" "}
+          <NavContent justify="end" className="gap-4 items-center">
             <NavMenuToggle
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               className="lg:hidden"
               isOpen={isMenuOpen}
               onToggle={() => setIsMenuOpen(!isMenuOpen)}
             />
-            <Button
-              asChild
-              className="hidden lg:inline-flex"
-              size="sm"
-              variant="ghost"
+            <Link
+              href={locale.NAVBAR.LINK}
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "hidden lg:inline-flex items-center justify-center px-4 h-10"
+              )}
             >
-              <Link href={locale.NAVBAR.LINK}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 mr-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                  />
-                </svg>
-                {locale.NAVBAR.BUTTON}
-              </Link>
-            </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 mr-2 flex-shrink-0"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                />
+              </svg>
+              <span>{locale.NAVBAR.BUTTON}</span>
+            </Link>
           </NavContent>
         </Nav>
       </div>

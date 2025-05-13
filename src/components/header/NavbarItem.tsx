@@ -1,4 +1,3 @@
-// filepath: c:\Users\hendr\OneDrive\Documents\proyectos\Web\Nextjs\skillswap\src\components\header\NavbarItem.tsx
 import type { NavbarItemProps } from "./types.d";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
@@ -15,12 +14,12 @@ const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
       <div
         ref={ref}
         className={cn(
-          "flex relative h-full items-center",
+          "flex relative h-full items-center justify-center",
           "transition-colors duration-200",
           "hover:text-primary-600",
           isActive &&
             "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-[2px] after:bg-primary",
-          "flex flex-cols gap-1 justify-center items-center text-foreground font-medium cursor-pointer",
+          "text-foreground font-medium cursor-pointer",
           classes
         )}
         data-active={isActive}
