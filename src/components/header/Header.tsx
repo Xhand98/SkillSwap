@@ -2,18 +2,15 @@
 import SkillSwapFull from "@/icons/logoFull";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
+import { Button } from "@/components/ui/button";
 import {
-  Button,
-  Dropdown,
-  DropdownItem,
   DropdownMenu,
-  DropdownTrigger,
-  NavbarBrand,
-  NavbarContent,
-  NavbarMenuToggle,
-  Navbar as NextNavbar,
-} from "@heroui/react";
-import { ChevronIcon } from "@heroui/shared-icons";
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Nav, NavBrand, NavContent, NavMenuToggle } from "@/components/ui/nav";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { forwardRef, useMemo, useState } from "react";
@@ -37,11 +34,9 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
         ref={ref}
       >
         {children}
-        <NextNavbar
-          isMenuOpen={isMenuOpen}
-          onMenuOpenChange={setIsMenuOpen}
-          isBordered
+        <Nav
           position="static"
+          isBordered={true}
           isBlurred={true}
           className={cn(
             path.startsWith("/admin")
@@ -50,31 +45,9 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
             "h-16 min-h-16 px-2 sm:px-4",
             className
           )}
-          classNames={{
-            base: "h-16 min-h-16",
-            wrapper: "mx-auto w-full h-full",
-            content: "gap-2 h-full",
-            brand: "gap-0 h-full",
-            item: [
-              "flex",
-              "relative",
-              "h-full",
-              "items-center",
-              "transition-colors duration-200",
-              "hover:text-primary-600",
-              "data-[active=true]:after:content-['']",
-              "data-[active=true]:after:absolute",
-              "data-[active=true]:after:bottom-0",
-              "data-[active=true]:after:left-0",
-              "data-[active=true]:after:right-0",
-              "data-[active=true]:after:h-[2px]",
-              "data-[active=true]:after:rounded-[2px]",
-              "data-[active=true]:after:bg-primary",
-            ],
-          }}
           {...rest}
         >
-          <NavbarBrand>
+          <NavBrand>
             <Link href="/" type="button" className="flex items-center">
               <SkillSwapFull
                 width={"120"}
@@ -82,9 +55,9 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                 className="w-[120px] sm:w-[170px] h-auto"
               />
             </Link>
-          </NavbarBrand>
+          </NavBrand>
           <NavbarMenu />
-          <NavbarContent justify="center" className="hidden  gap-2 lg:flex">
+          <NavContent justify="center" className="hidden gap-2 lg:flex">
             {locale.NAVBAR.ITEMS.map((item) => {
               if (item.LINK) {
                 const itemIsActive = item.LINK === path;
@@ -93,6 +66,7 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                     key={item.LINK}
                     isActive={itemIsActive}
                     isImportant={item.IMPORTANT}
+                    href={item.LINK}
                   >
                     <Link
                       href={item.LINK}
@@ -109,75 +83,66 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                 const itemIsActive = item.SUB_ITEMS?.some(
                   (subItem) => subItem.LINK === path
                 );
-
                 return (
-                  <Dropdown
-                    showArrow
-                    shouldCloseOnBlur
-                    radius="sm"
-                    size="sm"
-                    key={item.TEXT}
-                    className="bg-default-100"
-                  >
-                    <NavbarItem isActive={itemIsActive}>
-                      <DropdownTrigger>
+                  <DropdownMenu key={item.TEXT}>
+                    <NavbarItem isActive={itemIsActive} href="#">
+                      <DropdownMenuTrigger asChild>
                         <Button
-                          disableRipple
+                          variant="ghost"
                           className="p-0 bg-transparent data-[hover=true]:bg-transparent font-medium text-md"
-                          endContent={<ChevronIcon className="-rotate-90" />}
-                          radius="sm"
-                          variant="light"
                         >
                           {item.TEXT}
+                          <ChevronDown className="ml-1 h-4 w-4" />
                         </Button>
-                      </DropdownTrigger>
+                      </DropdownMenuTrigger>
                     </NavbarItem>
-                    <DropdownMenu
-                      aria-label={item.TEXT}
-                      items={item.SUB_ITEMS}
-                      className="max-w-[300px]"
-                      disabledKeys={item.SUB_ITEMS.filter(
-                        (sub) => sub.IS_DISABLED === true
-                      ).map((sub) => sub.LINK)}
-                    >
-                      {(sub) => (
-                        <DropdownItem
-                          description={sub.DESCRIPTION}
-                          as={Link}
+                    <DropdownMenuContent className="max-w-[300px]">
+                      {item.SUB_ITEMS.map((sub) => (
+                        <DropdownMenuItem
                           key={sub.LINK}
-                          href={sub.LINK}
+                          disabled={sub.IS_DISABLED === true}
+                          asChild
                         >
-                          <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
-                            {sub.TEXT}
-                          </span>
-                        </DropdownItem>
-                      )}
-                    </DropdownMenu>
-                  </Dropdown>
+                          <Link href={sub.LINK} className="w-full">
+                            <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
+                              {sub.TEXT}
+                            </span>
+                            {sub.DESCRIPTION && (
+                              <p className="text-xs text-muted-foreground">
+                                {sub.DESCRIPTION}
+                              </p>
+                            )}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 );
               }
+              return null;
             })}
-          </NavbarContent>
-          <NavbarContent justify="end" className="gap-2">
-            <NavbarMenuToggle
+          </NavContent>
+          <NavContent justify="end" className="gap-2">
+            <NavMenuToggle
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               className="lg:hidden"
+              isOpen={isMenuOpen}
+              onToggle={() => setIsMenuOpen(!isMenuOpen)}
             />
             <Button
-              as={Link}
-              href={locale.NAVBAR.LINK}
+              asChild
               className="hidden lg:inline-flex"
               size="sm"
-              variant="light"
-              color="primary"
-              startContent={
+              variant="ghost"
+            >
+              <Link href={locale.NAVBAR.LINK}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-5 h-5"
+                  className="w-5 h-5 mr-2"
                 >
                   <path
                     strokeLinecap="round"
@@ -185,12 +150,11 @@ const Header = forwardRef<HTMLDivElement, NavbarProps>(
                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
                   />
                 </svg>
-              }
-            >
-              {locale.NAVBAR.BUTTON}
+                {locale.NAVBAR.BUTTON}
+              </Link>
             </Button>
-          </NavbarContent>
-        </NextNavbar>
+          </NavContent>
+        </Nav>
       </div>
     );
   }

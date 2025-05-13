@@ -1,6 +1,6 @@
 import React from "react";
 import locale from "@/locales/home.json";
-import { Button } from "@heroui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export interface DescriptionProps {}
@@ -24,14 +24,11 @@ const Description: React.FC<DescriptionProps> = ({}) => (
           {locale.SECTION2.DESCRIPTION}
         </p>
         {locale.SECTION2.BUTTONS.map((element, index) => (
-          <Button
-            key={index}
-            as={Link}
-            className={element.CLASSES}
-            href={element.LINK}
-          >
-            {element.TEXT}
-          </Button>
+          <Link href={element.LINK} key={index}>
+            <Button key={index} className={element.CLASSES}>
+              {element.TEXT}
+            </Button>
+          </Link>
         ))}
       </div>
     </div>
