@@ -16,13 +16,15 @@
         "TEXT": "Ingresar",
         "COLOR": "primary",
         "CLASSES": "min-w-40 h-10 bg-white font-medium text-[#5f21db] rounded-[9px] hover:bg-slate-100 duration-200",
-        "LINK": "/feed"
+        "LINK": "/login",
+        "VARIANT": "default"
       },
       {
         "TEXT": "Registrarse",
         "COLOR": "secondary",
         "CLASSES": "min-w-40 h-10 bg-[#5f21db] text-[white] rounded-[9px] hover:bg-purple-700 duration-200",
-        "LINK": "/register"
+        "LINK": "/register",
+        "VARIANT": "outline"
       }
     ]
   },

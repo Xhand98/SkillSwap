@@ -1,9 +1,27 @@
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { Text } from "@/components/text";
 import Link from "next/link";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import locale from "@/locales/home.json";
 import RectangleIcon from "../_icons/Rectangle";
+
+type ButtonVariant = ButtonProps["variant"];
+
+interface ButtonData {
+  TEXT: string;
+  LINK: string;
+  COLOR: string;
+  VARIANT: ButtonVariant;
+  CLASSES: string;
+}
+
+const typedButtons = locale.SECTION1.BUTTONS as {
+  TEXT: string;
+  LINK: string;
+  COLOR: string;
+  VARIANT: ButtonVariant;
+  CLASSES: string;
+}[];
 
 export default function HeroSection() {
   return (
@@ -21,11 +39,11 @@ export default function HeroSection() {
           height={30}
           className="absolute top-32 rotate-0 w-24 h-24 object-contain"
         />
-        <div className="flex items-center justify-center content-center gap-40 mt-10 pt-20 min-w-screen">
-          {/* {locale.SECTION1.BUTTONS.map((element, index) => (
+        <div className="flex  items-center justify-center content-center gap-40 mt-10 pt-20 min-w-[100vw]   ">
+          {typedButtons.map((element, index) => (
             <Link key={index} href={element.LINK} passHref>
               <Button
-                variant="link"
+                variant={element.VARIANT}
                 size="lg"
                 className="flex items-center gap-2"
               >
@@ -40,8 +58,7 @@ export default function HeroSection() {
                 )}
               </Button>
             </Link>
-          ))} */}
-          <Button>Hola</Button>
+          ))}
         </div>
       </div>
     </section>

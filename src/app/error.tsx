@@ -17,12 +17,12 @@ function ErrorPage() {
         </Text>
       </div>
       <div className="flex justify-center gap-4">
-        <Link href="/" legacyBehavior>
+        <Link href="/">
           <Button className="min-w-[200px]" color="primary">
             {locale.GO_HOME}
           </Button>
         </Link>
-        <Link href="/" legacyBehavior>
+        <Link href="/">
           <Button onClick={() => router.back()} variant="default">
             {locale.GO_BACk}
           </Button>

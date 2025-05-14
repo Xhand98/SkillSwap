@@ -25,7 +25,7 @@ export default function NotFound() {
           alt={locale.IMAGE.ALT}
         />
         <div className="flex justify-center gap-4 pt-4">
-          <Link href="/" legacyBehavior>
+          <Link href="/">
             <Button className="min-w-[200px]" color="primary">
               {locale.GO_HOME}
             </Button>
