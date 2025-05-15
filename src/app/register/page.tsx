@@ -11,8 +11,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import SkillSwapFull from "@/icons/logoFull";
 import locale from "@/locales/userAuth.json";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "next/navigation";
 
 export default function Register() {
+  const router = useRouter();
   // Estado para los campos del formulario
   const [formData, setFormData] = useState({
     firstName: "",
@@ -104,6 +106,8 @@ export default function Register() {
     if (Object.values(newErrors).some((error) => error)) {
       return;
     }
+
+    router.push("/login");
 
     console.log("Registro exitoso", {
       ...formData,

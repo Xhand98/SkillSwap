@@ -1,4 +1,4 @@
-import type { SkillSwapContent } from "@/components/types.d";
+import type { SkillSwapContent } from "@/types/types";
 import type { ReactNode } from "react";
 
 export interface NavbarProps extends SkillSwapContent {

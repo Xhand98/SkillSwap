@@ -142,7 +142,7 @@ const Header = forwardRef<
 
         <div className="hidden lg:flex items-center gap-2">
           {/* Corregido - Se usa Button como wrapper principal */}
-          <Button variant="default" size="sm" className="text-md" asChild>
+          <Button variant="link" size="sm" className="text-md" asChild>
             <Link href={locale.NAVBAR.LINK} className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -165,7 +165,7 @@ const Header = forwardRef<
 
         <div className="lg:hidden">
           <Button
-            variant="ghost"
+            variant="link"
             size="icon"
             aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             onClick={() => setIsMenuOpen(!isMenuOpen)}

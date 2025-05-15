@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { X as CloseIcon } from "lucide-react";
 import { forwardRef, useEffect, useState } from "react";
-import type { SkillSwapContent } from "../types";
+import type { SkillSwapContent } from "../../types/types";
 import useNotify from "./useNotify";
 
 const Notify = forwardRef<HTMLDivElement, SkillSwapContent>(
