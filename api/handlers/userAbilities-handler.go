@@ -95,7 +95,7 @@ func (h *userAbilitiesHandler) GetUserAbility(w http.ResponseWriter, r *http.Req
 	// MODIFICACIÓN: Añadir Preload
 	if result := h.DB.Preload("User").Preload("Ability").First(&userAbility, id); result.Error != nil {
 		// Considerar verificar gorm.ErrRecordNotFound para un error 404 más específico
-		http.Error(w, "Habilidad de usuario no encontrada: "+err.Error(), http.StatusNotFound)
+		http.Error(w, result.Error.Error(), http.StatusNotFound)
 		return
 	}
 

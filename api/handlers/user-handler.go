@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"errors" // Importar el paquete errors
+	"fmt"
+	"math" // Importar el paquete math
 	"net/http"
 	"strconv"
 
@@ -27,15 +29,62 @@ func (h *userHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var users []models.User
+	// Paginación
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("pageSize")
 
-	if result := h.DB.Find(&users); result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1 // Valor por defecto para la página
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize <= 0 {
+		fmt.Println(err.Error())
+		pageSize = 3 // Valor por defecto para el tamaño de página
+	}
+
+	offset := (page - 1) * pageSize
+
+	var users []models.User
+	var totalUsers int64
+
+	// Contar el total de usuarios
+	if err := h.DB.Model(&models.User{}).Count(&totalUsers).Error; err != nil {
+		http.Error(w, "Error al contar usuarios: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Obtener usuarios paginados
+	if result := h.DB.Limit(pageSize).Offset(offset).Find(&users); result.Error != nil {
+		http.Error(w, "Error al obtener usuarios: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Estructura de respuesta que incluye los usuarios y la información de paginación
+	type PaginatedUsersResponse struct {
+		Users      []models.User `json:"users"`
+		TotalUsers int64         `json:"total_users"`
+		Page       int           `json:"page"`
+		PageSize   int           `json:"page_size"`
+		TotalPages int           `json:"total_pages"`
+	}
+
+	totalPages := 0
+	if pageSize > 0 {
+		totalPages = int(math.Ceil(float64(totalUsers) / float64(pageSize)))
+	}
+
+	response := PaginatedUsersResponse{
+		Users:      users,
+		TotalUsers: totalUsers,
+		Page:       page,
+		PageSize:   pageSize,
+		TotalPages: totalPages,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {

@@ -15,10 +15,9 @@ import (
 		SegundoApellido   string    `json:"segundo_apellido,omitempty" gorm:"column:SegundoApellido"`
 		CorreoElectronico string    `json:"correo_electronico" gorm:"unique;not null;column:CorreoElectronico"`
 		CiudadTrabajo     string    `json:"ciudad_trabajo" gorm:"not null;column:CiudadTrabajo"`
-		HashContrasena    string    `json:"hash_contrasena" gorm:"not null;column:HashContrasena"`
+		HashContrasena    string    `json:"-" gorm:"not null;column:HashContrasena"`
 		FechaNacimiento   string    `json:"fecha_nacimiento,omitempty" gorm:"column:FechaNacimiento"` // Asegúrate de que la columna FechaNacimiento exista
 		Rol               string    `json:"rol" gorm:"default:'user';column:Rol"`
-
 	}
 
 // TableName especifica el nombre de la tabla para el modelo User.
