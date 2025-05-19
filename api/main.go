@@ -1,21 +1,43 @@
 package main
 
 import (
-	"Api-learning/config"
+	"log"
+	"net/http"
+
+	"skillswap/api/config" // Asegúrate que esta ruta coincide con tu go.mod
+	"skillswap/api/routes" // Importar el paquete de rutas
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// router := http.NewServeMux()
-	// router.HandleFunc("/item/{id}", func(w http.ResponseWriter, r *http.Request) {
-	// 	id := r.PathValue("id")
-	// 	w.Write([]byte("Se recibio la request del item " + id))
-	// })
+	// Cargar variables de entorno desde .env
+	if err := godotenv.Load(); err != nil {
+		log.Println("Advertencia: No se pudo cargar el archivo .env:", err)
+	}
 
-	// server := http.Server{
-	// 	Addr:    ":8080",
-	// 	Handler: router,
-	// }
-	// log.Println("Prendiendo server en el puerto 8080")
-	// server.ListenAndServe()
-	config.ConnectDB(config.NewDBConfig())
+	log.Println("Iniciando conexión a la base de datos...")
+	db, err := config.ConnectDB(config.NewDBConfig())
+	if err != nil {
+		log.Fatalf("Error fatal al conectar con la base de datos: %v", err)
+	}
+	defer func() {
+		if sqlDB, err := db.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	// Configurar las rutas utilizando el paquete routes
+	router := routes.SetupRoutes(db)
+
+	// 3. Configurar e iniciar el servidor
+	server := &http.Server{
+		Addr:    ":8000",
+		Handler: router, // Usar el router configurado
+	}
+
+	log.Println("Servidor iniciado en http://localhost" + server.Addr) // Corregido para concatenar correctamente
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Error al iniciar el servidor: %v", err)
+	}
 }
