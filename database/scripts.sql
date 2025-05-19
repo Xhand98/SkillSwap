@@ -3,92 +3,92 @@
 -- USE SkillSwapDB;
 -- GO
 
--- -- Tabla de usuarios
--- CREATE TABLE Usuarios (
---     UsuarioID INT PRIMARY KEY IDENTITY(1,1),
---     NombreUsuario NVARCHAR(50) UNIQUE NOT NULL,
---     PrimerNombre NVARCHAR(50) NOT NULL,
---     SegundoNombre NVARCHAR(50),
---     PrimerApellido NVARCHAR(50) NOT NULL,
---     SegundoApellido NVARCHAR(50),
---     CorreoElectronico NVARCHAR(100) UNIQUE NOT NULL,
---     CiudadTrabajo NVARCHAR(50) NOT NULL,
---     HashContrasena NVARCHAR(256) NOT NULL,
---     FechaCreacion DATETIME DEFAULT GETDATE()
--- );
--- CREATE INDEX idx_NombreUsuario ON Usuarios(NombreUsuario);
--- CREATE INDEX idx_CorreoElectronico ON Usuarios(CorreoElectronico);
--- CREATE INDEX CiudadTrabajo ON Usuarios(CiudadTrabajo);
+-- Tabla de usuarios
+CREATE TABLE Usuarios (
+    UsuarioID INT PRIMARY KEY IDENTITY(1,1),
+    NombreUsuario NVARCHAR(50) UNIQUE NOT NULL,
+    PrimerNombre NVARCHAR(50) NOT NULL,
+    SegundoNombre NVARCHAR(50),
+    PrimerApellido NVARCHAR(50) NOT NULL,
+    SegundoApellido NVARCHAR(50),
+    CorreoElectronico NVARCHAR(100) UNIQUE NOT NULL,
+    CiudadTrabajo NVARCHAR(50) NOT NULL,
+    HashContrasena NVARCHAR(256) NOT NULL,
+    FechaCreacion DATETIME DEFAULT GETDATE()
+);
+CREATE INDEX idx_NombreUsuario ON Usuarios(NombreUsuario);
+CREATE INDEX idx_CorreoElectronico ON Usuarios(CorreoElectronico);
+CREATE INDEX CiudadTrabajo ON Usuarios(CiudadTrabajo);
 
--- -- Tabla Habilidades
--- CREATE TABLE Habilidades (
---     HabilidadID INT PRIMARY KEY IDENTITY(1,1),
---     NombreHabilidad NVARCHAR(100) NOT NULL,
---     Categoria NVARCHAR(50) CHECK (Categoria IN ('Informática', 'Contabilidad', 'Gastronomia', 'Electricidad', 'Refrigeración')),
---     Descripcion NVARCHAR(MAX)
--- );
--- CREATE INDEX idx_NombreHabilidad ON Habilidades(NombreHabilidad);
+-- Tabla Habilidades
+CREATE TABLE Habilidades (
+    HabilidadID INT PRIMARY KEY IDENTITY(1,1),
+    NombreHabilidad NVARCHAR(100) NOT NULL,
+    Categoria NVARCHAR(50) CHECK (Categoria IN ('Informática', 'Contabilidad', 'Gastronomia', 'Electricidad', 'Refrigeración')),
+    Descripcion NVARCHAR(MAX)
+);
+CREATE INDEX idx_NombreHabilidad ON Habilidades(NombreHabilidad);
 
--- -- Tabla interseccion usuario <=> habilidades
--- CREATE TABLE UsuariosHabilidades (
---     UsuarioHabilidadID INT PRIMARY KEY IDENTITY(1,1),
---     UsuarioID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     HabilidadID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
---     TipoHabilidad NVARCHAR(10) CHECK (TipoHabilidad IN ('Ofrece', 'Busca')),
---     NivelProficiencia NVARCHAR(20)
--- );
--- CREATE INDEX idx_UsuarioID ON UsuariosHabilidades(UsuarioID);
--- CREATE INDEX idx_HabilidadID ON UsuariosHabilidades(HabilidadID);
+-- Tabla interseccion usuario <=> habilidades
+CREATE TABLE UsuariosHabilidades (
+    UsuarioHabilidadID INT PRIMARY KEY IDENTITY(1,1),
+    UsuarioID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    HabilidadID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
+    TipoHabilidad NVARCHAR(10) CHECK (TipoHabilidad IN ('Ofrece', 'Busca')),
+    NivelProficiencia NVARCHAR(20)
+);
+CREATE INDEX idx_UsuarioID ON UsuariosHabilidades(UsuarioID);
+CREATE INDEX idx_HabilidadID ON UsuariosHabilidades(HabilidadID);
 
--- -- Tabla empajeramiento
--- CREATE TABLE Emparejamientos (
---     EmparejamientoID INT PRIMARY KEY IDENTITY(1,1),
---     Usuario1ID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     Usuario2ID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     Habilidad1ID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
---     Habilidad2ID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
---     EstadoEmparejamiento NVARCHAR(20) DEFAULT 'Pendiente',
---     FechaCreacion DATETIME DEFAULT GETDATE()
--- );
--- CREATE INDEX idx_Usuario1ID ON Emparejamientos(Usuario1ID);
--- CREATE INDEX idx_Usuario2ID ON Emparejamientos(Usuario2ID);
--- CREATE INDEX idx_Habilidad1ID ON Emparejamientos(Habilidad1ID);
--- CREATE INDEX idx_Habilidad2ID ON Emparejamientos(Habilidad2ID);
+-- Tabla empajeramiento
+CREATE TABLE Emparejamientos (
+    EmparejamientoID INT PRIMARY KEY IDENTITY(1,1),
+    Usuario1ID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    Usuario2ID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    Habilidad1ID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
+    Habilidad2ID INT FOREIGN KEY REFERENCES Habilidades(HabilidadID),
+    EstadoEmparejamiento NVARCHAR(20) DEFAULT 'Pendiente',
+    FechaCreacion DATETIME DEFAULT GETDATE()
+);
+CREATE INDEX idx_Usuario1ID ON Emparejamientos(Usuario1ID);
+CREATE INDEX idx_Usuario2ID ON Emparejamientos(Usuario2ID);
+CREATE INDEX idx_Habilidad1ID ON Emparejamientos(Habilidad1ID);
+CREATE INDEX idx_Habilidad2ID ON Emparejamientos(Habilidad2ID);
 
--- -- Tabla reseñas
--- CREATE TABLE Resenas (
---     ResenaID INT PRIMARY KEY IDENTITY(1,1),
---     EmparejamientoID INT FOREIGN KEY REFERENCES Emparejamientos(EmparejamientoID),
---     RevisorID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     UsuarioRevisadoID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     Calificacion INT CHECK (Calificacion BETWEEN 1 AND 5),
---     Comentario NVARCHAR(MAX),
---     FechaCreacion DATETIME DEFAULT GETDATE()
--- );
--- CREATE INDEX idx_EmparejamientoID ON Resenas(EmparejamientoID);
--- CREATE INDEX idx_RevisorID ON Resenas(RevisorID);
--- CREATE INDEX idx_UsuarioRevisadoID ON Resenas(UsuarioRevisadoID);
+-- Tabla reseñas
+CREATE TABLE Resenas (
+    ResenaID INT PRIMARY KEY IDENTITY(1,1),
+    EmparejamientoID INT FOREIGN KEY REFERENCES Emparejamientos(EmparejamientoID),
+    RevisorID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    UsuarioRevisadoID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    Calificacion INT CHECK (Calificacion BETWEEN 1 AND 5),
+    Comentario NVARCHAR(MAX),
+    FechaCreacion DATETIME DEFAULT GETDATE()
+);
+CREATE INDEX idx_EmparejamientoID ON Resenas(EmparejamientoID);
+CREATE INDEX idx_RevisorID ON Resenas(RevisorID);
+CREATE INDEX idx_UsuarioRevisadoID ON Resenas(UsuarioRevisadoID);
 
--- -- Tabla programacion de intercambio (fecha de entrega)
--- CREATE TABLE Programacion (
---     ProgramacionID INT PRIMARY KEY IDENTITY(1,1),
---     EmparejamientoID INT FOREIGN KEY REFERENCES Emparejamientos(EmparejamientoID),
---     FechaSesion DATETIME NOT NULL,
---     DuracionMinutos INT,
---     Estado NVARCHAR(20) DEFAULT 'Programada'
--- );
--- CREATE INDEX idx_EmparejamientoID_Programacion ON Programacion(EmparejamientoID);
+-- Tabla programacion de intercambio (fecha de entrega)
+CREATE TABLE Programacion (
+    ProgramacionID INT PRIMARY KEY IDENTITY(1,1),
+    EmparejamientoID INT FOREIGN KEY REFERENCES Emparejamientos(EmparejamientoID),
+    FechaSesion DATETIME NOT NULL,
+    DuracionMinutos INT,
+    Estado NVARCHAR(20) DEFAULT 'Programada'
+);
+CREATE INDEX idx_EmparejamientoID_Programacion ON Programacion(EmparejamientoID);
 
--- -- Tabla de Auditoria (log)
--- CREATE TABLE Auditoria (
---     AuditoriaID INT PRIMARY KEY IDENTITY(1,1),
---     UsuarioID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
---     Accion NVARCHAR(50),
---     TablaAfectada NVARCHAR(50),
---     FechaHora DATETIME DEFAULT GETDATE(),
---     DireccionIP NVARCHAR(50),
---     Detalles NVARCHAR(255)
--- );
+-- Tabla de Auditoria (log)
+CREATE TABLE Auditoria (
+    AuditoriaID INT PRIMARY KEY IDENTITY(1,1),
+    UsuarioID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    Accion NVARCHAR(50),
+    TablaAfectada NVARCHAR(50),
+    FechaHora DATETIME DEFAULT GETDATE(),
+    DireccionIP NVARCHAR(50),
+    Detalles NVARCHAR(255)
+);
 
 -- -- VIEWS
 
