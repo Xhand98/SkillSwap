@@ -1,0 +1,30 @@
+{
+  "NAV": {
+    "ELEMENTS": [
+      {
+        "Icon": "Home",
+        "Text": "Inicio"
+      },
+      {
+        "Icon": "Search",
+        "Text": "Explorar"
+      },
+      {
+        "Icon": "Bell",
+        "Text": "Notificaciones"
+      },
+      {
+        "Icon": "MessageCircle",
+        "Text": "Mensajes"
+      },
+      {
+        "Icon": "User",
+        "Text": "Perfil"
+      },
+      {
+        "Icon": "MoreHorizontal",
+        "Text": "Mas opciones"
+      }
+    ]
+  }
+}

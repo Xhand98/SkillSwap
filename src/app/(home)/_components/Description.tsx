@@ -24,7 +24,7 @@ const Description: React.FC<DescriptionProps> = ({}) => (
           {locale.SECTION2.DESCRIPTION}
         </p>{" "}
         {locale.SECTION2.BUTTONS.map((element, index) => (
-          <Button variant="default" key={index} asChild>
+          <Button variant="default" key={index}>
             <Link href={element.LINK}>{element.TEXT}</Link>
           </Button>
         ))}

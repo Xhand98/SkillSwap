@@ -28,8 +28,7 @@ func main() {
 	}()
 
 	// Configurar las rutas utilizando el paquete routes
-	router := routes.SetupRoutes(db)
-
+	 router := routes.SetupRoutes(db) // SetupRoutes ahora devuelve http.Handler
 	// 3. Configurar e iniciar el servidor
 	server := &http.Server{
 		Addr:    ":8000",

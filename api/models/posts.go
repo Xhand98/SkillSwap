@@ -30,7 +30,9 @@ type UpdatePostRequest struct {
 // PostFullInfo representa los datos de la vista vw_PostFullInfo.
 type PostFullInfo struct {
     PostID          uint      `json:"post_id" gorm:"column:PostID;primaryKey"` // Es buena idea tener una primaryKey para GORM, incluso en vistas
+    UsuarioID       uint      `json:"usuario_id" gorm:"column:UsuarioID"`
     NombreUsuario   string    `json:"nombre_usuario" gorm:"column:NombreUsuario"`
+    HabilidadID     uint      `json:"habilidad_id" gorm:"column:HabilidadID"`
     NombreHabilidad string    `json:"nombre_habilidad" gorm:"column:NombreHabilidad"`
     TipoPost        string    `json:"tipo_post" gorm:"column:TipoPost"` // Asegúrate que este campo exista en tu vista
     Descripcion     string    `json:"descripcion" gorm:"column:Descripcion"`

@@ -94,7 +94,7 @@ const Header = forwardRef<
                         navigationMenuTriggerStyle(),
                         itemIsActive && "text-primary font-semibold"
                       )}
-                      asChild
+                      aschild
                     >
                       <Link href={item.LINK}>{item.TEXT}</Link>
                     </NavigationMenuLink>
@@ -142,7 +142,7 @@ const Header = forwardRef<
 
         <div className="hidden lg:flex items-center gap-2">
           {/* Corregido - Se usa Button como wrapper principal */}
-          <Button variant="link" size="sm" className="text-md" asChild>
+          <Button variant="link" size="sm" className="text-md" aschild>
             <Link href={locale.NAVBAR.LINK} className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

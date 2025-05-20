@@ -34,13 +34,13 @@ const linkVariants = cva(
 export interface LinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
     VariantProps<typeof linkVariants> {
-  asChild?: boolean;
+  aschild?: boolean;
   href: string;
 }
 
 const ShadcnLink = React.forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ className, variant, size, asChild = false, href, ...props }, ref) => {
-    const Comp = asChild ? Slot : "a";
+  ({ className, variant, size, aschild = false, href, ...props }, ref) => {
+    const Comp = aschild ? Slot : "a";
 
     if (
       href.startsWith("http") ||
@@ -58,7 +58,7 @@ const ShadcnLink = React.forwardRef<HTMLAnchorElement, LinkProps>(
         />
       );
     }
-    if (asChild) {
+    if (aschild) {
       return (
         <Comp ref={ref} {...props}>
           <Link
