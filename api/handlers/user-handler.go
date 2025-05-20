@@ -139,7 +139,6 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		CorreoElectronico: req.CorreoElectronico,
 		CiudadTrabajo:    req.CiudadTrabajo,
 		HashContrasena:   string(hashedPassword),
-		FechaNacimiento:  req.FechaNacimiento,
 	}
 
 	if result := h.DB.Create(&user); result.Error != nil {
@@ -210,9 +209,6 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.CiudadTrabajo != nil {
 		user.CiudadTrabajo = *req.CiudadTrabajo
-	}
-	if req.FechaNacimiento != nil {
-		user.FechaNacimiento = *req.FechaNacimiento
 	}
 	if req.Rol != nil {
 		user.Rol = *req.Rol
