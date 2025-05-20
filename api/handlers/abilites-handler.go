@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"skillswap/api/models"
 	"strconv"
@@ -23,15 +24,59 @@ func (h *abilityHandler) GetAbilities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var abilities []models.Ability
+	// Paginación
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("pageSize")
 
-	if result := h.DB.Find(&abilities); result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1 // Valor por defecto para la página
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize <= 0 {
+		fmt.Println(err.Error())
+		pageSize = 3 // Valor por defecto para el tamaño de página
+	}
+
+	offset := (page - 1) * pageSize
+
+	var abilities []models.Ability
+	var totalAbilities int64
+
+	if err := h.DB.Model(&models.Ability{}).Count(&totalAbilities).Error; err != nil {
+		http.Error(w, "Error al contar usuarios: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	if result := h.DB.Limit(pageSize).Offset(offset).Find(&abilities); result.Error != nil {
+		http.Error(w, "Error al obtener usuarios: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type PaginatedUsersResponse struct {
+		Abilities  []models.Ability `json:"abilities"`
+		TotalUsers int64           `json:"total_users"`
+		Page       int             `json:"page"`
+		PageSize   int             `json:"page_size"`
+		TotalPages int             `json:"total_pages"`
+
+	}
+
+	totalPages := int(totalAbilities / int64(pageSize))
+
+	response := PaginatedUsersResponse{
+		Abilities:  abilities,
+		TotalUsers: totalAbilities,
+
+		Page:       page,
+		PageSize:   pageSize,
+		TotalPages: totalPages,
+	}
+
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(abilities)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *abilityHandler) GetAbility(w http.ResponseWriter, r *http.Request) {

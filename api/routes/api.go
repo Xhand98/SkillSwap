@@ -14,6 +14,7 @@ func SetupRoutes(db *gorm.DB) *http.ServeMux {
 	abilitiesHandler := handlers.NewAbilityHandler(db)
 	userAbilitiesHandler := handlers.NewUserAbilitiesHandler(db)
 	matchesHandler := handlers.NewMatchesHandler(db) // Nuevo handler para Emparejamientos
+	postsHandler := handlers.NewPostsHandler(db)     // Nuevo handler para Posts
 
 	// users routes
 	router.HandleFunc("GET /users", usersHandler.GetUsers)
@@ -43,6 +44,14 @@ func SetupRoutes(db *gorm.DB) *http.ServeMux {
 	router.HandleFunc("PUT /matches/{id}", matchesHandler.UpdateMatch)
 	router.HandleFunc("DELETE /matches/{id}", matchesHandler.DeleteMatch)
 	router.HandleFunc("GET /users/{userID}/matches/", matchesHandler.GetMatchesByUserID) // Obtener emparejamientos de un usuario
+
+	// Rutas para Posts
+	router.HandleFunc("POST /posts/", postsHandler.CreatePost)
+	router.HandleFunc("GET /posts/", postsHandler.GetPosts)
+	router.HandleFunc("GET /posts/{id}", postsHandler.GetPost)
+	router.HandleFunc("PUT /posts/{id}", postsHandler.UpdatePost)
+	router.HandleFunc("DELETE /posts/{id}", postsHandler.DeletePost)
+	router.HandleFunc("GET /users/{userID}/posts/", postsHandler.GetPostsByUserID) // Obtener publicaciones de un usuario
 
 	return router
 }
