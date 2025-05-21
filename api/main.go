@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -36,7 +37,13 @@ func main() {
 		Handler: router, // Usar el router configurado
 	}
 
-	log.Println("Servidor iniciado en http://localhost" + server.Addr) // Corregido para concatenar correctamente
+	fmt.Println("==============================")
+	fmt.Println("API de SkillSwap iniciada")
+	fmt.Println("Servidor escuchando en http://localhost:8000")
+	fmt.Println("CORS configurado para permitir cualquier origen")
+	fmt.Println("Métodos permitidos: GET, POST, PUT, DELETE, OPTIONS")
+	fmt.Println("==============================")
+
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Error al iniciar el servidor: %v", err)
 	}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors" // Importar el paquete errors
+	"log"    // Importar el paquete log para registro
 
 	// Importar el paquete math
 	"math"
@@ -39,6 +40,8 @@ func (h *postsHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	// Paginación
 	pageStr := r.URL.Query().Get("page")
 	pageSizeStr := r.URL.Query().Get("pageSize")
+	tipoPost := r.URL.Query().Get("tipo")
+	searchTerm := r.URL.Query().Get("search")
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
@@ -56,15 +59,27 @@ func (h *postsHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	var posts []models.PostFullInfo
 	var totalPosts int64
 
-	// Contar el total de usuarios
-	if err := h.DB.Model(&models.PostFullInfo{}).Count(&totalPosts).Error; err != nil {
-		http.Error(w, "Error al contar usuarios: "+err.Error(), http.StatusInternalServerError)
+	// Inicializar la consulta base
+	query := h.DB.Model(&models.PostFullInfo{})
+
+	// Aplicar filtros si están presentes
+	if tipoPost != "" {
+		query = query.Where("TipoPost = ?", tipoPost)
+	}
+
+	if searchTerm != "" {
+		query = query.Where("NombreHabilidad LIKE ?", "%"+searchTerm+"%")
+	}
+
+	// Contar el total de posts filtrados
+	if err := query.Count(&totalPosts).Error; err != nil {
+		http.Error(w, "Error al contar posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Obtener usuarios paginados
-	if result := h.DB.Limit(pageSize).Offset(offset).Find(&posts); result.Error != nil {
-		http.Error(w, "Error al obtener usuarios: "+result.Error.Error(), http.StatusInternalServerError)
+	// Obtener posts paginados con filtros
+	if result := query.Limit(pageSize).Offset(offset).Find(&posts); result.Error != nil {
+		http.Error(w, "Error al obtener posts: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -193,38 +208,65 @@ func (h *postsHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *postsHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	// Verificar explícitamente el método
 	if r.Method != http.MethodPost {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		log.Printf("ERROR: Método incorrecto. Recibido %s, esperado POST", r.Method)
+		http.Error(w, "Método no permitido: "+r.Method, http.StatusMethodNotAllowed)
 		return
 	}
 
+	log.Printf("INFO: Procesando solicitud POST a %s", r.URL.Path)
+	log.Printf("INFO: Content-Type: %s", r.Header.Get("Content-Type"))
+	log.Printf("INFO: Content-Length: %d", r.ContentLength)
+
+	// Intentar leer y decodificar el cuerpo de la solicitud
 	var req models.CreatePostRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		log.Printf("ERROR: Fallo al decodificar JSON: %s", err.Error())
 		http.Error(w, "Error al decodificar la solicitud: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// Imprimir los datos recibidos para depuración
+	log.Printf("INFO: Datos de post recibidos: usuario_id=%d, tipo_post=%s, habilidad_id=%d",
+		req.UsuarioID, req.TipoPost, req.HabilidadID)
+
+	// Validar los datos recibidos
+	if req.UsuarioID == 0 || req.HabilidadID == 0 || req.TipoPost == "" || req.Descripcion == "" {
+		log.Printf("ERROR: Datos incompletos para crear post")
+		http.Error(w, "Datos incompletos para crear el post", http.StatusBadRequest)
+		return
+	}
+
+	// Verificar que la habilidad existe
 	var habilidad models.Ability
 	if result := h.DB.First(&habilidad, req.HabilidadID); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			log.Printf("ERROR: Habilidad no encontrada (ID=%d)", req.HabilidadID)
 			http.Error(w, "Habilidad no encontrada", http.StatusNotFound)
 			return
 		} else {
+			log.Printf("ERROR: Fallo al buscar habilidad: %s", result.Error.Error())
 			http.Error(w, "Error al buscar habilidad: "+result.Error.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
+	// Crear el post en la base de datos
 	post := models.Post{
+		UsuarioID:   req.UsuarioID,
+		TipoPost:    req.TipoPost,
 		HabilidadID: req.HabilidadID,
 		Descripcion: req.Descripcion,
 	}
 
 	if result := h.DB.Create(&post); result.Error != nil {
-		http.Error(w, "Error al crear el usuario: "+result.Error.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al crear el post: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Devolver el post creado
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(post)

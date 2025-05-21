@@ -1,9 +1,12 @@
+// filepath: c:\Users\hendr\OneDrive\Documents\proyectos\Web\Nextjs\skillswap\api\handlers\user-handler.go
+
 package handlers
 
 import (
 	"encoding/json"
 	"errors" // Importar el paquete errors
 	"fmt"
+	"log"  // Importar el paquete log para registro
 	"math" // Importar el paquete math
 	"net/http"
 	"strconv"
@@ -110,26 +113,40 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 
 }
+
 func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	log.Printf("CreateUser: Método recibido: %s, URL: %s", r.Method, r.URL.Path)
+
 	if r.Method != http.MethodPost {
+		log.Printf("CreateUser: Método no permitido: %s", r.Method)
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
-
+	// Verificar Content-Type
+	contentType := r.Header.Get("Content-Type")
+	log.Printf("CreateUser: Content-Type: %s", contentType)
+	if contentType != "application/json" {
+		log.Printf("CreateUser: Content-Type incorrecto: %s", contentType)
+		http.Error(w, "Content-Type debe ser application/json", http.StatusUnsupportedMediaType)
+		return
+	}
 
 	var req models.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("CreateUser: Error al decodificar el cuerpo: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	log.Printf("CreateUser: Datos recibidos: %+v", req)
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.HashContrasena), bcrypt.DefaultCost)
 	if err != nil {
+		log.Printf("CreateUser: Error al generar la contraseña: %v", err)
 		http.Error(w, "Error al generar la contraseña", http.StatusInternalServerError)
 		return
 	}
-
 	user := models.User{
 		NombreUsuario:    req.NombreUsuario,
 		PrimerNombre:     req.PrimerNombre,
@@ -142,9 +159,12 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result := h.DB.Create(&user); result.Error != nil {
+		log.Printf("CreateUser: Error al crear el usuario: %v", result.Error)
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	log.Printf("CreateUser: Usuario creado con éxito: ID=%d", user.ID)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -205,8 +225,7 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			user.CorreoElectronico = *req.CorreoElectronico
-		}
-	}
+		}	}
 	if req.CiudadTrabajo != nil {
 		user.CiudadTrabajo = *req.CiudadTrabajo
 	}

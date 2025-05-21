@@ -3,10 +3,10 @@ package models
 import (
 	"time"
 )
-
 	type User struct {
 		ID                uint      `json:"id" gorm:"primaryKey;column:UsuarioID"`
 		CreatedAt         time.Time `json:"created_at" gorm:"column:FechaCreacion;autoCreateTime"`
+		UpdatedAt         time.Time `json:"updated_at" gorm:"column:UpdatedAt;autoUpdateTime"` // Mapeado a FechaActualizacion
 		NombreUsuario     string    `json:"nombre_usuario" gorm:"unique;not null;column:NombreUsuario"`
 		PrimerNombre      string    `json:"primer_nombre" gorm:"not null;column:PrimerNombre"`
 		SegundoNombre     string    `json:"segundo_nombre,omitempty" gorm:"column:SegundoNombre"`
