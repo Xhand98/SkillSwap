@@ -79,7 +79,9 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("PUT /userabilities/{id}", userAbilitiesHandler.UpdateUserAbility)
     router.HandleFunc("DELETE /userabilities/{id}", userAbilitiesHandler.DeleteUserAbility)
     router.HandleFunc("GET /userabilities/user/{id}", userAbilitiesHandler.GetUserAbilitiesByUserID) // Ruta específica    // Rutas para Emparejamientos (Matches)
-    router.HandleFunc("POST /matches/", matchesHandler.CreateMatch)
+
+	// Rutas para matches
+	router.HandleFunc("POST /matches/", matchesHandler.CreateMatch)
     router.HandleFunc("GET /matches/", matchesHandler.GetMatches) // Añadido trailing slash
     router.HandleFunc("GET /matches/{id}", matchesHandler.GetMatch)
     router.HandleFunc("PUT /matches/{id}", matchesHandler.UpdateMatch)

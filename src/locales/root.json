@@ -45,6 +45,11 @@
         ]
       },
       {
+        "TEXT": "Explorar Habilidades",
+        "LINK": "/explore",
+        "ICON": "explore"
+      },
+      {
         "TEXT": "Calendario",
         "LINK": "/tecnicas"
       },

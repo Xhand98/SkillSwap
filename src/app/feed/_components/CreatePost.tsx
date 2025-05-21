@@ -8,7 +8,7 @@ import { Text } from "@/components/text";
 
 interface Ability {
   id: number;
-  nombre: string;
+  name: string; // Cambiado de "nombre" a "name" para coincidir con el backend
 }
 
 interface CreatePostProps {
@@ -20,20 +20,43 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   const [selectedAbility, setSelectedAbility] = useState<number | null>(null);
   const [abilities, setAbilities] = useState<Ability[]>([]);
   const [loading, setLoading] = useState(false);
-  const [postType, setPostType] = useState<"OFREZCO" | "BUSCO">("OFREZCO");
+  const [postType, setPostType] = useState<"Ofrezco" | "Busco">("Ofrezco");
   const [currentUser] = useState({
     id: 1, // ID del usuario logueado
     name: "Usuario", // Nombre del usuario logueado
-  });
-
-  // Cargar habilidades disponibles
+  }); // Cargar habilidades disponibles
   useEffect(() => {
     const fetchAbilities = async () => {
       try {
         const response = await fetch("http://localhost:8000/abilities/");
         if (response.ok) {
           const data = await response.json();
-          setAbilities(data.abilities || []);
+          console.log("Habilidades recibidas:", data);
+
+          // Verificamos que data.abilities existe y es un array
+          if (data.abilities && Array.isArray(data.abilities)) {
+            setAbilities(data.abilities);
+          } else {
+            console.error("Formato de respuesta inesperado:", data);
+            // Si la respuesta tiene un formato diferente, intentamos adaptarnos
+            if (Array.isArray(data)) {
+              setAbilities(data);
+            } else if (data && typeof data === "object") {
+              // Intenta encontrar alguna propiedad que parezca un array de habilidades
+              const possibleArrays = Object.values(data).filter((value) =>
+                Array.isArray(value)
+              );
+              if (possibleArrays.length > 0) {
+                setAbilities(possibleArrays[0] as Ability[]);
+              }
+            }
+          }
+        } else {
+          console.error(
+            "Error en la respuesta:",
+            response.status,
+            response.statusText
+          );
         }
       } catch (error) {
         console.error("Error cargando habilidades:", error);
@@ -90,26 +113,26 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           <div className="mb-2">
             <div className="inline-flex rounded-full border border-gray-800 p-1">
               <Button
-                variant={postType === "OFREZCO" ? "default" : "ghost"}
+                variant={postType === "Ofrezco" ? "default" : "ghost"}
                 size="sm"
                 className={
-                  postType === "OFREZCO"
+                  postType === "Ofrezco"
                     ? "rounded-full"
                     : "rounded-full text-gray-400"
                 }
-                onClick={() => setPostType("OFREZCO")}
+                onClick={() => setPostType("Ofrezco")}
               >
                 Ofrezco
               </Button>
               <Button
-                variant={postType === "BUSCO" ? "default" : "ghost"}
+                variant={postType === "Busco" ? "default" : "ghost"}
                 size="sm"
                 className={
-                  postType === "BUSCO"
+                  postType === "Busco"
                     ? "rounded-full"
                     : "rounded-full text-gray-400"
                 }
-                onClick={() => setPostType("BUSCO")}
+                onClick={() => setPostType("Busco")}
               >
                 Busco
               </Button>
@@ -119,7 +142,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           <textarea
             className="w-full bg-transparent text-lg text-white placeholder-gray-500 border-none focus:outline-none resize-none"
             placeholder={
-              postType === "OFREZCO"
+              postType === "Ofrezco"
                 ? "¿Qué habilidad quieres ofrecer?"
                 : "¿Qué habilidad estás buscando?"
             }
@@ -134,7 +157,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                 Selecciona una habilidad:
               </Text>
               <div className="flex flex-wrap gap-2">
-                {abilities.slice(0, 5).map((ability) => (
+                {abilities.map((ability) => (
                   <button
                     key={ability.id}
                     onClick={() =>
@@ -148,11 +171,15 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                         : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     }`}
                   >
-                    {ability.nombre}
+                    {ability.name || "Sin nombre"}
                   </button>
                 ))}
               </div>
             </div>
+          )}
+
+          {abilities.length === 0 && (
+            <div className="mb-3 text-gray-400">Cargando habilidades...</div>
           )}
 
           <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-800">
