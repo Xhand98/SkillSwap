@@ -80,6 +80,8 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("DELETE /userabilities/{id}", userAbilitiesHandler.DeleteUserAbility)
     router.HandleFunc("GET /userabilities/user/{id}", userAbilitiesHandler.GetUserAbilitiesByUserID) // Ruta específica    // Rutas para Emparejamientos (Matches)
 
+
+
 	// Rutas para matches
 	router.HandleFunc("POST /matches/", matchesHandler.CreateMatch)
     router.HandleFunc("GET /matches/", matchesHandler.GetMatches) // Añadido trailing slash
@@ -87,6 +89,8 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("PUT /matches/{id}", matchesHandler.UpdateMatch)
     router.HandleFunc("DELETE /matches/{id}", matchesHandler.DeleteMatch)
     router.HandleFunc("GET /users/{userID}/matches/", matchesHandler.GetMatchesByUserID)
+	router.HandleFunc("GET /userabilities/matches/potential", matchesHandler.GetPotentialMatches)
+
 
     // Rutas para Posts
     // Para las solicitudes POST, definimos la ruta con y sin trailing slash

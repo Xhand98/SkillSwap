@@ -57,18 +57,17 @@ export default function MatchesList({ userId }: MatchesListProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUsingMockData, setIsUsingMockData] = useState(false);
   const [apiInfo, setApiInfo] = useState<any>({
     url: "",
     requestTime: 0,
     status: "idle",
     matchesCount: 0,
   });
+
   // Función para manejar el caso de fallo de la API
   const handleApiFailure = (error: any) => {
     console.error("Error en la conexión a la API:", error);
     setMatches([]);
-    setIsUsingMockData(false);
     setError(
       "Error de conexión a la API. Por favor, inténtalo de nuevo más tarde."
     );
@@ -111,9 +110,15 @@ export default function MatchesList({ userId }: MatchesListProps) {
           console.log(
             `Error en la petición: ${url}, status: ${response.status}`
           );
-          throw new Error(
-            `Error al cargar matches: ${response.status} ${response.statusText}`
-          );
+
+          let errorText = "Error al cargar matches";
+          try {
+            errorText = await response.text();
+          } catch (e) {
+            errorText = `Error al cargar matches: ${response.status} ${response.statusText}`;
+          }
+
+          throw new Error(errorText);
         }
 
         console.log(`Petición exitosa a: ${url}`);
@@ -138,8 +143,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
           console.warn("Formato de respuesta inesperado:", data);
           setMatches([]);
         }
-
-        setIsUsingMockData(false);
       } catch (err) {
         const errorMsg =
           err instanceof Error ? err.message : "Error desconocido";
@@ -150,7 +153,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
           ...prev,
           status: "error",
           errorMessage: errorMsg,
-        })); // Manejamos el error de la API
+        }));
         handleApiFailure(err);
       } finally {
         setLoading(false);
@@ -180,7 +183,14 @@ export default function MatchesList({ userId }: MatchesListProps) {
       });
 
       if (!response.ok) {
-        throw new Error(`Error al actualizar el estado: ${response.status}`);
+        let errorText = "Error al actualizar el estado";
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          errorText = `Error al actualizar el estado: ${response.status}`;
+        }
+
+        throw new Error(errorText);
       }
 
       // Actualizamos la lista de matches localmente
@@ -220,6 +230,30 @@ export default function MatchesList({ userId }: MatchesListProps) {
         >
           Reintentar
         </Button>
+
+        {/* Panel de diagnóstico para problemas técnicos */}
+        <div className="mt-6 text-xs text-left">
+          <details>
+            <summary className="cursor-pointer text-gray-500">
+              Información técnica
+            </summary>
+            <div className="p-2 mt-2 bg-gray-950 rounded text-gray-400">
+              <p>
+                <strong>URL API:</strong> {apiInfo.url}
+              </p>
+              <p>
+                <strong>Estado:</strong>{" "}
+                <span className="text-red-400">{apiInfo.status}</span>
+              </p>
+              {apiInfo.errorMessage && (
+                <p>
+                  <strong>Error:</strong>{" "}
+                  <span className="text-red-400">{apiInfo.errorMessage}</span>
+                </p>
+              )}
+            </div>
+          </details>
+        </div>
       </div>
     );
   }
@@ -250,7 +284,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
   console.log("DEBUG - Estado de matches:");
   console.log("- Total matches:", matches.length);
   console.log("- Hay matches para renderizar:", matches.length > 0);
-  console.log("- isUsingMockData:", isUsingMockData);
   console.log("- userId:", userId);
 
   // Filtramos los matches activos, pendientes y programados
@@ -335,13 +368,14 @@ export default function MatchesList({ userId }: MatchesListProps) {
 
   return (
     <div className="space-y-10">
-      {/* Indicador de datos fallback */}
-      {error && isUsingMockData && (
+      {/* Indicador de error pero con datos disponibles */}
+      {error && matches.length > 0 && (
         <div className="p-4 bg-amber-900/20 border border-amber-700 rounded-md mb-4">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 text-amber-500" />
             <p className="text-sm text-amber-500">
-              Error al conectar con la API, utilizando datos de respaldo.
+              Algunos datos podrían estar incompletos debido a errores en el
+              servidor.
             </p>
           </div>
           <p className="text-xs text-amber-400/70 mt-1">{error}</p>
@@ -545,7 +579,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
       )}
 
       {/* Panel de diagnóstico */}
-      {/* <details className="mt-8 text-left border-t border-gray-800 pt-4 text-xs text-gray-500">
+      <details className="mt-8 text-left border-t border-gray-800 pt-4 text-xs text-gray-500">
         <summary className="cursor-pointer flex items-center">
           <ChevronDown className="h-3 w-3 mr-1" />
           Información técnica
@@ -580,10 +614,9 @@ export default function MatchesList({ userId }: MatchesListProps) {
             <li>Total de matches: {matches.length}</li>
             <li>Matches activos: {activeMatches.length}</li>
             <li>Matches pendientes: {pendingMatches.length}</li>
-            <li>Usando datos simulados: {isUsingMockData ? "Sí" : "No"}</li>
           </ul>
         </div>
-      </details> */}
+      </details>
     </div>
   );
 }

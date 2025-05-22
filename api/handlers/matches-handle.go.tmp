@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
-	"errors"
-	"net/http"
-	"skillswap/api/models"
-	"strconv"
+"encoding/json"
+"errors"
+"net/http"
+"skillswap/api/models"
+"strconv"
 
-	"gorm.io/gorm"
+"gorm.io/gorm"
 )
 
 type matchesHandler struct {
