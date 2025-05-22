@@ -38,7 +38,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
             {author}
           </Text>
           <Text className="text-gray-500" size="paragraph-xs">
-            @{author.toLowerCase().replace(/\s/g, '')}
+            @{author.toLowerCase().replace(/\s/g, "")}
           </Text>
           <span className="text-gray-500">·</span>
           <Text className="text-gray-500" size="paragraph-xs">
@@ -46,7 +46,11 @@ const FeedCard: React.FC<FeedCardProps> = ({
           </Text>
         </div>
 
-        <Text as="h3" size="paragraph-base" className="font-semibold text-white">
+        <Text
+          as="h3"
+          size="paragraph-base"
+          className="font-semibold text-white"
+        >
           {title}
         </Text>
 
@@ -57,31 +61,24 @@ const FeedCard: React.FC<FeedCardProps> = ({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {tags.map((tag, i) => (
-              <span key={i} className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
-                #{tag.toLowerCase().replace(/\s/g, '')}
+              <span
+                key={i}
+                className="text-sm text-primary bg-primary/10 px-2 py-1 rounded-full text-bold"
+              >
+                #{tag.toLowerCase().replace(/\s/g, "")}
               </span>
             ))}
           </div>
         )}
 
         <div className="flex justify-between mt-3 text-gray-500 max-w-md">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-500 hover:text-primary hover:bg-primary/10">
-            <MessageCircle size={18} />
-            {comments > 0 && <span className="text-xs">{comments}</span>}
-          </Button>
-
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-500 hover:text-green-500 hover:bg-green-500/10">
-            <Repeat2 size={18} />
-            {reposts > 0 && <span className="text-xs">{reposts}</span>}
-          </Button>
-
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-500 hover:text-pink-500 hover:bg-pink-500/10">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1 text-gray-500 hover:text-pink-500 hover:bg-pink-500/10"
+          >
             <Heart size={18} />
             {likes > 0 && <span className="text-xs">{likes}</span>}
-          </Button>
-
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-500 hover:text-primary hover:bg-primary/10">
-            <Share size={18} />
           </Button>
         </div>
       </div>

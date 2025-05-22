@@ -182,22 +182,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             <div className="mb-3 text-gray-400">Cargando habilidades...</div>
           )}
 
-          <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-800">
-            <div className="flex gap-2 text-primary">
-              <button className="p-2 rounded-full hover:bg-primary/10">
-                <Image size={20} />
-              </button>
-              <button className="p-2 rounded-full hover:bg-primary/10">
-                <Globe size={20} />
-              </button>
-              <button className="p-2 rounded-full hover:bg-primary/10">
-                <Smile size={20} />
-              </button>
-              <button className="p-2 rounded-full hover:bg-primary/10">
-                <Calendar size={20} />
-              </button>
-            </div>
-
+          <div className="flex justify-between items-end mt-4 pt-2 border-t border-gray-800">
             <Button
               onClick={handleSubmit}
               disabled={!content.trim() || !selectedAbility || loading}

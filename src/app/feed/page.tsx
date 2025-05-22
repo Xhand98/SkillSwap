@@ -1,6 +1,5 @@
 "use client";
 
-import { Container } from "@/components/container";
 import FeedCard from "./_components/FeedCard";
 import CreatePost from "./_components/CreatePost";
 import { PageSizeSelector } from "./_components/PageSizeSelector";
@@ -95,85 +94,14 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="bg-neutral-950 text-white min-h-screen pt-16">
+    <div className="bg-[#1a1a1a] text-white min-h-screen pt-16 min-w-max">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[1fr,2fr] lg:grid-cols-[1fr,2fr,1fr]">
-        {/* Sidebar izquierdo - Navegación */}
-        <aside className="hidden md:flex flex-col gap-2 p-4 sticky top-0 h-screen">
-          <div className="p-2 rounded-full hover:bg-gray-900 w-fit">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className="w-8 h-8 text-primary fill-current"
-            >
-              <g>
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.13l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-              </g>
-            </svg>
-          </div>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <Home size={24} />
-            <span className="hidden lg:inline">Inicio</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <Search size={24} />
-            <span className="hidden lg:inline">Explorar</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <Bell size={24} />
-            <span className="hidden lg:inline">Notificaciones</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <MessageCircle size={24} />
-            <span className="hidden lg:inline">Mensajes</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <Bookmark size={24} />
-            <span className="hidden lg:inline">Guardados</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-4 text-xl hover:bg-gray-900 rounded-full py-6"
-          >
-            <User size={24} />
-            <span className="hidden lg:inline">Perfil</span>
-          </Button>
-
-          <Button
-            variant="default"
-            className="rounded-full mt-4 py-6 bg-primary hover:bg-primary/90"
-          >
-            <span className="hidden lg:inline">Publicar</span>
-            <PenSquare className="lg:hidden" size={24} />
-          </Button>
-        </aside>
-
         {/* Feed principal */}
-        <main className="border-x border-gray-800 min-h-screen">
+        <main className="min-w-[60vw] border-x border-gray-800 min-h-screen">
           {" "}
-          <header className="sticky top-0 bg-neutral-900 backdrop-blur-md p-4 border-b border-gray-800 z-10">
+          <header className="sticky top-0 bg-neutral-[#0a0a0a] backdrop-blur-md p-4 border-b border-gray-800 z-10">
             <div className="flex justify-between items-center">
-              <Text as="h1" size="heading-4" className="font-bold">
+              <Text as="h1" size="heading-3" className="font-bold">
                 Feed de Habilidades
               </Text>
               <PageSizeSelector
@@ -241,9 +169,9 @@ export default function FeedPage() {
         </main>
 
         {/* Sidebar derecho - Tendencias, etc */}
-        <aside className="hidden lg:block p-4 sticky top-0 h-screen">
+        <aside className="hidden lg:block p-4 min-w-[25rem] sticky top-0 h-screen">
           <div className="bg-gray-900 rounded-xl p-4 mb-4">
-            <Text as="h2" size="heading-5" className="mb-4 font-bold">
+            <Text as="h2" size="heading-3" className="mb-4 font-bold">
               ¿Qué habilidad buscas?
             </Text>
             <div className="bg-black rounded-full p-3 flex items-center gap-2 border border-gray-800 focus-within:border-primary">
@@ -257,7 +185,7 @@ export default function FeedPage() {
           </div>
 
           <div className="bg-gray-900 rounded-xl p-4">
-            <Text as="h2" size="heading-5" className="mb-4 font-bold">
+            <Text as="h2" size="heading-3" className="mb-4 font-bold">
               Usuarios Destacados
             </Text>
             <div className="space-y-3">

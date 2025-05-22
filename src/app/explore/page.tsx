@@ -99,7 +99,7 @@ export default function AllAbilitiesPage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="mb-8">
         <Text size="heading-3" className="text-white mb-2">
           Explorar Habilidades
