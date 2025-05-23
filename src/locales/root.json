@@ -48,14 +48,6 @@
         "TEXT": "Explorar Habilidades",
         "LINK": "/explore",
         "ICON": "explore"
-      },
-      {
-        "TEXT": "Calendario",
-        "LINK": "/calendario"
-      },
-      {
-        "TEXT": "Mensajes",
-        "LINK": "/messages"
       }
     ]
   },

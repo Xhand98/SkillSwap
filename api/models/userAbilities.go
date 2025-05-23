@@ -1,16 +1,12 @@
 // filepath: c:\Users\hendr\OneDrive\Documents\proyectos\Web\Nextjs\skillswap\api\models\userAbilities.go
 package models
 
-import "time"
-
 type UserAbility struct {
 ID               uint      `json:"id" gorm:"primaryKey;column:UsuarioHabilidadID"`
 UserID           uint      `json:"user_id" gorm:"column:UsuarioID"`
 AbilityID        uint      `json:"ability_id" gorm:"column:HabilidadID"`
 SkillType        string    `json:"skill_type" gorm:"column:TipoHabilidad"`
 ProficiencyLevel string    `json:"proficiency_level,omitempty" gorm:"column:NivelProficiencia"`
-CreatedAt        time.Time `json:"created_at" gorm:"column:FechaCreacion;autoCreateTime"`
-UpdatedAt        time.Time `json:"updated_at" gorm:"column:FechaActualizacion;autoUpdateTime"`
 
 // Campos para cargar datos relacionados
 User    User    `json:"user,omitempty" gorm:"foreignKey:UserID;references:UsuarioID"`

@@ -2,6 +2,8 @@
 import SkillSwapFull from "@/icons/logoFull";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
+import { useAuth } from "@/lib/AuthContext";
+import useCurrentUserId from "@/hooks/useCurrentUserId";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,12 +15,28 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ChevronDown, Menu as MenuIcon, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDown,
+  Menu as MenuIcon,
+  User,
+  LogOut,
+  Settings,
+  ChevronsUpDown,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { forwardRef, useMemo, useState } from "react";
 import NavbarMenu from "./NavbarMenu";
 import type { NavbarProps } from "./types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ListItem = React.forwardRef<
   React.ElementRef<typeof Link>,
@@ -51,6 +69,11 @@ const Header = forwardRef<
 >(({ className, children, ...rest }, ref) => {
   const path = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  // Usar nuestro hook para obtener el userId
+  const currentUserId = useCurrentUserId();
+
+  console.log("Header - ID de usuario desde hook:", currentUserId);
 
   useMemo(() => {
     if (isMenuOpen) setIsMenuOpen(false);
@@ -58,7 +81,7 @@ const Header = forwardRef<
 
   return (
     <div
-      className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
+      className="fixed bg-[#1a1a1a] top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
       ref={ref}
     >
       {children}
@@ -66,7 +89,7 @@ const Header = forwardRef<
         className={cn(
           "flex items-center justify-between h-16 min-h-16 px-4 sm:px-6",
           path.startsWith("/admin")
-            ? "bg-white"
+            ? "bg-[#1a1a1a]"
             : "bg-primary-100/50 backdrop-blur-sm border-b border-border",
           className
         )}
@@ -139,13 +162,88 @@ const Header = forwardRef<
           <NavigationMenuViewport />
         </NavigationMenu>{" "}
         <div className="hidden lg:flex items-center gap-2">
-          {/* Enlaces directos al perfil y cuenta */}
-          <Button variant="link" size="sm" className="text-md" asChild>
-            <Link href="/profiles/1" className="flex items-center gap-2">
-              <User className="w-5 h-5 flex-shrink-0" />
-              <span>Mi Perfil</span>
-            </Link>
-          </Button>
+          {isLoading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
+          ) : isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src="/images/avatars/default.png"
+                      alt={user?.nombre_usuario || "Usuario"}
+                    />
+                    <AvatarFallback>
+                      {user?.primer_nombre ? user.primer_nombre[0] : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline-block">
+                    {user?.primer_nombre || "Usuario"}
+                  </span>
+                  <ChevronsUpDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuSeparator />{" "}
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/profiles/${currentUserId || user?.id}`}
+                    className="cursor-pointer flex items-center"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Mi Perfil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/feed"
+                    className="cursor-pointer flex items-center"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Feed</span>
+                  </Link>
+                </DropdownMenuItem>{" "}
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/matches"
+                    className="cursor-pointer flex items-center"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Conexiones</span>
+                  </Link>
+                </DropdownMenuItem>
+                {user?.rol === "admin" && (
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/admin/dashboard"
+                      className="cursor-pointer flex items-center text-amber-600 font-medium"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Panel de Administración</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="cursor-pointer text-red-500"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">Iniciar Sesión</Link>
+              </Button>
+              <Button variant="default" asChild>
+                <Link href="/register">Registrarse</Link>
+              </Button>
+            </>
+          )}
         </div>
         <div className="lg:hidden">
           <Button
@@ -161,6 +259,18 @@ const Header = forwardRef<
       {isMenuOpen && (
         <div className="lg:hidden border-t border-border bg-background">
           <NavbarMenu />
+          {isAuthenticated && (
+            <div className="p-4 border-t">
+              <Button
+                onClick={logout}
+                variant="ghost"
+                className="w-full justify-start text-red-500"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Cerrar Sesión</span>
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -168,5 +278,4 @@ const Header = forwardRef<
 });
 
 Header.displayName = "Header";
-
 export default Header;

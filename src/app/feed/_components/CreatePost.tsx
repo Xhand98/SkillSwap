@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Image, Smile, Globe, Calendar } from "lucide-react";
+import { Image, Smile, Globe, Calendar, AlertCircle } from "lucide-react";
 import { Text } from "@/components/text";
+import { useAuth } from "@/lib/AuthContext";
+import useCurrentUserId from "@/hooks/useCurrentUserId";
 
 interface Ability {
   id: number;
@@ -16,15 +18,19 @@ interface CreatePostProps {
 }
 
 export default function CreatePost({ onPostCreated }: CreatePostProps) {
+  const { isAuthenticated, user } = useAuth();
+  const currentUserId = useCurrentUserId();
   const [content, setContent] = useState("");
   const [selectedAbility, setSelectedAbility] = useState<number | null>(null);
   const [abilities, setAbilities] = useState<Ability[]>([]);
   const [loading, setLoading] = useState(false);
   const [postType, setPostType] = useState<"Ofrezco" | "Busco">("Ofrezco");
-  const [currentUser] = useState({
-    id: 1, // ID del usuario logueado
-    name: "Usuario", // Nombre del usuario logueado
-  }); // Cargar habilidades disponibles
+
+  // Este objeto se utilizará si no hay un usuario autenticado
+  const [defaultUser] = useState({
+    id: null,
+    name: "Usuario",
+  });
   useEffect(() => {
     const fetchAbilities = async () => {
       try {
@@ -65,9 +71,8 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
     fetchAbilities();
   }, []);
-
   const handleSubmit = async () => {
-    if (!content.trim() || !selectedAbility) return;
+    if (!content.trim() || !selectedAbility || !currentUserId) return;
 
     setLoading(true);
     try {
@@ -77,7 +82,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          usuario_id: currentUser.id,
+          usuario_id: currentUserId,
           tipo_post: postType,
           habilidad_id: selectedAbility,
           descripcion: content,
@@ -100,13 +105,18 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
       setLoading(false);
     }
   };
-
   return (
     <div className="border-b border-gray-800 p-4">
       <div className="flex gap-4">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={`https://avatar.vercel.sh/${currentUser.name}`} />
-          <AvatarFallback>{currentUser.name[0]}</AvatarFallback>
+          <AvatarImage
+            src={`https://avatar.vercel.sh/${
+              user?.nombre_usuario || "usuario"
+            }`}
+          />
+          <AvatarFallback>
+            {user?.nombre_usuario ? user.nombre_usuario[0] : "U"}
+          </AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
@@ -138,7 +148,6 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
               </Button>
             </div>
           </div>
-
           <textarea
             className="w-full bg-transparent text-lg text-white placeholder-gray-500 border-none focus:outline-none resize-none"
             placeholder={
@@ -150,7 +159,6 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             onChange={(e) => setContent(e.target.value)}
             rows={3}
           />
-
           {abilities.length > 0 && (
             <div className="mb-3">
               <Text className="text-gray-400 mb-2" size="paragraph-sm">
@@ -177,23 +185,37 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
               </div>
             </div>
           )}
-
           {abilities.length === 0 && (
             <div className="mb-3 text-gray-400">Cargando habilidades...</div>
-          )}
-
+          )}{" "}
           <div className="flex justify-between items-end mt-4 pt-2 border-t border-gray-800">
-            <Button
-              onClick={handleSubmit}
-              disabled={!content.trim() || !selectedAbility || loading}
-              className={`rounded-full ${
-                !content.trim() || !selectedAbility
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              {loading ? "Publicando..." : "Publicar"}
-            </Button>
+            {!isAuthenticated || !currentUserId ? (
+              <div className="flex items-center text-amber-500 text-sm">
+                <AlertCircle className="mr-2 h-4 w-4" />
+                Inicia sesión para publicar
+              </div>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  !content.trim() ||
+                  !selectedAbility ||
+                  loading ||
+                  !isAuthenticated ||
+                  !currentUserId
+                }
+                className={`rounded-full ${
+                  !content.trim() ||
+                  !selectedAbility ||
+                  !isAuthenticated ||
+                  !currentUserId
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {loading ? "Publicando..." : "Publicar"}
+              </Button>
+            )}
           </div>
         </div>
       </div>

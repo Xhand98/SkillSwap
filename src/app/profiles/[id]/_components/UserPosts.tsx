@@ -9,15 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Post {
   id: number;
-  title: string;
-  content: string;
+  nombre_habilidad: string;
+  descripcion: string;
   created_at: string;
-  user_id: number;
-  user?: {
-    nombre_usuario: string;
-    primer_nombre: string;
-    primer_apellido: string;
-  };
+  nombre_usuario: string;
+  tipo_post: string;
+  updated_at: string;
 }
 
 interface UserPostsProps {
@@ -50,6 +47,8 @@ export default function UserPosts({ userId }: UserPostsProps) {
         }
 
         const data = await response.json();
+
+        console.log("Post data:", data?.posts);
         setData(data || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
@@ -95,45 +94,42 @@ export default function UserPosts({ userId }: UserPostsProps) {
 
   return (
     <div className="space-y-6">
-      {data?.posts.map((post) => (
-        <Card key={post.id} className="bg-gray-900 border-gray-800">
+      {data?.posts.map((post, i) => (
+        <Card key={i} className="bg-gray-900 border-gray-800">
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <Avatar>
                   <AvatarImage
                     src={`https://avatar.vercel.sh/${
-                      post.user?.nombre_usuario || "user"
+                      post.nombre_usuario || "user"
                     }`}
                   />
                   <AvatarFallback>
-                    {post.user?.primer_nombre?.[0] || "U"}
-                    {post.user?.primer_apellido?.[0] || "S"}
+                    {post.nombre_usuario[0] || "U"}
+                    {post.nombre_usuario[1] || "S"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-lg text-white">
-                    {post.title}
+                  <CardTitle className="text-base text-white">
+                    {post.nombre_habilidad}
                   </CardTitle>
-                  <div className="flex items-center text-gray-400 mt-1 text-sm">
-                    <Calendar size={14} className="mr-1" />
-                    {new Date(post.created_at).toLocaleDateString("es-ES", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                  <div className="flex items-center text-gray-400 mt-0 text-sm">
+                    <Calendar size={14} />
+                    <span className="ml-1">
+                      {new Date(post.created_at).toLocaleDateString("es-ES", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <Text
-              size="paragraph-base"
-              className="text-gray-300 whitespace-pre-line"
-            >
-              {post.content}
-            </Text>
+            <div className="ml-14">{post.descripcion}</div>
 
             <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-800">
               <div className="flex space-x-4">
@@ -145,23 +141,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
                   <ThumbsUp size={18} className="mr-1" />
                   <span>Me gusta</span>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-primary"
-                >
-                  <MessageCircle size={18} className="mr-1" />
-                  <span>Comentar</span>
-                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-primary"
-              >
-                <Share2 size={18} className="mr-1" />
-                <span>Compartir</span>
-              </Button>
             </div>
           </CardContent>
         </Card>

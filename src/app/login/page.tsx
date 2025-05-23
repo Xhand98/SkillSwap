@@ -5,18 +5,60 @@ import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SkillSwapFull from "@/icons/logoFull";
 import locale from "@/locales/userAuth.json";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "next/navigation";
+import { AuthService } from "@/lib/AuthService";
+import { useAuth } from "@/lib/AuthContext";
+import useCurrentUserId from "@/hooks/useCurrentUserId";
 
 export default function Login() {
+  const router = useRouter();
+  const {
+    login: authLogin,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuth();
+  const currentUserId = useCurrentUserId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Redireccionar si el usuario ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated && currentUserId) {
+      console.log("Usuario ya autenticado con ID:", currentUserId);
+      const redirectTo = localStorage.getItem("redirectAfterLogin") || "/feed";
+      localStorage.removeItem("redirectAfterLogin"); // Limpiar después de usar
+      router.push(redirectTo);
+    }
+  }, [isAuthenticated, currentUserId, router]);
+
+  // Efectos para manejar parámetros de URL
+  useEffect(() => {
+    // Verificar si viene de registro exitoso
+    const urlParams = new URLSearchParams(window.location.search);
+    const registered = urlParams.get("registered");
+    const prefilledEmail = urlParams.get("email");
+
+    if (registered === "true") {
+      setSuccessMessage(
+        "¡Registro exitoso! Ahora puedes iniciar sesión con tus credenciales."
+      );
+
+      // Prellenar el email si viene del registro
+      if (prefilledEmail) {
+        setEmail(prefilledEmail);
+      }
+    }
+  }, []);
 
   return (
     <Container className="flex min-h-[calc(100vh-140px)] items-center justify-center mt-8">
@@ -25,6 +67,12 @@ export default function Login() {
         <Text as="h1" size="heading-3" className="text-center">
           Iniciar sesión
         </Text>
+
+        {successMessage && (
+          <div className="w-full p-3 bg-green-50 border border-green-200 rounded text-green-700 flex items-center gap-2">
+            <span className="text-sm">{successMessage}</span>
+          </div>
+        )}
 
         <div className="w-full space-y-4">
           {locale.login.INPUTS.map((input, i) => (
@@ -82,38 +130,59 @@ export default function Login() {
               </div>
             </div>
           ))}
-
-          <div className="items-top flex space-x-2 pt-4">
-            <Checkbox
-              id="terms1"
-              checked={termsAccepted}
-              onCheckedChange={() => setTermsAccepted(!termsAccepted)}
-            />
-            <div className="grid gap-1.5 leading-none">
-              <label
-                htmlFor="terms1"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Aceptar terminos y condiciones
-              </label>
-              <p className="text-sm text-muted-foreground">
-                Aceptas nuestros Terminos de Servicio y Politica de Privacidad.
-              </p>
-            </div>
-          </div>
         </div>
 
+        {error && (
+          <div className="w-full p-3 bg-red-50 border border-red-200 rounded text-red-700 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
+
         <Button
-          onClick={() => {
-            termsAccepted === true
-              ? console.log("Sesion iniciada")
-              : alert("Debes aceptar los terminos y condiciones");
+          onClick={async () => {
+            if (!email || !password) {
+              setError("Por favor, completa todos los campos");
+              return;
+            }
+
+            try {
+              setLoading(true);
+              setError(null);
+              setSuccessMessage(null);
+
+              // Usar el contexto de autenticación para login
+              try {
+                await authLogin(email, password);
+              } catch (authError) {
+                // Intentar con el AuthService directo como fallback
+                const response = await AuthService.login({ email, password });
+                if (response && response.user && response.user.id) {
+                  // Asegurarse de que el ID del usuario se guarde correctamente
+                  AuthService.setCurrentUserId(response.user.id);
+                }
+              }
+
+              // El useEffect con isAuthenticated y currentUserId manejará la redirección
+              // después del login exitoso, pero por si acaso:
+              const redirectTo =
+                localStorage.getItem("redirectAfterLogin") || "/feed";
+              localStorage.removeItem("redirectAfterLogin"); // Limpiar después de usar
+              router.push(redirectTo);
+            } catch (err) {
+              console.error("Error de inicio de sesión:", err);
+              setError(
+                "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
+              );
+            } finally {
+              setLoading(false);
+            }
           }}
-          disabled={!termsAccepted}
+          disabled={loading}
           type="button"
           className="w-full"
         >
-          Entrar
+          {loading ? "Iniciando sesión..." : "Entrar"}
         </Button>
 
         <Text as="p" className="text-center">

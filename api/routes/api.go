@@ -47,14 +47,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Handler
-    router := http.NewServeMux()
-
-    // Inicialización de handlers
+    router := http.NewServeMux()    // Inicialización de handlers
     usersHandler := handlers.NewUserHandler(db)
     abilitiesHandler := handlers.NewAbilityHandler(db) // Asumiendo que tienes NewAbilityHandler
     userAbilitiesHandler := handlers.NewUserAbilitiesHandler(db)
     matchesHandler := handlers.NewMatchesHandler(db)
-    postsHandler := handlers.NewPostsHandler(db)    // Rutas para Usuarios
+    postsHandler := handlers.NewPostsHandler(db)
+    authHandler := handlers.NewAuthHandler(db)// Rutas para Usuarios
     // Para las solicitudes GET, definimos la ruta con y sin trailing slash
     router.HandleFunc("GET /users", usersHandler.GetUsers)
     router.HandleFunc("GET /users/", usersHandler.GetUsers)
@@ -80,18 +79,15 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("DELETE /userabilities/{id}", userAbilitiesHandler.DeleteUserAbility)
     router.HandleFunc("GET /userabilities/user/{id}", userAbilitiesHandler.GetUserAbilitiesByUserID) // Ruta específica    // Rutas para Emparejamientos (Matches)
 
-
-
 	// Rutas para matches
 	router.HandleFunc("POST /matches/", matchesHandler.CreateMatch)
     router.HandleFunc("GET /matches/", matchesHandler.GetMatches) // Añadido trailing slash
+    router.HandleFunc("GET /matches/check", matchesHandler.CheckMatchJSON) // Usar nueva implementación que devuelve JSON
     router.HandleFunc("GET /matches/{id}", matchesHandler.GetMatch)
     router.HandleFunc("PUT /matches/{id}", matchesHandler.UpdateMatch)
     router.HandleFunc("DELETE /matches/{id}", matchesHandler.DeleteMatch)
     router.HandleFunc("GET /users/{userID}/matches/", matchesHandler.GetMatchesByUserID)
 	router.HandleFunc("GET /userabilities/matches/potential", matchesHandler.GetPotentialMatches)
-
-
     // Rutas para Posts
     // Para las solicitudes POST, definimos la ruta con y sin trailing slash
     router.HandleFunc("POST /posts", postsHandler.CreatePost)
@@ -99,6 +95,10 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     // Para las solicitudes GET, también definimos la ruta con y sin trailing slash
     router.HandleFunc("GET /posts", postsHandler.GetPosts)
     router.HandleFunc("GET /posts/", postsHandler.GetPosts)
+
+    // Rutas para autenticación
+    router.HandleFunc("POST /auth/login", authHandler.Login)
+    router.HandleFunc("GET /auth/validate", authHandler.ValidateToken)
     router.HandleFunc("GET /posts/{id}", postsHandler.GetPost)
     router.HandleFunc("PUT /posts/{id}", postsHandler.UpdatePost)
     router.HandleFunc("DELETE /posts/{id}", postsHandler.DeletePost)

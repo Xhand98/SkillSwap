@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import "./globals.css";
 import ThemeProvider from "@/components/theme/theme-provider";
+import { AuthProvider } from "@/lib/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,15 +38,18 @@ export default function RootLayout({
           inter.className
         )}
       >
+        {" "}
         <ThemeProvider
           attribute={"class"}
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          {children}
-          <Footer />
+          <AuthProvider>
+            <Header />
+            {children}
+            <Footer />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

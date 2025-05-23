@@ -42,6 +42,11 @@
         "LABEL": "Contraseña",
         "TYPE": "password",
         "PLACEHOLDER": "ej: ********"
+      },
+      {
+        "LABEL": "Confirmar Contraseña",
+        "TYPE": "password",
+        "PLACEHOLDER": "Confirma tu contraseña"
       }
     ],
     "BUTTONS": [
