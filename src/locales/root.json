@@ -67,16 +67,16 @@
           "LINK": "/contacto"
         },
         {
-          "TEXT": "Sobre Nosotros",
-          "LINK": "/sobre-nosotros"
+          "TEXT": "Historia",
+          "LINK": "/nosotros"
         },
         {
-          "TEXT": "Misión y Visión",
-          "LINK": "/mision-y-vision"
+          "TEXT": "Ubicación",
+          "LINK": "/#ubicacion"
         },
         {
-          "TEXT": "Marca",
-          "LINK": "/brand"
+          "TEXT": "Técnicas",
+          "LINK": "/tecnicas"
         }
       ]
     },
@@ -86,6 +86,10 @@
         {
           "TEXT": "Página Principal",
           "LINK": "/"
+        },
+        {
+          "TEXT": "Descargas",
+          "LINK": "/descargas"
         },
         {
           "TEXT": "Noticias",

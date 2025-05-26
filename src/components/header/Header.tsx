@@ -3,186 +3,199 @@ import SkillSwapFull from "@/icons/logoFull";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { ChevronDown, Menu as MenuIcon } from "lucide-react";
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  NavbarBrand,
+  NavbarContent,
+  NavbarMenuToggle,
+  Navbar as NextNavbar,
+} from "@heroui/react";
+import { ChevronIcon } from "@heroui/shared-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useMemo, useState } from "react";
+import NavbarItem from "./NavbarItem";
 import NavbarMenu from "./NavbarMenu";
 import type { NavbarProps } from "./types";
 
-const ListItem = React.forwardRef<
-  React.ElementRef<typeof Link>,
-  React.ComponentPropsWithoutRef<typeof Link> & { title: string }
->(({ className, title, children, href, ...props }, ref) => {
-  return (
-    <li>
-      <Link
-        href={href || "#"}
-        ref={ref}
-        className={cn(
-          "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-          className
-        )}
-        {...props}
-      >
-        <div className="text-sm font-medium leading-none">{title}</div>
-        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-          {children}
-        </p>
-      </Link>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
+const Header = forwardRef<HTMLDivElement, NavbarProps>(
+  ({ className, children, as, ...rest }, ref) => {
+    const path = usePathname();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-const Header = forwardRef<
-  HTMLDivElement,
-  Omit<NavbarProps, "as" | "isBordered" | "isBlurred">
->(({ className, children, ...rest }, ref) => {
-  const path = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useMemo(() => {
+      if (isMenuOpen) setIsMenuOpen(false);
+    }, [path]);
 
-  useMemo(() => {
-    if (isMenuOpen) setIsMenuOpen(false);
-  }, [path]);
-
-  return (
-    <div
-      className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
-      ref={ref}
-    >
-      {children}
+    return (
       <div
-        className={cn(
-          "flex items-center justify-between h-16 min-h-16 px-4 sm:px-6",
-          path.startsWith("/admin")
-            ? "bg-white"
-            : "bg-primary-100/50 backdrop-blur-sm border-b border-border",
-          className
-        )}
-        {...rest}
+        className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
+        ref={ref}
       >
-        <Link href="/" className="flex items-center flex-shrink-0">
-          <SkillSwapFull
-            width={"120"}
-            height={"70"}
-            className="w-[120px] sm:w-[170px] h-auto"
-          />
-        </Link>
-
-        <NavigationMenu className="hidden lg:flex mx-auto">
-          <NavigationMenuList>
+        {children}
+        <NextNavbar
+          isMenuOpen={isMenuOpen}
+          onMenuOpenChange={setIsMenuOpen}
+          isBordered
+          position="static"
+          isBlurred={true}
+          className={cn(
+            path.startsWith("/admin")
+              ? "bg-white border-0"
+              : "bg-primary-100/50 backdrop-blur-sm",
+            "h-16 min-h-[4rem] px-2 sm:px-4",
+            className
+          )}
+          classNames={{
+            base: "h-16 min-h-[4rem]",
+            wrapper: "mx-auto w-full h-full",
+            content: "gap-2 h-full",
+            brand: "gap-0 h-full",
+            item: [
+              "flex",
+              "relative",
+              "h-full",
+              "items-center",
+              "transition-colors duration-200",
+              "hover:text-primary-600",
+              "data-[active=true]:after:content-['']",
+              "data-[active=true]:after:absolute",
+              "data-[active=true]:after:bottom-0",
+              "data-[active=true]:after:left-0",
+              "data-[active=true]:after:right-0",
+              "data-[active=true]:after:h-[2px]",
+              "data-[active=true]:after:rounded-[2px]",
+              "data-[active=true]:after:bg-primary",
+            ],
+          }}
+          {...rest}
+        >
+          <NavbarBrand>
+            <Link href="/" type="button" className="flex items-center">
+              <SkillSwapFull
+                width={"120"}
+                height={"70"}
+                className="w-[120px] sm:w-[170px] h-auto"
+              />
+            </Link>
+          </NavbarBrand>
+          <NavbarMenu />
+          <NavbarContent justify="center" className="hidden  gap-2 lg:flex">
             {locale.NAVBAR.ITEMS.map((item) => {
-              const itemIsActive =
-                item.LINK === path ||
-                item.SUB_ITEMS?.some((sub) => sub.LINK === path);
               if (item.LINK) {
+                const itemIsActive = item.LINK === path;
                 return (
-                  <NavigationMenuItem key={item.LINK}>
-                    <NavigationMenuLink
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        itemIsActive && "text-primary font-semibold"
-                      )}
-                      aschild
+                  <NavbarItem
+                    key={item.LINK}
+                    isActive={itemIsActive}
+                    isImportant={item.IMPORTANT}
+                  >
+                    <Link
+                      href={item.LINK}
+                      scroll={false}
+                      className="flex items-center"
                     >
-                      <Link href={item.LINK}>{item.TEXT}</Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
+                      {item.TEXT}
+                    </Link>
+                  </NavbarItem>
                 );
               }
 
               if (item.SUB_ITEMS) {
+                const itemIsActive = item.SUB_ITEMS?.some(
+                  (subItem) => subItem.LINK === path
+                );
+
                 return (
-                  <NavigationMenuItem key={item.TEXT}>
-                    <NavigationMenuTrigger
-                      className={cn(
-                        itemIsActive && "text-primary font-semibold"
-                      )}
+                  <Dropdown
+                    showArrow
+                    shouldCloseOnBlur
+                    radius="sm"
+                    size="sm"
+                    key={item.TEXT}
+                    className="bg-default-100"
+                  >
+                    <NavbarItem isActive={itemIsActive}>
+                      <DropdownTrigger>
+                        <Button
+                          disableRipple
+                          className="p-0 bg-transparent data-[hover=true]:bg-transparent font-medium text-md"
+                          endContent={<ChevronIcon className="-rotate-90" />}
+                          radius="sm"
+                          variant="light"
+                        >
+                          {item.TEXT}
+                        </Button>
+                      </DropdownTrigger>
+                    </NavbarItem>
+                    <DropdownMenu
+                      aria-label={item.TEXT}
+                      items={item.SUB_ITEMS}
+                      className="max-w-[300px]"
+                      disabledKeys={item.SUB_ITEMS.filter(
+                        (sub) => sub.IS_DISABLED === true
+                      ).map((sub) => sub.LINK)}
                     >
-                      {item.TEXT}
-                      <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[300px] gap-3 p-4 md:w-[400px] lg:w-[500px] grid-cols-1 md:grid-cols-2">
-                        {item.SUB_ITEMS.map((sub) => (
-                          <ListItem
-                            key={sub.LINK}
-                            href={sub.LINK}
-                            title={sub.TEXT}
-                            className={
-                              path === sub.LINK
-                                ? "bg-accent text-accent-foreground"
-                                : ""
-                            }
-                          >
-                            {sub.DESCRIPTION}
-                          </ListItem>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+                      {(sub) => (
+                        <DropdownItem
+                          description={sub.DESCRIPTION}
+                          as={Link}
+                          key={sub.LINK}
+                          href={sub.LINK}
+                        >
+                          <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
+                            {sub.TEXT}
+                          </span>
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
                 );
               }
-              return null;
             })}
-          </NavigationMenuList>
-          <NavigationMenuViewport />
-        </NavigationMenu>
-
-        <div className="hidden lg:flex items-center gap-2">
-          {/* Corregido - Se usa Button como wrapper principal */}
-          <Button variant="link" size="sm" className="text-md" aschild>
-            <Link href={locale.NAVBAR.LINK} className="flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5 flex-shrink-0"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                />
-              </svg>
-              <span>{locale.NAVBAR.BUTTON}</span>
-            </Link>
-          </Button>
-        </div>
-
-        <div className="lg:hidden">
-          <Button
-            variant="link"
-            size="icon"
-            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <MenuIcon className="h-6 w-6" />
-          </Button>
-        </div>
+          </NavbarContent>
+          <NavbarContent justify="end" className="gap-2">
+            <NavbarMenuToggle
+              aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
+              className="lg:hidden"
+            />
+            <Button
+              as={Link}
+              href={locale.NAVBAR.LINK}
+              className="hidden lg:inline-flex"
+              size="sm"
+              variant="light"
+              color="primary"
+              startContent={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                  />
+                </svg>
+              }
+            >
+              {locale.NAVBAR.BUTTON}
+            </Button>
+          </NavbarContent>
+        </NextNavbar>
       </div>
-      {isMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-background">
-          <NavbarMenu />
-        </div>
-      )}
-    </div>
-  );
-});
+    );
+  }
+);
 
-Header.displayName = "Header";
+Header.displayName = "skillSwap.Navbar";
 
 export default Header;

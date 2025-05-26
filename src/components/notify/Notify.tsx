@@ -1,69 +1,73 @@
 "use client";
 
-import { type Notify as NotifyType, getNotify } from "@/app/_actions/notify";
+import { type Notify, getNotify } from "@/app/_actions/notify";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@heroui/button";
+import { Link as NextLink } from "@heroui/react";
+import { CloseIcon } from "@heroui/shared-icons";
 import Link from "next/link";
-import { X as CloseIcon } from "lucide-react";
 import { forwardRef, useEffect, useState } from "react";
-import type { SkillSwapContent } from "../../types/types";
+import type { SkillSwapContent } from "../types";
 import useNotify from "./useNotify";
 
-const Notify = forwardRef<HTMLDivElement, SkillSwapContent>(
+const NavbarNotify = forwardRef<HTMLDivElement, SkillSwapContent>(
   ({ className, ...rest }, ref) => {
     const { isOpen, close, open } = useNotify();
     const handleClose = () => close();
-    const [message, setMessage] = useState<NotifyType | undefined>(undefined);
+    const [message, setMessage] = useState<Notify | undefined>(undefined);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
       const updateMessage = async () => {
         const message = await getNotify();
-        if (message) {
-          setMessage(message);
-          open();
-        }
+        setMessage(message as Notify);
+        open();
       };
 
       updateMessage();
-    }, [open]);
-
-    if (!isOpen || !message) {
-      return null;
-    }
+    }, []);
 
     return (
-      <div
-        ref={ref}
-        className={cn(
-          "print:hidden flex flex-col flex-center w-screen bg-primary py-2 px-12 text-sm font-medium z-10 text-white",
-          className
-        )}
-        {...rest}
-      >
-        <span className="inline-flex gap-2">
-          {message.value}
-          <Link
-            href={message.link.href}
-            className="text-white underline-offset-4 hover:underline text-sm"
-          >
-            {message.link.value}
-          </Link>
-        </span>
-        <Button
-          aria-label="Cerrar notificación"
-          name="close"
-          size="icon"
-          variant="ghost"
-          className="text-white absolute right-4 mr-0 xss:sm:mr-10 max-h-full rounded-full"
-          onClick={handleClose}
+      isOpen &&
+      message && (
+        <div
+          ref={ref}
+          className={cn(
+            "print:hidden flex flex-col flex-center w-screen bg-primary py-2 px-12 text-sm font-medium z-10 text-white",
+            className
+          )}
+          {...rest}
         >
-          <CloseIcon className="h-4 w-4" />
-        </Button>
-      </div>
+          <span className="inline-flex gap-2">
+            {message.value}
+            <NextLink
+              as={Link}
+              href={message.link.href}
+              underline="hover"
+              size="sm"
+              className="text-white"
+            >
+              {message.link.value}
+            </NextLink>
+          </span>
+
+          <Button
+            aria-label="Cerrar notificación"
+            name="close"
+            isIconOnly
+            variant="light"
+            color="primary"
+            className="text-white absolute right-4 mr-0 xss:sm:mr-10 max-h-full rounded-full"
+            onClick={handleClose}
+          >
+            <CloseIcon />
+          </Button>
+        </div>
+      )
     );
   }
 );
 
-Notify.displayName = "SkillSwap.Notify";
+NavbarNotify.displayName = "Pomaray.NavbarNotify";
 
-export default Notify;
+export default NavbarNotify;

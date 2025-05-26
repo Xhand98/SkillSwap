@@ -2,10 +2,10 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { HeroUIProvider } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import "./globals.css";
-import ThemeProvider from "@/components/theme/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,27 +26,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-DO" suppressHydrationWarning>
+    <html lang="es-DO">
       <head>
-        <meta name="theme-color" content="#5f21db" />
-        <link rel="icon" type="image/x-icon" href="/images/icons/favicon.ico" />
+        <meta name="theme-color" content="#6E34F3" />
+        <link
+          rel="icon"
+          type="image/x-icon"
+          href="/images/icons/favicon.ico4"
+        />
       </head>
+
       <body
         className={cn(
-          "min-h-screen max-w-screen overflow-x-hidden bg-background text-foreground dark",
-          inter.className
+          "max-w-screen overflow-x-hidden text-foreground",
+          inter.className,
         )}
       >
-        <ThemeProvider
-          attribute={"class"}
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <HeroUIProvider>
           <Header />
           {children}
           <Footer />
-        </ThemeProvider>
+        </HeroUIProvider>
       </body>
     </html>
   );

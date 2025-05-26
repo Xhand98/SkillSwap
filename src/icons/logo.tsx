@@ -1,4 +1,4 @@
-import { SkillSwapContent } from "@/types/types";
+import { SkillSwapContent } from "@/components/types";
 import { cn } from "@/lib/utils";
 
 export default function SkillSwap({
