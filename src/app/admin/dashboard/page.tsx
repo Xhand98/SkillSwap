@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/AuthContext";
 import { AuthService } from "@/lib/AuthService";
+import { API_CONFIG } from "@/lib/api-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   UsersIcon,
@@ -44,6 +45,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 
 interface User {
   id: number;
@@ -94,6 +96,62 @@ export default function AdminDashboard() {
     category: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20); // 20 usuarios por página
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Función para cargar usuarios con paginación
+  const fetchUsers = async (page = 1, search = "") => {
+    try {
+      let url = `${API_CONFIG.API_URL}/users/?page=${page}&pageSize=${pageSize}`;
+
+      // Si hay término de búsqueda, agregar parámetro
+      if (search.trim()) {
+        url += `&search=${encodeURIComponent(search)}`;
+      }
+
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users || []);
+        setTotalUsers(data.total_users || 0);
+        setTotalPages(Math.ceil((data.total_users || 0) / pageSize));
+
+        // Actualizar estadísticas solo si no hay búsqueda
+        if (!search.trim()) {
+          setStats((prevStats) => ({
+            ...prevStats,
+            total_users: data.total_users || 0,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando usuarios:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los usuarios",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Manejar cambio de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchUsers(page, searchTerm);
+  };
+
+  // Manejar búsqueda con debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1); // Resetear a página 1 al buscar
+      fetchUsers(1, searchTerm);
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Verificar si el usuario actual es administrador
   useEffect(() => {
@@ -110,7 +168,6 @@ export default function AdminDashboard() {
       }
     }
   }, [isAuthenticated, user]);
-
   // Cargar usuarios y estadísticas
   useEffect(() => {
     const fetchData = async () => {
@@ -118,29 +175,20 @@ export default function AdminDashboard() {
 
       setLoading(true);
       try {
-        // Cargar usuarios
-        const usersResponse = await fetch("http://localhost:8000/users/");
-        if (usersResponse.ok) {
-          const data = await usersResponse.json();
-          setUsers(data.users || []);
-          setStats((prevStats) => ({
-            ...prevStats,
-            total_users: data.total_users || 0,
-          }));
-        }
+        // Cargar usuarios con paginación
+        await fetchUsers(currentPage, searchTerm);
 
         // Cargar habilidades
         const abilitiesResponse = await fetch(
-          "http://localhost:8000/abilities/"
+          `${API_CONFIG.API_URL}/abilities/`
         );
         if (abilitiesResponse.ok) {
           const data = await abilitiesResponse.json();
           setAbilities(data.abilities || []);
         }
-
         // Cargar posts
         const postsResponse = await fetch(
-          "http://localhost:8000/posts/?page=1&pageSize=1"
+          `${API_CONFIG.API_URL}/posts/?page=1&pageSize=1`
         );
         if (postsResponse.ok) {
           const data = await postsResponse.json();
@@ -149,9 +197,8 @@ export default function AdminDashboard() {
             total_posts: data.total_posts || 0,
           }));
         }
-
         // Cargar matches
-        const matchesResponse = await fetch("http://localhost:8000/matches/");
+        const matchesResponse = await fetch(`${API_CONFIG.API_URL}/matches/`);
         if (matchesResponse.ok) {
           const data = await matchesResponse.json();
           setStats((prevStats) => ({
@@ -178,7 +225,7 @@ export default function AdminDashboard() {
   // Función para banear/desbanear usuario (cambiar rol)
   const handleUserRoleChange = async (userId: number, newRole: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/users/${userId}`, {
+      const response = await fetch(`${API_CONFIG.API_URL}/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +275,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/abilities/", {
+      const response = await fetch(`${API_CONFIG.API_URL}/abilities/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,18 +310,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filtrar usuarios según término de búsqueda
-  const filteredUsers = users.filter(
-    (user) =>
-      user.nombre_usuario.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.correo_electronico
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      `${user.primer_nombre} ${user.primer_apellido}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
-
   if (!isAuthenticated || (user && user.rol !== "admin")) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -300,10 +335,8 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-16">
-      {" "}
       <div className="flex justify-between items-center mb-8">
         <div>
           <Text as="h1" size="heading-3" className="font-bold mb-2">
@@ -421,7 +454,7 @@ export default function AdminDashboard() {
                   <TableHead>Rol</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
-              </TableHeader>
+              </TableHeader>{" "}
               <TableBody>
                 {loading ? (
                   <TableRow>
@@ -429,14 +462,14 @@ export default function AdminDashboard() {
                       Cargando usuarios...
                     </TableCell>
                   </TableRow>
-                ) : filteredUsers.length === 0 ? (
+                ) : users.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-4">
                       No se encontraron usuarios
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((user) => (
+                  users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.id}</TableCell>
                       <TableCell>@{user.nombre_usuario}</TableCell>
@@ -521,13 +554,27 @@ export default function AdminDashboard() {
                             </Button>
                           )}
                         </div>
-                      </TableCell>
+                      </TableCell>{" "}
                     </TableRow>
                   ))
                 )}
               </TableBody>
             </Table>
           </div>
+
+          {/* Componente de paginación */}
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+              <div className="text-sm text-muted-foreground text-center mt-2">
+                Mostrando {users.length} de {totalUsers} usuarios
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* Pestaña de habilidades */}

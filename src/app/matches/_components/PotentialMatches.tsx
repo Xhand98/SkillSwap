@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,7 +70,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
   useEffect(() => {
     const fetchUserSkills = async () => {
       try {
-        const url = `http://localhost:8000/userabilities/user/${userId}`;
+        const url = `${API_CONFIG.API_URL}/userabilities/user/${userId}`;
         console.log(`Consultando API de habilidades: ${url}`);
 
         const response = await fetch(url);
@@ -115,7 +116,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
 
         // Obtenemos todos los usuarios que ofrecen las habilidades que el usuario busca
         const matchPromises = skillsUserWants.map(async (wantedSkill) => {
-          const url = `http://localhost:8000/userabilities/matches/potential?userId=${userId}&abilityId=${wantedSkill.ability_id}`;
+          const url = `${API_CONFIG.API_URL}/userabilities/matches/potential?userId=${userId}&abilityId=${wantedSkill.ability_id}`;
           console.log(`Consultando API para matches potenciales: ${url}`);
 
           // Agregamos información del inicio de la llamada API
@@ -303,8 +304,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
         );
         return;
       }
-
-      const response = await fetch(`http://localhost:8000/matches/`, {
+      const response = await fetch(`${API_CONFIG.API_URL}/matches/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

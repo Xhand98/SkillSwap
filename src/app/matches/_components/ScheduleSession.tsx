@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { API_CONFIG } from "@/lib/api-config";
 
 interface ScheduleSessionProps {
   matchId: string;
@@ -79,7 +80,7 @@ export default function ScheduleSession({
       const [hours, minutes] = time.split(":").map(Number);
       sessionDateTime.setHours(hours, minutes);
 
-      const response = await fetch("http://localhost:8000/sessions/", {
+      const response = await fetch(`${API_CONFIG.API_URL}/sessions/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

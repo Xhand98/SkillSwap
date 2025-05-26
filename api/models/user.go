@@ -17,6 +17,7 @@ CorreoElectronico string    `json:"correo_electronico" gorm:"unique;not null;col
 CiudadTrabajo     string    `json:"ciudad_trabajo" gorm:"not null;column:CiudadTrabajo"`
 HashContrasena    string    `json:"-" gorm:"not null;column:HashContrasena"`
 Rol               string    `json:"rol" gorm:"default:'user';column:Rol"`
+IsBanned		  bool 		`json:"is_banned" gorm:"default:0;column:IsBanned"` // Añadido IsBanned a User
 
 // Relación con las habilidades del usuario
 UserAbilities []UserAbility `json:"user_abilities,omitempty" gorm:"foreignKey:UserID;references:UsuarioID"`
@@ -48,4 +49,5 @@ CorreoElectronico *string `json:"correo_electronico"`
 CiudadTrabajo     *string `json:"ciudad_trabajo"`
 HashContrasena    *string `json:"hash_contrasena"` // Considerar si la contraseña se actualiza así
 Rol               *string `json:"rol"` // Añadido Rol a UpdateUserRequest
+IsBanned          *bool   `json:"is_banned"` // Añadido IsBanned a UpdateUserRequest
 }

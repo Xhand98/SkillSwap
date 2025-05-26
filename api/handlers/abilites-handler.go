@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"skillswap/api/models"
 	"strconv"
@@ -32,11 +31,9 @@ func (h *abilityHandler) GetAbilities(w http.ResponseWriter, r *http.Request) {
 	if err != nil || page < 1 {
 		page = 1 // Valor por defecto para la página
 	}
-
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil || pageSize <= 0 {
-		fmt.Println(err.Error())
-		pageSize = 3 // Valor por defecto para el tamaño de página
+		pageSize = 50 // Valor por defecto más alto para mostrar más habilidades
 	}
 
 	offset := (page - 1) * pageSize
@@ -63,7 +60,10 @@ func (h *abilityHandler) GetAbilities(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	totalPages := int(totalAbilities / int64(pageSize))
+	totalPages := 0
+	if pageSize > 0 {
+		totalPages = int((totalAbilities + int64(pageSize) - 1) / int64(pageSize)) // Ceil division
+	}
 
 	response := PaginatedUsersResponse{
 		Abilities:  abilities,

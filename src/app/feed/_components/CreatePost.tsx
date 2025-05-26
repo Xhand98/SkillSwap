@@ -7,6 +7,7 @@ import { Image, Smile, Globe, Calendar, AlertCircle } from "lucide-react";
 import { Text } from "@/components/text";
 import { useAuth } from "@/lib/AuthContext";
 import useCurrentUserId from "@/hooks/useCurrentUserId";
+import { API_CONFIG } from "@/lib/api-config";
 
 interface Ability {
   id: number;
@@ -34,7 +35,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   useEffect(() => {
     const fetchAbilities = async () => {
       try {
-        const response = await fetch("http://localhost:8000/abilities/");
+        const response = await fetch(`${API_CONFIG.API_URL}/abilities/`);
         if (response.ok) {
           const data = await response.json();
           console.log("Habilidades recibidas:", data);
@@ -76,7 +77,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/posts/", {
+      const response = await fetch(`${API_CONFIG.API_URL}/posts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -35,8 +35,11 @@ export interface AuthResponse {
   expires_at: string;
 }
 
+// Importar configuración centralizada de la API
+import { API_CONFIG } from "./api-config";
+
 // URL base de la API
-const API_URL = "http://localhost:8000";
+const API_URL = API_CONFIG.API_URL;
 
 // Servicios de autenticación
 export const AuthService = {

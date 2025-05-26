@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Diagnóstico Frontend SkillSwap</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #111;
+            color: #fff;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+
+        .success {
+            color: #4ade80;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .warning {
+            color: #f59e0b;
+        }
+
+        .info {
+            color: #3b82f6;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #5f21db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4c1d95;
+        }
+
+        pre {
+            background: #1f1f1f;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #333;
+        }
+
+        .test-result.success {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .test-result.error {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .test-result.warning {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Diagnóstico Frontend SkillSwap</h1>
+
+    <div class="test-section">
+        <h2>🌐 Tests de Conectividad Backend</h2>
+        <button onclick="testBackendHealth()">Test Health</button>
+        <button onclick="testAbilities()">Test Abilities</button>
+        <button onclick="testAddSkill()">Test Add Skill</button>
+        <button onclick="testUserSkills()">Test User Skills</button>
+        <div id="backend-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Tests de Páginas Frontend</h2>
+        <button onclick="openExplorePage()">Abrir /explore</button>
+        <button onclick="openSkillsPage()">Abrir /skills</button>
+        <button onclick="testFrontendFetch()">Test Frontend Fetch</button>
+        <div id="frontend-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Información del Sistema</h2>
+        <div id="system-info"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const FRONTEND_URL = 'http://localhost:3000';
+
+        function addResult(containerId, type, title, message, data = null) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Backend Tests
+        async function testBackendHealth() {
+            clearResults('backend-results');
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                addResult('backend-results', 'success', '✅ Backend Health', 'API está funcionando', data);
+            } catch (error) {
+                addResult('backend-results', 'error', '❌ Backend Health', `Error: ${error.message}`);
+            }
+        }
+
+        async function testAbilities() {
+            try {
+                const response = await fetch(`${API_URL}/abilities/`);
+                const data = await response.json();
+                addResult('backend-results', 'success', '✅ Abilities Endpoint',
+                    `${data.abilities?.length || 0} habilidades encontradas`, data);
+            } catch (error) {
+                addResult('backend-results', 'error', '❌ Abilities Endpoint', `Error: ${error.message}`);
+            }
+        }
+
+        async function testAddSkill() {
+            try {
+                const payload = {
+                    user_id: 1,
+                    ability_id: 1,
+                    skill_type: 'Ofrece',
+                    proficiency_level: 'Intermedio'
+                };
+
+                const response = await fetch(`${API_URL}/userabilities/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                addResult('backend-results', 'success', '✅ Add Skill',
+                    `Habilidad agregada con ID: ${data.id}`, data);
+            } catch (error) {
+                addResult('backend-results', 'error', '❌ Add Skill', `Error: ${error.message}`);
+            }
+        }
+
+        async function testUserSkills() {
+            try {
+                const response = await fetch(`${API_URL}/userabilities/user/1`);
+                const data = await response.json();
+                addResult('backend-results', 'success', '✅ User Skills',
+                    `${data.length} habilidades del usuario`, data);
+            } catch (error) {
+                addResult('backend-results', 'error', '❌ User Skills', `Error: ${error.message}`);
+            }
+        }
+
+        // Frontend Tests
+        function openExplorePage() {
+            window.open(`${FRONTEND_URL}/explore`, '_blank');
+            addResult('frontend-results', 'info', '🔗 Explore Page', 'Página abierta en nueva pestaña');
+        }
+
+        function openSkillsPage() {
+            window.open(`${FRONTEND_URL}/skills`, '_blank');
+            addResult('frontend-results', 'info', '🔗 Skills Page', 'Página abierta en nueva pestaña');
+        }
+
+        async function testFrontendFetch() {
+            clearResults('frontend-results');
+
+            // Test if we can access the frontend from here
+            try {
+                const response = await fetch(`${FRONTEND_URL}/api/health`);
+                addResult('frontend-results', 'info', '📡 Frontend API', 'Endpoint existe');
+            } catch (error) {
+                addResult('frontend-results', 'warning', '📡 Frontend API',
+                    'No hay endpoint /api/health en el frontend (normal)');
+            }
+
+            // Test CORS
+            try {
+                const response = await fetch(`${API_URL}/abilities/`, {
+                    headers: {
+                        'Origin': FRONTEND_URL
+                    }
+                });
+                const data = await response.json();
+                addResult('frontend-results', 'success', '✅ CORS Test',
+                    'Backend acepta requests desde frontend');
+            } catch (error) {
+                addResult('frontend-results', 'error', '❌ CORS Test', `Error: ${error.message}`);
+            }
+        }
+
+        // System Info
+        function showSystemInfo() {
+            const info = {
+                userAgent: navigator.userAgent,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                apiUrl: API_URL,
+                frontendUrl: FRONTEND_URL,
+                timestamp: new Date().toISOString()
+            };
+
+            document.getElementById('system-info').innerHTML = `
+                <pre>${JSON.stringify(info, null, 2)}</pre>
+            `;
+        }
+
+        // Auto-run system info
+        showSystemInfo();
+
+        // Auto-run basic connectivity test
+        setTimeout(() => {
+            testBackendHealth();
+            testAbilities();
+        }, 1000);
+    </script>
+</body>
+
+</html>

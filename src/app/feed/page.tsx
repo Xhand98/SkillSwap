@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 
 interface Post {
   id_usuario: number;
@@ -55,12 +56,11 @@ export default function FeedPage() {
   useEffect(() => {
     console.log("Feed - ID de usuario desde hook:", currentUserId);
   }, [currentUserId]);
-
   const fetchPosts = async (page: number = 1) => {
     setLoading(true);
     try {
       // Construir la URL base
-      let url = `http://localhost:8000/posts/?page=${page}&pageSize=${pageSize}`; // Añadir filtros a la URL si están presentes
+      let url = `${API_CONFIG.API_URL}/posts/?page=${page}&pageSize=${pageSize}`; // Añadir filtros a la URL si están presentes
       if (filters.type) {
         url += `&tipo=${filters.type}`;
       }
@@ -154,23 +154,21 @@ export default function FeedPage() {
               <div className="p-4 text-center text-gray-500">
                 No hay publicaciones disponibles
               </div>
-            ) : (
-              <div>
-                {" "}
-                {posts.map((post) => (
+            ) : (              <div>
+                {" "}                {posts.map((post) => (
                   <FeedCard
                     id={post.id_usuario}
                     postId={post.post_id}
-                    key={post.post_id}
-                    title={
-                      post.tipo_post === "OFREZCO"
+                    key={post.post_id}                    title={
+                      post.tipo_post === "Ofrece"
                         ? `Ofrezco: ${post.nombre_habilidad}`
                         : `Busco: ${post.nombre_habilidad}`
                     }
                     description={post.descripcion}
                     tags={[post.nombre_habilidad]}
                     author={post.nombre_usuario}
-                    createdAt={formatTimeAgo(post.created_at)}
+                    createdAt={post.created_at}
+                    skillName={post.nombre_habilidad}
                     onPostDeleted={() => fetchPosts(currentPage)}
                   />
                 ))}
@@ -191,8 +189,8 @@ export default function FeedPage() {
           </main>
 
           {/* Sidebar derecho - Tendencias, etc */}
-          <aside className="hidden lg:block p-4 min-w-[25rem] sticky top-0 h-screen">
-            <div className="bg-gray-900 rounded-xl p-4">
+          <aside className="hidden lg:block -my-4 -ml-3 p-4 min-w-[32rem] sticky top-0 h-screen">
+            <div className="bg-neutral-900 rounded-xl p-4">
               <Text as="h2" size="heading-3" className="mb-4 font-bold">
                 Usuarios Destacados
               </Text>

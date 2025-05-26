@@ -1,0 +1,267 @@
+import { Text } from "@/components/text";
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  User,
+  Trash2,
+  MoreVertical,
+  Calendar,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { QuickSchedule } from "./QuickSchedule";
+import { API_CONFIG } from "@/lib/api-config";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface FeedCardProps {
+  title: string;
+  description: string;
+  tags: string[];
+  author: string;
+  createdAt?: string;
+  likes?: number;
+  comments?: number;
+  reposts?: number;
+  id?: number;
+  postId?: number;
+  onPostDeleted?: () => void;
+}
+
+const FeedCard: React.FC<FeedCardProps> = ({
+  title,
+  description,
+  id,
+  postId,
+  tags = [],
+  author,
+  createdAt = new Date().toISOString(),
+  likes = Math.floor(Math.random() * 100),
+  comments = Math.floor(Math.random() * 50),
+  reposts = Math.floor(Math.random() * 10),
+  onPostDeleted,
+}) => {
+  const { user } = useAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasScheduledSession, setHasScheduledSession] = useState(false);
+
+  const isAdmin = user?.rol === "admin";
+  const isAuthor = user?.id === id;
+  const canDelete = isAdmin || isAuthor;
+
+  useEffect(() => {
+    const checkForScheduledSessions = async () => {
+      if (!postId || !user || !user.id) return;
+
+      try {
+        // Verificar si existe un match
+        const matchResponse = await fetch(
+          `${API_CONFIG.API_URL}/matches/check?user1=${user.id}&user2=${id}`,
+          {
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!matchResponse.ok) {
+          console.error(`Error en respuesta de match: ${matchResponse.status}`);
+          return;
+        }
+
+        const matchData = await matchResponse.json();
+
+        console.log('Match data:', matchData); // Debug log
+
+        if (matchData && matchData.exists && matchData.match_id) {
+          // Si hay match, verificar si hay sesiones programadas
+          const sessionsResponse = await fetch(
+            `${API_CONFIG.API_URL}/matches/${matchData.match_id}/sessions/`,
+            {
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!sessionsResponse.ok) {
+            console.error(`Error en respuesta de sesiones: ${sessionsResponse.status}`);
+            return;
+          }
+
+          const sessionsData = await sessionsResponse.json();
+          console.log('Sessions data:', sessionsData); // Debug log
+
+          // Si hay al menos una sesión, actualizamos el estado
+          setHasScheduledSession(Array.isArray(sessionsData) && sessionsData.length > 0);
+        }
+      } catch (error) {
+        console.error("Error al verificar sesiones:", error);
+      }
+    };
+
+    checkForScheduledSessions();
+  }, [postId, user, id]);
+
+  const handleDeletePost = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${API_CONFIG.API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+
+      if (response.ok) {
+        if (onPostDeleted) onPostDeleted();
+      } else {
+        console.error("Error al eliminar post:", response.statusText);
+        alert("No se pudo eliminar la publicación");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al eliminar la publicación");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg p-4 bg-background border mb-4">
+      <div className="flex justify-between items-start">
+        <div className="flex items-center mb-3">
+          <Avatar className="mr-2 h-10 w-10">
+            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`} />
+            <AvatarFallback><User /></AvatarFallback>
+          </Avatar>
+          <div>
+            <Link href={`/profiles/${id}`}>
+              <Text className="font-semibold hover:underline cursor-pointer">{author}</Text>
+            </Link>
+            <Text className="text-xs text-muted-foreground">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </div>
+        </div>
+
+        {canDelete && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-500"
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar publicación
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      <Link href={`/posts/${postId}`}>
+        <Text className="text-lg font-semibold mb-1 hover:underline">{title}</Text>
+      </Link>
+      <Text className="mb-3">{description}</Text>
+
+      {tags && tags.length > 0 && (
+        <div className="flex flex-wrap mb-3">
+          {tags.map((tag, index) => (
+            <span
+              key={index}
+              className="bg-secondary text-secondary-foreground rounded-full px-3 py-1 text-xs mr-2 mb-2"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-between mt-4">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" className="flex items-center">
+            <Heart className={cn("h-4 w-4 mr-1", false ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
+            <span className="text-xs text-muted-foreground">{likes}</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center">
+            <MessageCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{comments}</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center">
+            <Repeat2 className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{reposts}</span>
+          </Button>
+        </div>
+
+        <div>
+          {user && user.id !== id && (
+            hasScheduledSession ? (
+              <Button variant="outline" size="sm" disabled>
+                <Calendar className="h-4 w-4 mr-2" />
+                Sesión programada
+              </Button>
+            ) : (
+              <QuickSchedule userId={id} userName={author} />
+            )
+          )}
+        </div>
+      </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente esta publicación.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeletePost();
+              }}
+              className="bg-red-500 hover:bg-red-600"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default FeedCard;

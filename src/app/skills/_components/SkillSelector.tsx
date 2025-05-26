@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +21,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Text } from "@/components/text";
 import { Briefcase, Star, AlertTriangle } from "lucide-react";
+import { DatabaseStatus } from "@/components/database-status";
+import { useToast, showDatabaseToast } from "@/components/toast-provider";
 
 interface Ability {
   id: number;
@@ -43,20 +46,32 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const { addToast } = useToast();
+  const dbToast = showDatabaseToast(addToast);
   useEffect(() => {
     const fetchAbilities = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/abilities/");
+        dbToast.loading("Conectando con la base de datos...");
+
+        const response = await fetch(`${API_CONFIG.API_URL}/abilities/`);
 
         if (!response.ok) {
           throw new Error(`Error al cargar habilidades: ${response.status}`);
         }
 
         const data = await response.json();
-        setAbilities(data.abilities || []);
+        const abilitiesList = data.abilities || [];
+        setAbilities(abilitiesList);
+
+        dbToast.success(
+          `${abilitiesList.length} habilidades cargadas desde la base de datos`
+        );
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        const errorMessage =
+          err instanceof Error ? err.message : "Error desconocido";
+        setError(errorMessage);
+        dbToast.error(`Error al cargar habilidades: ${errorMessage}`);
         console.error("Error:", err);
       } finally {
         setLoading(false);
@@ -71,13 +86,14 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
       setError("Por favor selecciona una habilidad");
       return;
     }
-
     try {
       setSubmitting(true);
       setError(null);
       setSuccess(null);
 
-      const response = await fetch("http://localhost:8000/userabilities/", {
+      dbToast.loading("Guardando habilidad en la base de datos...");
+
+      const response = await fetch(`${API_CONFIG.API_URL}/userabilities/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,38 +111,66 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
       }
 
       // Éxito
-      setSuccess("¡Habilidad agregada correctamente!");
+      const selectedAbility = abilities.find(
+        (a) => a.id === parseInt(selectedAbilityId)
+      );
+      setSuccess("¡Habilidad guardada en la base de datos correctamente!");
+      dbToast.success(
+        `Habilidad "${selectedAbility?.name}" agregada exitosamente`
+      );
+
       // Reset form
       setSelectedAbilityId("");
       setProficiencyLevel("Principiante");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      const errorMessage =
+        err instanceof Error ? err.message : "Error desconocido";
+      setError(errorMessage);
+      dbToast.error(`Error al guardar: ${errorMessage}`);
       console.error("Error:", err);
     } finally {
       setSubmitting(false);
     }
   };
-
   if (loading) {
     return (
-      <div className="p-8 text-center">
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-        <p className="text-gray-400 mt-4">
-          Cargando habilidades disponibles...
-        </p>
-      </div>
+      <Card className="bg-gray-900 border-gray-800">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Agregar Nueva Habilidad</CardTitle>
+              <CardDescription>
+                Selecciona una habilidad que ofreces o buscas aprender
+              </CardDescription>
+            </div>
+            <DatabaseStatus />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="p-8 text-center">
+            <div className="flex justify-center items-center h-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+            <p className="text-gray-400 mt-4">
+              Cargando habilidades desde la base de datos...
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
-
   return (
     <Card className="bg-gray-900 border-gray-800">
       <CardHeader>
-        <CardTitle>Agregar Nueva Habilidad</CardTitle>
-        <CardDescription>
-          Selecciona una habilidad que ofreces o buscas aprender
-        </CardDescription>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Agregar Nueva Habilidad</CardTitle>
+            <CardDescription>
+              Selecciona una habilidad que ofreces o buscas aprender
+            </CardDescription>
+          </div>
+          <DatabaseStatus />
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -136,15 +180,18 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
             <p>{error}</p>
           </div>
         )}
-
         {success && (
           <div className="bg-green-900/20 text-green-400 p-3 rounded-md">
             {success}
           </div>
-        )}
-
+        )}{" "}
         <div className="space-y-2">
-          <Label htmlFor="ability">Habilidad</Label>
+          <div className="flex justify-between items-center">
+            <Label htmlFor="ability">Habilidad</Label>
+            <span className="text-xs text-green-400">
+              {abilities.length} disponibles desde la BD
+            </span>
+          </div>
           <Select
             value={selectedAbilityId}
             onValueChange={setSelectedAbilityId}
@@ -167,7 +214,6 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
             </SelectContent>
           </Select>
         </div>
-
         <div className="space-y-2">
           <Label>Tipo de Habilidad</Label>
           <RadioGroup
@@ -191,7 +237,6 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
             </div>
           </RadioGroup>
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="level">
             Nivel de {skillType === "Ofrece" ? "Experiencia" : "Interés"}
@@ -207,14 +252,13 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
               <SelectItem value="Experto">Experto</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
+        </div>{" "}
         <Button
           className="w-full"
           onClick={handleAddSkill}
           disabled={submitting || !selectedAbilityId}
         >
-          {submitting ? "Agregando..." : "Agregar Habilidad"}
+          {submitting ? "Guardando en base de datos..." : "Agregar Habilidad"}
         </Button>
       </CardContent>
     </Card>

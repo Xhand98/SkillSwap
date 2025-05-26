@@ -13,6 +13,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Definición actualizada según la respuesta real de la API
 interface User {
@@ -547,19 +554,24 @@ export default function MatchesList({ userId }: MatchesListProps) {
                     </div>
 
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-indigo-800 text-indigo-500 hover:bg-indigo-950/50 hover:text-indigo-400"
-                      >
-                        <Link
-                          href={`/chat/${otherUser?.id}`}
-                          className="flex items-center"
-                        >
-                          <MessageSquare size={16} className="mr-1" />
-                          Chatear
-                        </Link>
-                      </Button>{" "}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-indigo-800 text-indigo-500 hover:bg-indigo-950/50 hover:text-indigo-400"
+                          >
+                            <MessageSquare size={16} className="mr-1" />
+                            Ver contacto
+                          </Button>
+                        </DialogTrigger>
+
+                        <DialogTitle className="sr-only">
+                          Aparatado hacaer match
+                        </DialogTitle>
+                        <DialogContent>HOLA KLK MANITO 0880</DialogContent>
+                      </Dialog>
+
                       <Button variant="outline" size="sm">
                         <Link
                           href={`/profiles/${otherUser?.id}`}

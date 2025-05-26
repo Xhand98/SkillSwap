@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:8000/users/${userId}/posts/`
+          `${API_CONFIG.API_URL}/users/${userId}/posts/`
         );
 
         if (!response.ok) {

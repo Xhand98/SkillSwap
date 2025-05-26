@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Text } from "@/components/text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { DatabaseStatus } from "@/components/database-status";
 
 interface Ability {
   id: number;
@@ -25,7 +27,7 @@ export default function AllAbilitiesPage() {
     const fetchAbilities = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/abilities/");
+        const response = await fetch(`${API_CONFIG.API_URL}/abilities/`);
 
         if (!response.ok) {
           throw new Error(`Error al cargar habilidades: ${response.status}`);
@@ -68,23 +70,57 @@ export default function AllAbilitiesPage() {
 
     setFilteredAbilities(filtered);
   }, [searchQuery, abilities]);
-
   if (loading) {
     return (
-      <div className="p-8 text-center">
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="container mx-auto px-4 py-16 max-w-5xl">
+        <div className="mb-8">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <Text size="heading-3" className="text-white mb-2">
+                Explorar Habilidades
+              </Text>
+              <Text size="paragraph-base" className="text-gray-400">
+                Descubre todas las habilidades disponibles en la plataforma
+              </Text>
+            </div>
+            <DatabaseStatus />
+          </div>
         </div>
-        <p className="text-gray-400 mt-4">Cargando habilidades...</p>
+        <div className="p-8 text-center bg-gray-900 rounded-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            Cargando desde la base de datos...
+          </h2>
+          <p className="text-gray-400">Obteniendo habilidades del servidor</p>
+        </div>
       </div>
     );
   }
-
   if (error) {
     return (
-      <div className="p-8 text-center bg-gray-900 rounded-lg">
-        <h2 className="text-xl font-bold text-red-500 mb-2">Error</h2>
-        <p className="text-gray-300">{error}</p>
+      <div className="container mx-auto px-4 py-16 max-w-5xl">
+        <div className="mb-8">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <Text size="heading-3" className="text-white mb-2">
+                Explorar Habilidades
+              </Text>
+              <Text size="paragraph-base" className="text-gray-400">
+                Descubre todas las habilidades disponibles en la plataforma
+              </Text>
+            </div>
+            <DatabaseStatus />
+          </div>
+        </div>
+        <div className="p-8 text-center bg-gray-900 rounded-lg">
+          <h2 className="text-xl font-bold text-red-500 mb-2">
+            Error de conexión
+          </h2>
+          <p className="text-gray-300 mb-4">{error}</p>
+          <p className="text-gray-400 text-sm">
+            Verifica el estado de la base de datos arriba y refresca la página
+          </p>
+        </div>
       </div>
     );
   }
@@ -97,16 +133,23 @@ export default function AllAbilitiesPage() {
     }
     abilitiesByCategory[ability.category].push(ability);
   });
-
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="mb-8">
-        <Text size="heading-3" className="text-white mb-2">
-          Explorar Habilidades
-        </Text>
-        <Text size="paragraph-base" className="text-gray-400">
-          Descubre todas las habilidades disponibles en la plataforma
-        </Text>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <Text size="heading-3" className="text-white mb-2">
+              Explorar Habilidades
+            </Text>
+            <Text size="paragraph-base" className="text-gray-400">
+              Descubre todas las habilidades disponibles en la plataforma
+            </Text>
+            <Text size="paragraph-sm" className="text-green-400 mt-1">
+              ✓ {abilities.length} habilidades cargadas desde la base de datos
+            </Text>
+          </div>
+          <DatabaseStatus />
+        </div>
       </div>
 
       <div className="mb-8 relative">

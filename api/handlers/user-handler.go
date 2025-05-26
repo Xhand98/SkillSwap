@@ -10,6 +10,7 @@ import (
 	"math" // Importar el paquete math
 	"net/http"
 	"strconv"
+	"strings" // Importar el paquete strings para manipulación de cadenas
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -40,26 +41,37 @@ func (h *userHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil || page < 1 {
 		page = 1 // Valor por defecto para la página
 	}
-
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil || pageSize <= 0 {
 		fmt.Println(err.Error())
-		pageSize = 3 // Valor por defecto para el tamaño de página
+		pageSize = 20 // Aumentado de 3 a 20 para la administración
 	}
-
 	offset := (page - 1) * pageSize
+
+	// Parámetro de búsqueda
+	searchTerm := r.URL.Query().Get("search")
 
 	var users []models.User
 	var totalUsers int64
 
-	// Contar el total de usuarios
-	if err := h.DB.Model(&models.User{}).Count(&totalUsers).Error; err != nil {
+	// Construir query base
+	query := h.DB.Model(&models.User{})	// Aplicar filtro de búsqueda si existe
+	if searchTerm != "" {
+		searchPattern := "%" + strings.ToLower(searchTerm) + "%"
+		query = query.Where(
+			"LOWER(NombreUsuario) LIKE ? OR LOWER(CorreoElectronico) LIKE ? OR LOWER(PrimerNombre) LIKE ? OR LOWER(PrimerApellido) LIKE ? OR LOWER(SegundoNombre) LIKE ? OR LOWER(SegundoApellido) LIKE ?",
+			searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern,
+		)
+	}
+
+	// Contar el total de usuarios (con filtro aplicado)
+	if err := query.Count(&totalUsers).Error; err != nil {
 		http.Error(w, "Error al contar usuarios: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Obtener usuarios paginados
-	if result := h.DB.Limit(pageSize).Offset(offset).Find(&users); result.Error != nil {
+	// Obtener usuarios paginados (con filtro aplicado)
+	if result := query.Limit(pageSize).Offset(offset).Find(&users); result.Error != nil {
 		http.Error(w, "Error al obtener usuarios: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -146,9 +158,35 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		log.Printf("CreateUser: Error al generar la contraseña: %v", err)
 		http.Error(w, "Error al generar la contraseña", http.StatusInternalServerError)
 		return
+	}	// Generar un nombre de usuario único si está vacío o en caso de colisión
+	nombreUsuario := req.NombreUsuario
+	if nombreUsuario == "" {
+		// Generar nombre de usuario basado en el email
+		emailParts := strings.Split(req.CorreoElectronico, "@")
+		if len(emailParts) > 0 {
+			nombreUsuario = emailParts[0]
+		} else {
+			nombreUsuario = "user"
+		}
 	}
+
+	// Verificar unicidad del nombre de usuario y generar alternativas si es necesario
+	originalNombre := nombreUsuario
+	for i := 0; i < 100; i++ { // Máximo 100 intentos
+		var existingUser models.User
+		result := h.DB.Where("NombreUsuario = ?", nombreUsuario).First(&existingUser)
+		if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// El nombre de usuario está disponible
+			break
+		}
+		// El nombre de usuario ya existe, generar uno nuevo
+		nombreUsuario = fmt.Sprintf("%s%d", originalNombre, i+1)
+	}
+
+	log.Printf("CreateUser: Nombre de usuario generado: %s", nombreUsuario)
+
 	user := models.User{
-		NombreUsuario:    req.NombreUsuario,
+		NombreUsuario:    nombreUsuario,
 		PrimerNombre:     req.PrimerNombre,
 		SegundoNombre:    req.SegundoNombre,
 		PrimerApellido:   req.PrimerApellido,
@@ -169,6 +207,40 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
+}
+
+func (h *userHandler) BanUser (w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	if result := h.DB.First(&user, userId); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Usuario no encontrado", http.StatusNotFound)
+		} else {
+			http.Error(w, "Error al buscar usuario: "+result.Error.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Cambiar el estado de IsBanned
+	user.IsBanned = !user.IsBanned
+
+	if result := h.DB.Save(&user); result.Error != nil {
+		http.Error(w, "Error: "+result.Error.Error(), http.StatusInternalServerError)
+		return // Añadido return para evitar continuar si hay error
+	}
+
+	w.Header().Set("Content-Type", "application/json") // Cambiado a application/json
+	json.NewEncoder(w).Encode(user);
 }
 
 func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {

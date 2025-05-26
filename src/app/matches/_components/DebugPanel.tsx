@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,7 +37,7 @@ export default function DebugPanel({ userId }: { userId: string }) {
     try {
       // Intentamos conectar con la API usando fetch
       const response = await fetch(
-        `http://localhost:8000/users/${userId}/matches/`,
+        `${API_CONFIG.API_URL}/users/${userId}/matches/`,
         {
           method: "GET",
           headers: {
@@ -147,7 +148,7 @@ export default function DebugPanel({ userId }: { userId: string }) {
             <div className="mt-2 space-y-1 text-xs text-gray-400">
               <p>
                 URL de la API:{" "}
-                <span className="text-blue-400">http://localhost:8000</span>
+                <span className="text-blue-400">{API_CONFIG.API_URL}</span>
               </p>
               <p>
                 ID de Usuario: <span className="text-blue-400">{userId}</span>

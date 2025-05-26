@@ -8,14 +8,17 @@ import {
   Trash2,
   MoreVertical,
   Calendar,
+  UserPlus,
+  Briefcase,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { QuickSchedule } from "./QuickSchedule";
+import { API_CONFIG } from "@/lib/api-config";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +48,7 @@ interface FeedCardProps {
   id?: number;
   postId?: number;
   onPostDeleted?: () => void;
+  skillName?: string; // Nombre de la habilidad del post
 }
 
 const FeedCard: React.FC<FeedCardProps> = ({
@@ -52,28 +56,119 @@ const FeedCard: React.FC<FeedCardProps> = ({
   description,
   id,
   postId,
-  tags,
+  tags = [],
   author,
-  createdAt = "2h",
-  likes = Math.floor(Math.random() * 50),
-  comments = Math.floor(Math.random() * 20),
+  createdAt = new Date().toISOString(),
+  likes = Math.floor(Math.random() * 100),
+  comments = Math.floor(Math.random() * 50),
   reposts = Math.floor(Math.random() * 10),
   onPostDeleted,
+  skillName,
 }) => {
   const { user } = useAuth();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [hasScheduledSession, setHasScheduledSession] = useState(false);
+  const [isRequestingMatch, setIsRequestingMatch] = useState(false);
+  const [existingMatch, setExistingMatch] = useState<{
+    exists: boolean;
+    match_id?: number;
+  }>({ exists: false });
 
   const isAdmin = user?.rol === "admin";
   const isAuthor = user?.id === id;
   const canDelete = isAdmin || isAuthor;
 
-  const handleDeletePost = async () => {
-    if (!postId) return;
+  const formatTimeAgo = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Fecha inválida";
+      }
 
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffSecs < 60) return `${diffSecs}s`;
+      if (diffMins < 60) return `${diffMins}m`;
+      if (diffHours < 24) return `${diffHours}h`;
+      return `${diffDays}d`;
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "Fecha inválida";
+    }
+  };
+
+  useEffect(() => {
+    const checkForScheduledSessions = async () => {
+      if (!postId || !user || !user.id) return;
+
+      try {
+        // Verificar si existe un match
+        const matchResponse = await fetch(
+          `${API_CONFIG.API_URL}/matches/check?user1=${user.id}&user2=${id}`,
+          {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!matchResponse.ok) {
+          console.error(`Error en respuesta de match: ${matchResponse.status}`);
+          return;
+        }
+
+        const matchData = await matchResponse.json();
+        console.log("Match data:", matchData);
+
+        // Actualizar estado de match existente
+        setExistingMatch(matchData);
+
+        if (matchData && matchData.exists && matchData.match_id) {
+          // Si hay match, verificar si hay sesiones programadas
+          const sessionsResponse = await fetch(
+            `${API_CONFIG.API_URL}/matches/${matchData.match_id}/sessions/`,
+            {
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!sessionsResponse.ok) {
+            console.error(
+              `Error en respuesta de sesiones: ${sessionsResponse.status}`
+            );
+            return;
+          }
+
+          const sessionsData = await sessionsResponse.json();
+          console.log("Sessions data:", sessionsData);
+
+          // Si hay al menos una sesión, actualizamos el estado
+          setHasScheduledSession(
+            Array.isArray(sessionsData) && sessionsData.length > 0
+          );
+        }
+      } catch (error) {
+        console.error("Error al verificar sesiones:", error);
+      }
+    };
+
+    checkForScheduledSessions();
+  }, [postId, user, id]);
+
+  const handleDeletePost = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:8000/posts/${postId}`, {
+      const response = await fetch(`${API_CONFIG.API_URL}/posts/${postId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
@@ -94,122 +189,327 @@ const FeedCard: React.FC<FeedCardProps> = ({
       setIsDeleteDialogOpen(false);
     }
   };
+  const handleRequestMatch = async () => {
+    console.log("=== INICIANDO HANDLEREQEUSTMATCH ===");
+    console.log("user:", user);
+    console.log("id (user del post):", id);
+    console.log("skillName:", skillName);
+    console.log("author:", author);
+
+    if (!user || !id || !skillName) {
+      alert("Información insuficiente para crear el match");
+      console.error("Información faltante:", {
+        user: !!user,
+        id: !!id,
+        skillName: !!skillName,
+      });
+      return;
+    }
+
+    console.log("=== VERIFICANDO USUARIO ACTUAL ===");
+    console.log("ID del usuario actual:", user.id);
+    console.log("ID del usuario del post:", id);
+
+    if (user.id === id) {
+      alert("No puedes hacer match contigo mismo");
+      return;
+    }
+    setIsRequestingMatch(true);
+    try {
+      // 1. Obtener las habilidades del usuario actual
+      console.log("=== OBTENIENDO HABILIDADES DEL USUARIO ACTUAL ===");
+      const userSkillsResponse = await fetch(
+        `${API_CONFIG.API_URL}/userabilities/user/${user.id}`,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!userSkillsResponse.ok) {
+        throw new Error("Error al obtener tus habilidades");
+      }
+
+      const userSkills = await userSkillsResponse.json();
+      console.log("Habilidades del usuario actual:", userSkills);
+
+      // 2. Encontrar una habilidad que el usuario actual ofrece
+      const userOfferedSkill = userSkills.find(
+        (skill: any) => skill.skill_type === "Ofrece"
+      );
+
+      console.log("Habilidad ofrecida por usuario actual:", userOfferedSkill);
+
+      if (!userOfferedSkill) {
+        alert(
+          "Debes agregar al menos una habilidad que ofrezcas para solicitar un match. Ve a tu perfil para agregar habilidades."
+        );
+
+        return;
+      }
+
+      // 3. Obtener las habilidades del usuario del post
+      const postUserSkillsResponse = await fetch(
+        `${API_CONFIG.API_URL}/userabilities/user/${id}`,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!postUserSkillsResponse.ok) {
+        throw new Error("Error al obtener habilidades del usuario del post");
+      }
+
+      const postUserSkills = await postUserSkillsResponse.json(); // 4. Buscar la habilidad específica que el usuario del post ofrece
+      console.log("=== BUSCANDO HABILIDAD DEL POST ===");
+      console.log(
+        "skillName buscado:",
+        `"${skillName}" (length: ${skillName?.length})`
+      );
+      console.log("postUserSkills total:", postUserSkills.length);
+
+      // Mostrar todas las habilidades que ofrece para debugging
+      const offeredSkills = postUserSkills.filter(
+        (skill: any) => skill.skill_type === "Ofrece"
+      );
+      console.log("Habilidades que ofrece el usuario del post:");
+      offeredSkills.forEach((skill: any, index: number) => {
+        const abilityName = skill.ability?.name;
+        console.log(
+          `  ${index + 1}. "${abilityName}" (length: ${abilityName?.length})`
+        );
+        console.log(`     Comparación exacta: ${abilityName === skillName}`);
+        console.log(
+          `     Comparación trim: ${abilityName?.trim() === skillName?.trim()}`
+        );
+      });
+
+      // Intentar búsqueda exacta primero
+      let postUserOfferedSkill = postUserSkills.find(
+        (skill: any) =>
+          skill.skill_type === "Ofrece" && skill.ability?.name === skillName
+      );
+
+      // Si no encuentra, intentar con trim y case-insensitive
+      if (!postUserOfferedSkill) {
+        console.log("Búsqueda exacta falló, intentando con trim...");
+        postUserOfferedSkill = postUserSkills.find(
+          (skill: any) =>
+            skill.skill_type === "Ofrece" &&
+            skill.ability?.name?.trim().toLowerCase() ===
+              skillName?.trim().toLowerCase()
+        );
+      }
+
+      console.log("postUserOfferedSkill encontrado:", postUserOfferedSkill);
+
+      if (!postUserOfferedSkill) {
+        console.error(
+          "No se encontró la habilidad. Verificando alternativas..."
+        );
+
+        // Intentar encontrar cualquier habilidad que ofrezca el usuario
+        const anyOfferedSkill = postUserSkills.find(
+          (skill: any) => skill.skill_type === "Ofrece"
+        );
+
+        if (anyOfferedSkill) {
+          console.log("Habilidad alternativa encontrada:", anyOfferedSkill);
+          alert(
+            `Este usuario ofrece "${anyOfferedSkill.ability?.name}" pero no "${skillName}". ¿Quieres hacer match con esa habilidad?`
+          );
+          return;
+        } else {
+          alert("Este usuario no ofrece ninguna habilidad actualmente");
+          return;
+        }
+      }
+
+      // 5. Crear el match
+      console.log("=== CREANDO MATCH ===");
+      console.log("Datos del match a crear:", {
+        user_id_1: user.id,
+        user_id_2: id,
+        ability_1_id: userOfferedSkill.ability_id,
+        ability_2_id: postUserOfferedSkill.ability_id,
+        matching_state: "pendiente",
+      });
+
+      const matchResponse = await fetch(`${API_CONFIG.API_URL}/matches/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id_1: user.id,
+          user_id_2: id,
+          ability_1_id: userOfferedSkill.ability_id,
+          ability_2_id: postUserOfferedSkill.ability_id,
+          matching_state: "pendiente",
+        }),
+      });
+
+      console.log(
+        "Respuesta del match:",
+        matchResponse.status,
+        matchResponse.statusText
+      );
+
+      if (!matchResponse.ok) {
+        const errorText = await matchResponse.text();
+        console.error("Error en la respuesta del match:", errorText);
+        throw new Error(`Error al crear match: ${errorText}`);
+      }
+
+      const matchResult = await matchResponse.json();
+      console.log("Match creado exitosamente:", matchResult);
+
+      // 6. Actualizar el estado local
+      setExistingMatch({ exists: true });
+
+      alert(
+        `¡Solicitud de match enviada con éxito! Has solicitado intercambiar tu "${userOfferedSkill.ability?.name}" por "${skillName}" de ${author}.`
+      );
+    } catch (error) {
+      console.error("Error al solicitar match:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "No se pudo enviar la solicitud de match"
+      );
+    } finally {
+      setIsRequestingMatch(false);
+    }
+  };
 
   return (
-    <article className="border-b border-gray-800 p-4 hover:bg-gray-900/50 transition-colors cursor-pointer">
-      <div className="flex gap-3">
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage
-            src={`https://avatar.vercel.sh/${author}`}
-            alt={author}
-          />
-          <AvatarFallback>{author[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
-
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center gap-2">
+    <div className="rounded-lg p-4 bg-background border mb-4">
+      <div className="flex justify-between items-start">
+        <div className="flex items-center mb-3">
+          <Avatar className="mr-2 h-10 w-10">
+            <AvatarImage
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`}
+            />
+            <AvatarFallback>
+              <User />
+            </AvatarFallback>
+          </Avatar>
+          <div>
             <Link href={`/profiles/${id}`}>
-              <Text className="font-bold text-white" size="paragraph-sm">
+              <Text className="font-semibold hover:underline cursor-pointer">
                 {author}
               </Text>
-            </Link>
-            <Text className="text-gray-500" size="paragraph-xs">
-              @{author.toLowerCase().replace(/\s/g, "")}
+            </Link>{" "}
+            <Text className="text-xs text-muted-foreground">
+              {formatTimeAgo(createdAt)}
             </Text>
-            <span className="text-gray-500">·</span>
-            <Text className="text-gray-500" size="paragraph-xs">
-              {createdAt}
-            </Text>
-
-            {canDelete && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-8 w-8 p-0"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    className="text-red-500 focus:text-red-500 cursor-pointer"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Eliminar</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-          <Text
-            as="h3"
-            size="paragraph-base"
-            className="font-semibold text-white"
-          >
-            {title}
-          </Text>
-          <Text size="paragraph-sm" className="text-gray-300">
-            {description}
-          </Text>
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="text-sm text-primary bg-primary/10 px-2 py-1 rounded-full text-bold"
-                >
-                  #{tag.toLowerCase().replace(/\s/g, "")}
-                </span>
-              ))}
-            </div>
-          )}{" "}
-          <div className="flex justify-between mt-3 text-gray-500 max-w-md">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 text-gray-500 hover:text-pink-500 hover:bg-pink-500/10"
-            >
-              <Heart size={18} />
-              {likes > 0 && <span className="text-xs">{likes}</span>}
-            </Button>{" "}
-            <Link href={`/matches?postId=${postId}&userId=${id}`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1 text-gray-500 hover:text-green-500 hover:bg-green-500/10"
-              >
-                <Repeat2 size={18} />
-                <span className="text-xs">Hacer Match</span>
-              </Button>
-            </Link>
-            <QuickSchedule
-              postId={postId || 0}
-              userId={id || 0}
-              postAuthor={author}
-            />
           </div>
         </div>
-      </div>
 
-      {/* Diálogo de confirmación para eliminar post */}
+        {canDelete && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-500"
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar publicación
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>{" "}
+      <Link href={`/posts/${postId}`}>
+        <Text className="text-lg font-semibold mb-1 hover:underline">
+          {title}
+        </Text>
+      </Link>
+      <Text className="mb-3">{description}</Text>
+      {/* Mostrar información de la habilidad */}
+      {skillName && (
+        <div className="mb-3 p-2 bg-secondary/10 rounded-lg border border-secondary/20">
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Habilidad:</span>
+            <span className="text-sm text-foreground">{skillName}</span>
+          </div>
+        </div>
+      )}
+      {tags && tags.length > 0 && (
+        <div className="flex flex-wrap mb-3">
+          {tags.map((tag, index) => (
+            <span
+              key={index}
+              className="bg-secondary text-secondary-foreground rounded-full px-3 py-1 text-xs mr-2 mb-2"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex justify-between mt-4">
+        <div className="flex items-center space-x-2">
+          {user && user.id !== id && (
+            <>
+              {/* Botón de Hacer Match */}
+              {!existingMatch.exists ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRequestMatch}
+                  disabled={isRequestingMatch}
+                  className="border-blue-600 text-blue-500 hover:bg-blue-950/50 hover:text-blue-400"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {isRequestingMatch ? "Enviando..." : "Hacer Match"}
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" disabled>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Match solicitado
+                </Button>
+              )}
+
+              {/* Botón de QuickSchedule o Sesión programada */}
+              {hasScheduledSession ? (
+                <Button variant="outline" size="sm" disabled>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Sesión programada
+                </Button>
+              ) : (
+                id !== undefined && (
+                  <QuickSchedule
+                    userId={id}
+                    postId={postId || 0}
+                    postAuthor={author}
+                  />
+                )
+              )}
+            </>
+          )}
+        </div>
+      </div>
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar publicación?</AlertDialogTitle>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. La publicación será eliminada
-              permanentemente.
-              {isAdmin && !isAuthor && (
-                <div className="mt-2 p-2 bg-amber-50 text-amber-800 rounded-md text-sm">
-                  Estás eliminando esta publicación como administrador.
-                </div>
-              )}
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              esta publicación.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -217,16 +517,19 @@ const FeedCard: React.FC<FeedCardProps> = ({
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeletePost}
-              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeletePost();
+              }}
               className="bg-red-500 hover:bg-red-600"
+              disabled={isDeleting}
             >
               {isDeleting ? "Eliminando..." : "Eliminar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </article>
+    </div>
   );
 };
 

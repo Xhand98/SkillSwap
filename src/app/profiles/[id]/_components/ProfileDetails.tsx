@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";
@@ -54,10 +55,9 @@ export default function ProfileDetails({ userId }: UserProfileProps) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        setLoading(true);
-        // Obtener datos del perfil
+        setLoading(true); // Obtener datos del perfil
         const profileResponse = await fetch(
-          `http://localhost:8000/users/${userId}`
+          `${API_CONFIG.API_URL}/users/${userId}`
         );
 
         if (!profileResponse.ok) {
@@ -72,7 +72,7 @@ export default function ProfileDetails({ userId }: UserProfileProps) {
         // Intentar obtener habilidades del usuario
         try {
           const skillsResponse = await fetch(
-            `http://localhost:8000/userabilities/user/${userId}`
+            `${API_CONFIG.API_URL}/userabilities/user/${userId}`
           );
           if (skillsResponse.ok) {
             const skillsData = await skillsResponse.json();

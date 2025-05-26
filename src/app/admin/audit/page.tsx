@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/text";
 import {
@@ -122,9 +123,8 @@ export default function AuditPage() {
         if (endDate) {
           params.append("endDate", endDate.toISOString());
         }
-
         const response = await fetch(
-          `http://localhost:8000/audit?${params.toString()}`,
+          `${API_CONFIG.API_URL}/audit?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
@@ -303,18 +303,18 @@ export default function AuditPage() {
             <div>
               <Label htmlFor="filter-succeeded" className="mb-2 block">
                 Estado
-              </Label>
+              </Label>{" "}
               <Select
-                value={filterSucceeded === null ? "" : filterSucceeded}
+                value={filterSucceeded === null ? "all" : filterSucceeded}
                 onValueChange={(value) =>
-                  setFilterSucceeded(value === "" ? null : value)
+                  setFilterSucceeded(value === "all" ? null : value)
                 }
               >
                 <SelectTrigger id="filter-succeeded">
                   <SelectValue placeholder="Todos los estados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los estados</SelectItem>
+                  <SelectItem value="all">Todos los estados</SelectItem>
                   <SelectItem value="true">Exitosos</SelectItem>
                   <SelectItem value="false">Fallidos</SelectItem>
                 </SelectContent>
@@ -324,18 +324,18 @@ export default function AuditPage() {
             <div>
               <Label htmlFor="filter-action" className="mb-2 block">
                 Tipo de Acción
-              </Label>
+              </Label>{" "}
               <Select
-                value={filterAction || ""}
+                value={filterAction || "all"}
                 onValueChange={(value) =>
-                  setFilterAction(value === "" ? null : value)
+                  setFilterAction(value === "all" ? null : value)
                 }
               >
                 <SelectTrigger id="filter-action">
                   <SelectValue placeholder="Todas las acciones" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas las acciones</SelectItem>
+                  <SelectItem value="all">Todas las acciones</SelectItem>
                   <SelectItem value="SCHEMA_OBJECT_ACCESS_EVENT">
                     Acceso a Objeto
                   </SelectItem>

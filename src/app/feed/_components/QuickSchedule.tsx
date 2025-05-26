@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, Clock, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { API_CONFIG } from "@/lib/api-config";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -58,7 +59,7 @@ export function QuickSchedule({
     try {
       // Verificar si ya existe un match entre los usuarios
       const response = await fetch(
-        `http://localhost:8000/matches/check?user1=${user.id}&user2=${userId}`
+        `${API_CONFIG.API_URL}/matches/check?user1=${user.id}&user2=${userId}`
       );
       let data;
       try {
@@ -80,7 +81,7 @@ export function QuickSchedule({
 
         if (confirm) {
           // Crear el match
-          const createResponse = await fetch("http://localhost:8000/matches/", {
+          const createResponse = await fetch(`${API_CONFIG.API_URL}/matches/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -172,7 +173,7 @@ export function QuickSchedule({
 
       // Obtener el ID del match (asumiendo que existe un endpoint para verificarlo)
       const matchResponse = await fetch(
-        `http://localhost:8000/matches/check?user1=${user?.id}&user2=${userId}`
+        `${API_CONFIG.API_URL}/matches/check?user1=${user?.id}&user2=${userId}`
       );
       let matchData;
       try {
@@ -191,7 +192,7 @@ export function QuickSchedule({
         throw new Error("No se encontró el ID del match");
       }
 
-      const response = await fetch("http://localhost:8000/sessions/", {
+      const response = await fetch(`${API_CONFIG.API_URL}/sessions/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

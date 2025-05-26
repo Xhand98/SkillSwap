@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"reflect"
 	"skillswap/api/models"
 	"strconv"
 
@@ -251,6 +252,7 @@ func (h *matchesHandler) GetPotentialMatches(w http.ResponseWriter, r *http.Requ
 	if err := h.DB.
 		Model(&models.UserAbility{}).
 		Where("UsuarioID = ? AND TipoHabilidad = ?", userID, "Ofrece").
+		Debug().
 		Pluck("HabilidadID", &offeredAbilities).Error; err != nil {
 		http.Error(w, "Error al obtener habilidades ofrecidas del usuario: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -265,9 +267,13 @@ func (h *matchesHandler) GetPotentialMatches(w http.ResponseWriter, r *http.Requ
 	// 3. Buscar usuarios que "Ofrecen" la abilityID, excluyendo al usuario actual
 	var candidates []models.User
 	if err := h.DB.
+		Table("Usuarios").
+		Select("Usuarios.*").
 		Joins("JOIN UsuariosHabilidades ua ON ua.UsuarioID = Usuarios.UsuarioID").
 		Where("ua.HabilidadID = ? AND ua.TipoHabilidad = ? AND Usuarios.UsuarioID <> ?", abilityID, "Ofrece", userID).
 		Preload("UserAbilities").
+		Preload("UserAbilities.Ability").
+		Debug().
 		Find(&candidates).Error; err != nil {
 		http.Error(w, "Error al obtener candidatos: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -275,21 +281,48 @@ func (h *matchesHandler) GetPotentialMatches(w http.ResponseWriter, r *http.Requ
 	// 4. Filtrar aquellos candidatos que, a la vez, buscan alguna habilidad que el usuario actual ofrece
 	var finalMatches []models.User
 	for _, candidato := range candidates {
+		// Corregir el ID del usuario para usar el campo correcto
+		// Verificamos que la propiedad ID esté configurada correctamente
+		userID := candidato.ID
+		if userID == 0 {
+			// Intentamos obtener el ID usando el campo UsuarioID del modelo User
+			userIDField := reflect.ValueOf(candidato).FieldByName("UsuarioID")
+			if userIDField.IsValid() && userIDField.Kind() == reflect.Uint {
+				userID = uint(userIDField.Uint())
+			}
+		}
+
 		var count int64
 		if err := h.DB.
 			Model(&models.UserAbility{}).
-			Where("UsuarioID = ? AND TipoHabilidad = ? AND HabilidadID IN ?", candidato.ID, "Busca", offeredAbilities).
+			Where("UsuarioID = ? AND TipoHabilidad = ? AND HabilidadID IN ?", userID, "Busca", offeredAbilities).
+			Debug().
 			Count(&count).Error; err != nil {
 			http.Error(w, "Error al filtrar candidatos: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if count > 0 {
-			finalMatches = append(finalMatches, candidato)
+			// Obtener un usuario completo con todas sus habilidades y relaciones
+			var userCompleto models.User
+			if err := h.DB.
+				Preload("UserAbilities").
+				Preload("UserAbilities.Ability").
+				First(&userCompleto, userID).Error; err != nil {
+				continue // Si hay un error, continuar con el siguiente candidato
+			}
+			finalMatches = append(finalMatches, userCompleto)
 		}
 	}
 
 	// 5. Devolver JSON con los usuarios que cumplen ambas condiciones
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Si no hay matches, devolver un array vacío en lugar de null
+	if finalMatches == nil {
+		finalMatches = []models.User{}
+	}
+
 	json.NewEncoder(w).Encode(finalMatches)
 }
 

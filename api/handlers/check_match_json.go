@@ -2,8 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"skillswap/api/models"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 // CheckMatchJSON verifica si existe un match entre dos usuarios
@@ -11,6 +15,7 @@ import (
 func (h *matchesHandler) CheckMatchJSON(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"exists": false,
 			"error":  "Método no permitido",
@@ -41,32 +46,45 @@ func (h *matchesHandler) CheckMatchJSON(w http.ResponseWriter, r *http.Request) 
 			"error":  "IDs de usuario inválidos",
 		})
 		return
-	}
-
-	// Buscar match (considerando ambas direcciones: user1->user2 o user2->user1)
+	}	// Buscar match (considerando ambas direcciones: user1->user2 o user2->user1)
 	var matchID int
 	var exists bool
+	// Buscar el match de manera directa usando el modelo de GORM
+	var match models.Matches
+	result := h.DB.Where(
+		"(Usuario1ID = ? AND Usuario2ID = ?) OR (Usuario1ID = ? AND Usuario2ID = ?)",
+		user1ID, user2ID, user2ID, user1ID,
+	).First(&match)
 
-	row := h.DB.Raw(`
-		SELECT EmparejamientoID
-		FROM Emparejamientos
-		WHERE (Usuario1ID = ? AND Usuario2ID = ?) OR (Usuario1ID = ? AND Usuario2ID = ?)
-		LIMIT 1
-	`, user1ID, user2ID, user2ID, user1ID).Row()
-
-	if err := row.Scan(&matchID); err != nil {
-		// No encontrado
+	if result.Error != nil {
+		// Verificar si es un error de "record not found" (caso normal)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// No encontrado - respuesta normal
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"exists":   false,
+				"match_id": nil,
+			})
+			return
+		}
+		// Otro tipo de error de base de datos
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"exists":   false,
-			"match_id": nil,
+			"exists": false,
+			"error":  "Error al consultar la base de datos",
 		})
 		return
 	}
 
-	// Match encontrado
+	// El match ID debería estar en match.ID
+	matchID = int(match.ID)// Match encontrado
 	exists = true
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Asegurarse de devolver el campo como "match_id" explícitamente para el frontend
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"exists":   exists,
 		"match_id": matchID,

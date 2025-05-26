@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -85,10 +86,8 @@ export default function MatchesList({ userId }: MatchesListProps) {
         );
 
         // Guardamos el tiempo de inicio para calcular la duración de la petición
-        const startTime = performance.now();
-
-        // URL para obtener matches de la API real
-        const url = `http://localhost:8000/users/${userId}/matches`;
+        const startTime = performance.now(); // URL para obtener matches de la API real
+        const url = `${API_CONFIG.API_URL}/users/${userId}/matches`;
         setApiInfo((prev: any) => ({ ...prev, url }));
         console.log(`Realizando petición a: ${url}`);
 
@@ -169,7 +168,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
   const handleUpdateMatchStatus = async (matchId: number, status: string) => {
     try {
       console.log(`Actualizando estado del match ${matchId} a ${status}`);
-      const response = await fetch(`http://localhost:8000/matches/${matchId}`, {
+      const response = await fetch(`${API_CONFIG.API_URL}/matches/${matchId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -513,19 +512,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
                     </div>
 
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-indigo-800 text-indigo-500 hover:bg-indigo-950/50 hover:text-indigo-400"
-                      >
-                        <Link
-                          href={`/chat/${otherUser?.id}`}
-                          className="flex items-center"
-                        >
-                          <MessageSquare size={16} className="mr-1" />
-                          Chatear
-                        </Link>
-                      </Button>{" "}
                       <Button variant="outline" size="sm">
                         <Link
                           href={`/profiles/${otherUser?.id}`}

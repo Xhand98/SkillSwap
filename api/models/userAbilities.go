@@ -2,15 +2,15 @@
 package models
 
 type UserAbility struct {
-ID               uint      `json:"id" gorm:"primaryKey;column:UsuarioHabilidadID"`
-UserID           uint      `json:"user_id" gorm:"column:UsuarioID"`
-AbilityID        uint      `json:"ability_id" gorm:"column:HabilidadID"`
-SkillType        string    `json:"skill_type" gorm:"column:TipoHabilidad"`
-ProficiencyLevel string    `json:"proficiency_level,omitempty" gorm:"column:NivelProficiencia"`
+	ID               uint      `json:"id" gorm:"primaryKey;column:UsuarioHabilidadID"`
+	UserID           uint      `json:"user_id" gorm:"column:UsuarioID"`
+	AbilityID        uint      `json:"ability_id" gorm:"column:HabilidadID"`
+	SkillType        string    `json:"skill_type" gorm:"column:TipoHabilidad"`
+	ProficiencyLevel string    `json:"proficiency_level,omitempty" gorm:"column:NivelProficiencia"`
 
-// Campos para cargar datos relacionados
-User    User    `json:"user,omitempty" gorm:"foreignKey:UserID;references:UsuarioID"`
-Ability Ability `json:"ability,omitempty" gorm:"foreignKey:AbilityID;references:HabilidadID"`
+	// Campos para cargar datos relacionados
+	User    User    `json:"user,omitempty" gorm:"foreignKey:UserID;references:UsuarioID"`
+	Ability Ability `json:"ability,omitempty" gorm:"foreignKey:AbilityID;references:HabilidadID"`
 }
 
 func (UserAbility) TableName() string {

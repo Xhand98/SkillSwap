@@ -3,16 +3,16 @@ import ProfileDetails from "./_components/ProfileDetails";
 import UserPosts from "./_components/UserPosts";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string; // Este es el nombre del parámetro basado en la carpeta [id]
-  };
-  searchParams?: {
+  }>;
+  searchParams?: Promise<{
     [key: string]: string | string[] | undefined;
-  };
+  }>;
 }
 
-export default function UserProfile({ params }: PageProps) {
-  const userId = params.id;
+export default async function UserProfile({ params }: PageProps) {
+  const { id: userId } = await params;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -36,7 +36,7 @@ export default function UserProfile({ params }: PageProps) {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const userId = params.id;
+  const { id: userId } = await params;
 
   // Aquí podrías hacer una solicitud al backend para obtener el nombre real del usuario
   // Para simplificar, usamos el ID por ahora

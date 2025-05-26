@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import { useAuth } from "@/lib/AuthContext";
 import useCurrentUserId from "@/hooks/useCurrentUserId";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -165,75 +166,78 @@ const Header = forwardRef<
           {isLoading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
           ) : isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src="/images/avatars/default.png"
-                      alt={user?.nombre_usuario || "Usuario"}
-                    />
-                    <AvatarFallback>
-                      {user?.primer_nombre ? user.primer_nombre[0] : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden sm:inline-block">
-                    {user?.primer_nombre || "Usuario"}
-                  </span>
-                  <ChevronsUpDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                <DropdownMenuSeparator />{" "}
-                <DropdownMenuItem asChild>
-                  <Link
-                    href={`/profiles/${currentUserId || user?.id}`}
-                    className="cursor-pointer flex items-center"
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Mi Perfil</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/feed"
-                    className="cursor-pointer flex items-center"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Feed</span>
-                  </Link>
-                </DropdownMenuItem>{" "}
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/matches"
-                    className="cursor-pointer flex items-center"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Conexiones</span>
-                  </Link>
-                </DropdownMenuItem>
-                {user?.rol === "admin" && (
+            <>
+              <NotificationBell />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src="/images/avatars/default.png"
+                        alt={user?.nombre_usuario || "Usuario"}
+                      />
+                      <AvatarFallback>
+                        {user?.primer_nombre ? user.primer_nombre[0] : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline-block">
+                      {user?.primer_nombre || "Usuario"}
+                    </span>
+                    <ChevronsUpDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />{" "}
                   <DropdownMenuItem asChild>
                     <Link
-                      href="/admin/dashboard"
-                      className="cursor-pointer flex items-center text-amber-600 font-medium"
+                      href={`/profiles/${currentUserId || user?.id}`}
+                      className="cursor-pointer flex items-center"
                     >
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Panel de Administración</span>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Mi Perfil</span>
                     </Link>
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-red-500"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Cerrar Sesión</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/feed"
+                      className="cursor-pointer flex items-center"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Feed</span>
+                    </Link>
+                  </DropdownMenuItem>{" "}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/matches"
+                      className="cursor-pointer flex items-center"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Conexiones</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {user?.rol === "admin" && (
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/admin/dashboard"
+                        className="cursor-pointer flex items-center text-amber-600 font-medium"
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Panel de Administración</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="cursor-pointer text-red-500"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar Sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant="ghost" asChild>
