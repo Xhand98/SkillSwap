@@ -373,7 +373,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
         </Button>
 
         {/* Panel de diagnóstico para problemas técnicos */}
-        <div className="mt-6 text-xs text-left">
+        {/* <div className="mt-6 text-xs text-left">
           <details>
             <summary className="cursor-pointer text-gray-500">
               Información técnica
@@ -394,7 +394,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
               ))}
             </div>
           </details>
-        </div>
+        </div> */}
       </div>
     );
   }

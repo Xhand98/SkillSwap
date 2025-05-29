@@ -493,7 +493,7 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          {user.rol === "banned" ? (
+                          {/* {user.rol === "banned" ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -520,7 +520,7 @@ export default function AdminDashboard() {
                             >
                               <UserX className="h-4 w-4 mr-1" /> Banear
                             </Button>
-                          )}
+                          )} */}
 
                           {user.rol !== "admin" ? (
                             <Button

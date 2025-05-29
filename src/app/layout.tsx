@@ -7,7 +7,7 @@ import locale from "@/locales/root.json";
 import "./globals.css";
 import ThemeProvider from "@/components/theme/theme-provider";
 import { AuthProvider } from "@/lib/AuthContext";
-import { ToastProvider } from "@/components/toast-provider";
+import GlobalToastProvider from "@/components/GlobalToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,11 +47,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <ToastProvider>
+            <GlobalToastProvider>
               <Header />
               {children}
               <Footer />
-            </ToastProvider>
+            </GlobalToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

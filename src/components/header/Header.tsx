@@ -31,6 +31,7 @@ import {
   LogOut,
   Settings,
   ChevronsUpDown,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -196,6 +197,15 @@ const Header = forwardRef<
                     >
                       <User className="mr-2 h-4 w-4" />
                       <span>Mi Perfil</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/messages"
+                      className="cursor-pointer flex items-center"
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      <span>Mensajes</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

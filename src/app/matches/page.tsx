@@ -32,15 +32,12 @@ export default function Page() {
       <div className="max-w-6xl mx-auto px-4 py-16">
         <h1 className="text-3xl font-bold mb-6">Matches</h1>
 
-        {/* Mostrar ID de usuario para depuración */}
-        <p className="text-sm text-gray-500 mb-4">ID de usuario: {userId}</p>
-
         <Tabs defaultValue="matches-actuales" className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="matches-actuales">Mis Matches</TabsTrigger>
-            <TabsTrigger value="matches-potenciales">
+            {/* <TabsTrigger value="matches-potenciales">
               Matches Potenciales
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>{" "}
           <TabsContent value="matches-actuales">
             {USE_REAL_API ? (

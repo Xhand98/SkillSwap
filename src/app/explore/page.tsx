@@ -83,7 +83,7 @@ export default function AllAbilitiesPage() {
                 Descubre todas las habilidades disponibles en la plataforma
               </Text>
             </div>
-            <DatabaseStatus />
+            {/* <DatabaseStatus /> */}
           </div>
         </div>
         <div className="p-8 text-center bg-gray-900 rounded-lg">
@@ -144,11 +144,11 @@ export default function AllAbilitiesPage() {
             <Text size="paragraph-base" className="text-gray-400">
               Descubre todas las habilidades disponibles en la plataforma
             </Text>
-            <Text size="paragraph-sm" className="text-green-400 mt-1">
+            {/* <Text size="paragraph-sm" className="text-green-400 mt-1">
               ✓ {abilities.length} habilidades cargadas desde la base de datos
-            </Text>
+            </Text> */}
           </div>
-          <DatabaseStatus />
+          {/* <DatabaseStatus /> */}
         </div>
       </div>
 

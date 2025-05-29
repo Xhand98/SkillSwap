@@ -70,8 +70,7 @@ func (h *auditHandler) GetAuditRecords(w http.ResponseWriter, r *http.Request) {
 	succeededStr := r.URL.Query().Get("succeeded")
 	actionID := r.URL.Query().Get("actionId")
 	startDate := r.URL.Query().Get("startDate")
-	endDate := r.URL.Query().Get("endDate")
-	// Construir la consulta base
+	endDate := r.URL.Query().Get("endDate")	// Construir la consulta base
 	query := `
 	SELECT
 		ROW_NUMBER() OVER (ORDER BY event_time DESC) as id,
@@ -87,12 +86,12 @@ func (h *auditHandler) GetAuditRecords(w http.ResponseWriter, r *http.Request) {
 		host_name,
 		client_ip,
 		file_name
-	FROM vw_AuditoriaVoluLink
+	FROM vw_AuditoriaSkillSwap
 	WHERE 1=1`
 
 	countQuery := `
 	SELECT COUNT(*)
-	FROM vw_AuditoriaVoluLink
+	FROM vw_AuditoriaSkillSwap
 	WHERE 1=1`
 
 	var args []interface{}

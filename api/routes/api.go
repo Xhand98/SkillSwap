@@ -6,13 +6,15 @@ import (
 	"os"
 
 	"skillswap/api/handlers" // Reemplaza con tu módulo si es diferente
+	"skillswap/api/middleware"
 
 	"gorm.io/gorm"
 )
 
 // Middleware para habilitar CORS
 func enableCORS(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {        // En producción, debes especificar exactamente los orígenes permitidos
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // En producción, debes especificar exactamente los orígenes permitidos
         // Obtener dominio permitido desde variables de entorno o usar valor por defecto
         allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
         if allowedOrigin == "" {
@@ -26,7 +28,11 @@ func enableCORS(next http.Handler) http.Handler {
         w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-        w.Header().Set("Content-Type", "application/json")
+
+        // No configurar Content-Type para conexiones WebSocket
+        if r.Header.Get("Upgrade") != "websocket" {
+            w.Header().Set("Content-Type", "application/json")
+        }
 
         // Si es una solicitud OPTIONS (preflight), solo envía los headers y OK.
         if r.Method == "OPTIONS" {
@@ -51,6 +57,33 @@ func loggingMiddleware(next http.Handler) http.Handler {
         if r.Method == http.MethodPost {
             log.Printf("Content-Length: %d", r.ContentLength)
         }
+
+        next.ServeHTTP(w, r)
+    })
+}
+
+// Middleware específico para WebSocket que maneja CORS sin interferir con el upgrade
+func webSocketCORS(next http.HandlerFunc) http.HandlerFunc {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Obtener dominio permitido desde variables de entorno o usar valor por defecto
+        allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+        if allowedOrigin == "" {
+            allowedOrigin = "*"
+        }
+
+        // Headers de CORS específicos para WebSocket
+        w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Sec-WebSocket-Key, Sec-WebSocket-Version, Sec-WebSocket-Extensions, Sec-WebSocket-Protocol")
+
+        // Si es una solicitud OPTIONS (preflight), solo envía los headers y OK.
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        // Log específico para WebSocket
+        log.Printf("WebSocket request: %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
 
         next.ServeHTTP(w, r)
     })
@@ -89,6 +122,16 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     postsHandler := handlers.NewPostsHandler(db)
     authHandler := handlers.NewAuthHandler(db)
     auditHandler := handlers.NewAuditHandler(db)
+    messagesHandler := handlers.NewMessagesHandler(db)
+    commentsHandler := handlers.NewCommentHandler(db)
+
+    // Inicializar WebSocket hub y handler
+    wsHub := handlers.NewHub(db)
+    go wsHub.Run() // Ejecutar el hub en una goroutine separada
+    wsHandler := handlers.NewWebSocketHandler(db, wsHub)
+      // Configurar la conexión WebSocket en los handlers que la necesiten
+    messagesHandler.SetWebSocketHandler(wsHandler)
+    commentsHandler.SetWebSocketHandler(wsHandler)
 
     // Rutas para Usuarios
     // Para las solicitudes GET, definimos la ruta con y sin trailing slash
@@ -162,6 +205,29 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("PUT /notifications/{id}", notificationsHandler.MarkNotificationAsRead)
     router.HandleFunc("POST /sessions/{sessionID}/send-reminder", notificationsHandler.SendSessionReminder)
     router.HandleFunc("GET /system/upcoming-session-reminders", notificationsHandler.GetUpcomingSessionsReminders)
+
+    // Rutas para Mensajería
+    router.HandleFunc("POST /conversations", messagesHandler.CreateConversation)
+    router.HandleFunc("POST /conversations/", messagesHandler.CreateConversation)
+    router.HandleFunc("GET /users/{userID}/conversations", messagesHandler.GetUserConversations)
+    router.HandleFunc("GET /conversations/{conversationID}", messagesHandler.GetConversation)
+    router.HandleFunc("GET /conversations/{conversationID}/messages", messagesHandler.GetConversationMessages)
+    router.HandleFunc("POST /conversations/{conversationID}/messages", messagesHandler.SendMessage)
+    router.HandleFunc("PUT /messages/{messageID}/read", messagesHandler.MarkMessageAsRead)
+    router.HandleFunc("PUT /conversations/{conversationID}/read", messagesHandler.MarkConversationAsRead)    // Rutas para Comentarios
+    // GET no requiere autenticación, los demás sí
+    router.HandleFunc("GET /posts/{postId}/comments", commentsHandler.GetPostComments)
+    router.HandleFunc("GET /comments/{comentarioId}/replies", commentsHandler.GetCommentReplies)
+    router.HandleFunc("GET /posts/{postId}/comments/stats", commentsHandler.GetPostCommentStats)
+
+    // Rutas que requieren autenticación
+    router.Handle("POST /posts/{postId}/comments", middleware.RequireAuthWrapper(commentsHandler.CreateComment))
+    router.Handle("PUT /comments/{comentarioId}", middleware.RequireAuthWrapper(commentsHandler.UpdateComment))
+    router.Handle("DELETE /comments/{comentarioId}", middleware.RequireAuthWrapper(commentsHandler.DeleteComment))
+    router.Handle("POST /comments/{comentarioId}/like", middleware.RequireAuthWrapper(commentsHandler.LikeComment))    // Rutas para WebSocket con middleware específico
+    router.HandleFunc("GET /ws", webSocketCORS(wsHandler.ServeWS))
+    router.HandleFunc("GET /ws/status", wsHandler.GetWebSocketStatus)
+    router.HandleFunc("GET /ws/clients", wsHandler.GetConnectedClients)
 
     // Ruta para health check
     router.HandleFunc("GET /health", handlers.HealthCheckHandler)

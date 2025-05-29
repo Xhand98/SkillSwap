@@ -46,13 +46,13 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { addToast } = useToast();
-  const dbToast = showDatabaseToast(addToast);
+  //   const { addToast } = useToast();
+  //   const dbToast = showDatabaseToast(addToast);
   useEffect(() => {
     const fetchAbilities = async () => {
       try {
         setLoading(true);
-        dbToast.loading("Conectando con la base de datos...");
+        // dbToast.loading("Conectando con la base de datos...");
 
         const response = await fetch(`${API_CONFIG.API_URL}/abilities/`);
 
@@ -64,14 +64,14 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
         const abilitiesList = data.abilities || [];
         setAbilities(abilitiesList);
 
-        dbToast.success(
-          `${abilitiesList.length} habilidades cargadas desde la base de datos`
-        );
+        // dbToast.success(
+        //   `${abilitiesList.length} habilidades cargadas desde la base de datos`
+        // );
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Error desconocido";
         setError(errorMessage);
-        dbToast.error(`Error al cargar habilidades: ${errorMessage}`);
+        // dbToast.error(`Error al cargar habilidades: ${errorMessage}`);
         console.error("Error:", err);
       } finally {
         setLoading(false);
@@ -91,7 +91,7 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
       setError(null);
       setSuccess(null);
 
-      dbToast.loading("Guardando habilidad en la base de datos...");
+      //   dbToast.loading("Guardando habilidad en la base de datos...");
 
       const response = await fetch(`${API_CONFIG.API_URL}/userabilities/`, {
         method: "POST",
@@ -115,9 +115,9 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
         (a) => a.id === parseInt(selectedAbilityId)
       );
       setSuccess("¡Habilidad guardada en la base de datos correctamente!");
-      dbToast.success(
-        `Habilidad "${selectedAbility?.name}" agregada exitosamente`
-      );
+      //   dbToast.success(
+      //     `Habilidad "${selectedAbility?.name}" agregada exitosamente`
+      //   );
 
       // Reset form
       setSelectedAbilityId("");
@@ -126,7 +126,7 @@ export default function SkillSelector({ userId }: SkillSelectorProps) {
       const errorMessage =
         err instanceof Error ? err.message : "Error desconocido";
       setError(errorMessage);
-      dbToast.error(`Error al guardar: ${errorMessage}`);
+      //   dbToast.error(`Error al guardar: ${errorMessage}`);
       console.error("Error:", err);
     } finally {
       setSubmitting(false);

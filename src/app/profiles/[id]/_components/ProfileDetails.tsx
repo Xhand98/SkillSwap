@@ -6,6 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Mail,
   MapPin,
   Calendar,
@@ -13,7 +20,10 @@ import {
   Briefcase,
   User,
   Star,
+  Edit,
 } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/lib/AuthContext";
 
 interface UserProfile {
   id: number;
@@ -24,6 +34,10 @@ interface UserProfile {
   segundo_apellido?: string;
   correo_electronico: string;
   ciudad_trabajo: string;
+  fecha_nacimiento?: string;
+  linkedin_link?: string;
+  github_link?: string;
+  website_link?: string;
   rol: string;
   created_at: string;
 }
@@ -47,10 +61,14 @@ interface UserProfileProps {
 }
 
 export default function ProfileDetails({ userId }: UserProfileProps) {
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Verificar si es el perfil del usuario actual
+  const isOwnProfile = user && user.id.toString() === userId;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -185,22 +203,202 @@ export default function ProfileDetails({ userId }: UserProfileProps) {
             <Text size="paragraph-sm" className="text-gray-400 mt-1">
               {profile.rol === "admin" ? "Administrador" : "Usuario"}
             </Text>
-          </div>
+          </div>{" "}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              asChild
-            >
-              <a href={`/skills`}>
-                <Briefcase size={16} />
-                Gestionar Habilidades
-              </a>
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Mail size={16} />
-              Contactar
-            </Button>
+            {isOwnProfile ? (
+              // Botones para el propio perfil
+              <>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  asChild
+                >
+                  <Link href="/profiles/edit">
+                    <Edit size={16} />
+                    Editar Perfil
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  asChild
+                >
+                  <Link href="/skills">
+                    <Briefcase size={16} />
+                    Gestionar Habilidades
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              // Botones para perfiles de otros usuarios
+              <>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  asChild
+                >
+                  <Link href={`/skills`}>
+                    <Briefcase size={16} />
+                    Ver Habilidades
+                  </Link>
+                </Button>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Mail size={16} />
+                      Contactar
+                    </Button>
+                  </DialogTrigger>
+
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-lg font-semibold text-white">
+                        Contactar a {profile.primer_nombre}
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                      {/* Información del usuario */}
+                      <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={`https://avatar.vercel.sh/${profile.nombre_usuario}`}
+                          />
+                          <AvatarFallback>
+                            {profile.primer_nombre[0]}
+                            {profile.primer_apellido[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-medium text-white">{fullName}</h3>
+                          <p className="text-sm text-gray-400">
+                            @{profile.nombre_usuario}
+                          </p>
+                        </div>
+                      </div>{" "}
+                      {/* Información de contacto */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail size={16} className="text-gray-400" />
+                          <span className="text-gray-300">
+                            {profile.correo_electronico}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin size={16} className="text-gray-400" />
+                          <span className="text-gray-300">
+                            {profile.ciudad_trabajo}
+                          </span>
+                        </div>
+
+                        {profile.fecha_nacimiento && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar size={16} className="text-gray-400" />
+                            <span className="text-gray-300">
+                              {new Date(
+                                profile.fecha_nacimiento
+                              ).toLocaleDateString("es-ES")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Enlaces profesionales */}
+                      {(profile.linkedin_link ||
+                        profile.github_link ||
+                        profile.website_link) && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-gray-300">
+                            Enlaces Profesionales
+                          </h4>
+                          <div className="space-y-2">
+                            {profile.linkedin_link && (
+                              <a
+                                href={profile.linkedin_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                              >
+                                <Globe size={16} />
+                                LinkedIn
+                              </a>
+                            )}
+
+                            {profile.github_link && (
+                              <a
+                                href={profile.github_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                              >
+                                <Globe size={16} />
+                                GitHub
+                              </a>
+                            )}
+
+                            {profile.website_link && (
+                              <a
+                                href={profile.website_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                              >
+                                <Globe size={16} />
+                                Sitio Web
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {/* Habilidades disponibles */}
+                      {skillsOfrecidas.length > 0 && (
+                        <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                          <h4 className="text-sm font-medium text-white mb-2">
+                            Habilidades que ofrece:
+                          </h4>
+                          <div className="flex flex-wrap gap-1">
+                            {skillsOfrecidas.slice(0, 3).map((skill) => (
+                              <span
+                                key={skill.id}
+                                className="text-xs bg-green-900/20 text-green-400 px-2 py-1 rounded-full"
+                              >
+                                {skill.ability?.name ||
+                                  `Habilidad ${skill.ability_id}`}
+                              </span>
+                            ))}
+                            {skillsOfrecidas.length > 3 && (
+                              <span className="text-xs text-gray-500 px-2 py-1">
+                                +{skillsOfrecidas.length - 3} más
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {/* Botón de acción */}
+                      <div className="flex justify-end">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            window.open(
+                              `mailto:${profile.correo_electronico}?subject=Contacto desde SkillSwap&body=Hola ${profile.primer_nombre},%0D%0A%0D%0AHe visto tu perfil en SkillSwap y me gustaría ponerme en contacto contigo.%0D%0A%0D%0ASaludos!`,
+                              "_blank"
+                            );
+                          }}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Mail size={14} className="mr-1" />
+                          Enviar Email
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
           </div>
         </div>
         {/* Detalles adicionales */}

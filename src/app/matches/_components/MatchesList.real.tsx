@@ -11,6 +11,9 @@ import {
   Check,
   AlertCircle,
   ChevronDown,
+  Mail,
+  MapPin,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -30,6 +33,10 @@ interface User {
   segundo_apellido?: string;
   correo_electronico?: string;
   ciudad_trabajo?: string;
+  fecha_nacimiento?: string;
+  linkedin_link?: string;
+  github_link?: string;
+  website_link?: string;
   created_at?: string;
   updated_at?: string;
   rol?: string;
@@ -239,7 +246,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
         </Button>
 
         {/* Panel de diagnóstico para problemas técnicos */}
-        <div className="mt-6 text-xs text-left">
+        {/* <div className="mt-6 text-xs text-left">
           <details>
             <summary className="cursor-pointer text-gray-500">
               Información técnica
@@ -260,7 +267,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
               )}
             </div>
           </details>
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -554,6 +561,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
                     </div>
 
                     <div className="flex justify-end gap-2">
+                      {" "}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -566,12 +574,145 @@ export default function MatchesList({ userId }: MatchesListProps) {
                           </Button>
                         </DialogTrigger>
 
-                        <DialogTitle className="sr-only">
-                          Aparatado hacaer match
-                        </DialogTitle>
-                        <DialogContent>HOLA KLK MANITO 0880</DialogContent>
-                      </Dialog>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="text-lg font-semibold text-white">
+                              Información de Contacto
+                            </DialogTitle>
+                          </DialogHeader>
 
+                          <div className="space-y-4">
+                            {/* Información del usuario */}
+                            <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage
+                                  src={`https://avatar.vercel.sh/${
+                                    otherUser?.nombre_usuario || "user"
+                                  }`}
+                                />
+                                <AvatarFallback>
+                                  {otherUser?.primer_nombre?.[0] || "U"}
+                                  {otherUser?.primer_apellido?.[0] || "S"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <h3 className="font-medium text-white">
+                                  {otherUser?.primer_nombre}{" "}
+                                  {otherUser?.primer_apellido}
+                                </h3>
+                                <p className="text-sm text-gray-400">
+                                  @{otherUser?.nombre_usuario}
+                                </p>
+                              </div>
+                            </div>{" "}
+                            {/* Información de contacto */}
+                            <div className="space-y-3">
+                              {otherUser?.correo_electronico && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Mail size={16} className="text-gray-400" />
+                                  <span className="text-gray-300">
+                                    {otherUser.correo_electronico}
+                                  </span>
+                                </div>
+                              )}
+
+                              {otherUser?.ciudad_trabajo && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <MapPin size={16} className="text-gray-400" />
+                                  <span className="text-gray-300">
+                                    {otherUser.ciudad_trabajo}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            {/* Enlaces profesionales */}
+                            {(otherUser?.linkedin_link ||
+                              otherUser?.github_link ||
+                              otherUser?.website_link) && (
+                              <div className="space-y-3">
+                                <h4 className="text-sm font-medium text-gray-300">
+                                  Enlaces Profesionales
+                                </h4>
+                                <div className="space-y-2">
+                                  {otherUser?.linkedin_link && (
+                                    <a
+                                      href={otherUser.linkedin_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      LinkedIn
+                                    </a>
+                                  )}
+
+                                  {otherUser?.github_link && (
+                                    <a
+                                      href={otherUser.github_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      GitHub
+                                    </a>
+                                  )}
+
+                                  {otherUser?.website_link && (
+                                    <a
+                                      href={otherUser.website_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      Sitio Web
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {/* Información del intercambio */}
+                            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                              <h4 className="text-sm font-medium text-white mb-2">
+                                Intercambio de habilidades:
+                              </h4>
+                              <div className="text-xs text-gray-400 space-y-1">
+                                <p>
+                                  <span className="text-green-400">
+                                    Tú ofreces:
+                                  </span>{" "}
+                                  {userAbility?.name}
+                                </p>
+                                <p>
+                                  <span className="text-blue-400">
+                                    Ellos ofrecen:
+                                  </span>{" "}
+                                  {otherUserAbility?.name}
+                                </p>
+                              </div>
+                            </div>
+                            {/* Botón de acción */}
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (otherUser?.correo_electronico) {
+                                    window.open(
+                                      `mailto:${otherUser.correo_electronico}?subject=SkillSwap - Intercambio de habilidades&body=Hola ${otherUser.primer_nombre},%0D%0A%0D%0AMe gustaría coordinar el intercambio de habilidades que acordamos en SkillSwap.%0D%0A%0D%0AYo te puedo enseñar: ${userAbility?.name}%0D%0ATú me puedes enseñar: ${otherUserAbility?.name}%0D%0A%0D%0A¿Cuándo te parece bien que nos pongamos en contacto?%0D%0A%0D%0ASaludos!`,
+                                      "_blank"
+                                    );
+                                  }
+                                }}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <Mail size={14} className="mr-1" />
+                                Enviar Email
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       <Button variant="outline" size="sm">
                         <Link
                           href={`/profiles/${otherUser?.id}`}
@@ -591,7 +732,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
       )}
 
       {/* Panel de diagnóstico */}
-      <details className="mt-8 text-left border-t border-gray-800 pt-4 text-xs text-gray-500">
+      {/* <details className="mt-8 text-left border-t border-gray-800 pt-4 text-xs text-gray-500">
         <summary className="cursor-pointer flex items-center">
           <ChevronDown className="h-3 w-3 mr-1" />
           Información técnica
@@ -628,7 +769,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
             <li>Matches pendientes: {pendingMatches.length}</li>
           </ul>
         </div>
-      </details>
+      </details> */}
     </div>
   );
 }

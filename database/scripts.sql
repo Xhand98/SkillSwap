@@ -14,6 +14,11 @@ CREATE TABLE Usuarios (
     CorreoElectronico NVARCHAR(100) UNIQUE NOT NULL,
     CiudadTrabajo NVARCHAR(50) NOT NULL,
     HashContrasena NVARCHAR(256) NOT NULL,
+    Biografia NVARCHAR(500),
+    NumeroTelefono NVARCHAR(15),
+    LinkedInLink NVARCHAR(255),
+    GitHubLink NVARCHAR(255),
+    OwnWebsiteLink NVARCHAR(255),
     FechaCreacion DATETIME DEFAULT GETDATE()
 );
 CREATE INDEX idx_NombreUsuario ON Usuarios(NombreUsuario);
@@ -24,7 +29,10 @@ CREATE INDEX CiudadTrabajo ON Usuarios(CiudadTrabajo);
 CREATE TABLE Habilidades (
     HabilidadID INT PRIMARY KEY IDENTITY(1,1),
     NombreHabilidad NVARCHAR(100) NOT NULL,
-    Categoria NVARCHAR(50) CHECK (Categoria IN ('Informática', 'Contabilidad', 'Gastronomia', 'Electricidad', 'Refrigeración')),
+    Categoria NVARCHAR(50) CHECK (Categoria IN (
+        'Informática', 'Contabilidad', 'Gastronomia', 'Electricidad', 'Refrigeración',
+        'Tecnología', 'Artes', 'Idiomas', 'Deportes', 'Cocina', 'Negocios', 'Educación', 'Ciencia', 'Otros'
+    )),
     Descripcion NVARCHAR(MAX)
 );
 CREATE INDEX idx_NombreHabilidad ON Habilidades(NombreHabilidad);

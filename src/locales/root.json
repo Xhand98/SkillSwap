@@ -45,6 +45,11 @@
         ]
       },
       {
+        "TEXT": "Mensajes",
+        "LINK": "/messages",
+        "ICON": "messages"
+      },
+      {
         "TEXT": "Explorar Habilidades",
         "LINK": "/explore",
         "ICON": "explore"

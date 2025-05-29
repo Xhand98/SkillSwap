@@ -184,7 +184,6 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("CreateUser: Nombre de usuario generado: %s", nombreUsuario)
-
 	user := models.User{
 		NombreUsuario:    nombreUsuario,
 		PrimerNombre:     req.PrimerNombre,
@@ -194,6 +193,10 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		CorreoElectronico: req.CorreoElectronico,
 		CiudadTrabajo:    req.CiudadTrabajo,
 		HashContrasena:   string(hashedPassword),
+		FechaNacimiento:  req.FechaNacimiento,
+		LinkedInLink:     req.LinkedInLink,
+		GithubLink:       req.GithubLink,
+		OwnWebsiteLink:   req.OwnWebsiteLink,
 	}
 
 	if result := h.DB.Create(&user); result.Error != nil {
@@ -271,7 +274,6 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
 	// Actualizar campos si se proporcionan en la solicitud
 	if req.PrimerNombre != nil {
 		user.PrimerNombre = *req.PrimerNombre
@@ -285,11 +287,10 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if req.SegundoApellido != nil {
 		user.SegundoApellido = *req.SegundoApellido
 	}
-	if req.CorreoElectronico != nil {
-		// Validar unicidad si el correo cambia
+	if req.CorreoElectronico != nil {		// Validar unicidad si el correo cambia
 		if *req.CorreoElectronico != user.CorreoElectronico {
 			var existingUser models.User
-			if err := h.DB.Where("correo_electronico = ? AND \"UsuarioID\" != ?", *req.CorreoElectronico, user.ID).First(&existingUser).Error; err == nil {
+			if err := h.DB.Where("CorreoElectronico = ? AND \"UsuarioID\" != ?", *req.CorreoElectronico, user.ID).First(&existingUser).Error; err == nil {
 				http.Error(w, "El correo electrónico ya está en uso por otro usuario", http.StatusConflict)
 				return
 			} else if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -303,6 +304,20 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Rol != nil {
 		user.Rol = *req.Rol
+	}
+	if req.FechaNacimiento != nil {
+		user.FechaNacimiento = *req.FechaNacimiento
+	}
+
+	// Nuevos campos de enlaces sociales
+	if req.LinkedInLink != nil {
+		user.LinkedInLink = *req.LinkedInLink
+	}
+	if req.GithubLink != nil {
+		user.GithubLink = *req.GithubLink
+	}
+	if req.OwnWebsiteLink != nil {
+		user.OwnWebsiteLink = *req.OwnWebsiteLink
 	}
 
 	// Manejar actualización de contraseña si se proporciona una nueva

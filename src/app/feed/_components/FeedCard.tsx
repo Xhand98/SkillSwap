@@ -190,15 +190,14 @@ const FeedCard: React.FC<FeedCardProps> = ({
     }
   };
   const handleRequestMatch = async () => {
-    console.log("=== INICIANDO HANDLEREQEUSTMATCH ===");
-    console.log("user:", user);
-    console.log("id (user del post):", id);
-    console.log("skillName:", skillName);
-    console.log("author:", author);
+    console.log("🚀 === INICIANDO PROCESO DE MATCH ===");
+    console.log("👤 Usuario actual:", user);
+    console.log("🎯 Usuario del post:", { id, author });
+    console.log("💼 Habilidad del post:", skillName);
 
     if (!user || !id || !skillName) {
       alert("Información insuficiente para crear el match");
-      console.error("Información faltante:", {
+      console.error("❌ Información faltante:", {
         user: !!user,
         id: !!id,
         skillName: !!skillName,
@@ -206,9 +205,9 @@ const FeedCard: React.FC<FeedCardProps> = ({
       return;
     }
 
-    console.log("=== VERIFICANDO USUARIO ACTUAL ===");
-    console.log("ID del usuario actual:", user.id);
-    console.log("ID del usuario del post:", id);
+    console.log("🔍 === VERIFICANDO USUARIO ACTUAL ===");
+    console.log("🆔 ID del usuario actual:", user.id);
+    console.log("🆔 ID del usuario del post:", id);
 
     if (user.id === id) {
       alert("No puedes hacer match contigo mismo");
@@ -217,7 +216,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
     setIsRequestingMatch(true);
     try {
       // 1. Obtener las habilidades del usuario actual
-      console.log("=== OBTENIENDO HABILIDADES DEL USUARIO ACTUAL ===");
+      console.log("📚 === OBTENIENDO HABILIDADES DEL USUARIO ACTUAL ===");
       const userSkillsResponse = await fetch(
         `${API_CONFIG.API_URL}/userabilities/user/${user.id}`,
         {
@@ -233,24 +232,27 @@ const FeedCard: React.FC<FeedCardProps> = ({
       }
 
       const userSkills = await userSkillsResponse.json();
-      console.log("Habilidades del usuario actual:", userSkills);
+      console.log("📋 Habilidades del usuario actual:", userSkills);
 
       // 2. Encontrar una habilidad que el usuario actual ofrece
       const userOfferedSkill = userSkills.find(
         (skill: any) => skill.skill_type === "Ofrece"
       );
 
-      console.log("Habilidad ofrecida por usuario actual:", userOfferedSkill);
+      console.log(
+        "💼 Habilidad ofrecida por usuario actual:",
+        userOfferedSkill
+      );
 
       if (!userOfferedSkill) {
         alert(
-          "Debes agregar al menos una habilidad que ofrezcas para solicitar un match. Ve a tu perfil para agregar habilidades."
+          "⚠️ Debes agregar al menos una habilidad que ofrezcas para solicitar un match.\n\nVe a tu perfil para agregar habilidades."
         );
-
         return;
       }
 
       // 3. Obtener las habilidades del usuario del post
+      console.log("📚 === OBTENIENDO HABILIDADES DEL USUARIO DEL POST ===");
       const postUserSkillsResponse = await fetch(
         `${API_CONFIG.API_URL}/userabilities/user/${id}`,
         {
@@ -260,32 +262,40 @@ const FeedCard: React.FC<FeedCardProps> = ({
           },
         }
       );
-
       if (!postUserSkillsResponse.ok) {
         throw new Error("Error al obtener habilidades del usuario del post");
       }
 
-      const postUserSkills = await postUserSkillsResponse.json(); // 4. Buscar la habilidad específica que el usuario del post ofrece
+      const postUserSkills = await postUserSkillsResponse.json();
+
+      // 4. Buscar la habilidad específica que el usuario del post ofrece
       console.log("=== BUSCANDO HABILIDAD DEL POST ===");
       console.log(
-        "skillName buscado:",
+        "🎯 skillName buscado:",
         `"${skillName}" (length: ${skillName?.length})`
       );
-      console.log("postUserSkills total:", postUserSkills.length);
+      console.log("📋 postUserSkills total:", postUserSkills.length);
 
       // Mostrar todas las habilidades que ofrece para debugging
       const offeredSkills = postUserSkills.filter(
         (skill: any) => skill.skill_type === "Ofrece"
       );
-      console.log("Habilidades que ofrece el usuario del post:");
+      console.log("💼 Habilidades que ofrece el usuario del post:");
       offeredSkills.forEach((skill: any, index: number) => {
         const abilityName = skill.ability?.name;
         console.log(
           `  ${index + 1}. "${abilityName}" (length: ${abilityName?.length})`
         );
-        console.log(`     Comparación exacta: ${abilityName === skillName}`);
+        console.log(`     ✓ Comparación exacta: ${abilityName === skillName}`);
         console.log(
-          `     Comparación trim: ${abilityName?.trim() === skillName?.trim()}`
+          `     ✓ Comparación trim: ${
+            abilityName?.trim() === skillName?.trim()
+          }`
+        );
+        console.log(
+          `     ✓ Comparación lower: ${
+            abilityName?.toLowerCase() === skillName?.toLowerCase()
+          }`
         );
       });
 
@@ -295,85 +305,106 @@ const FeedCard: React.FC<FeedCardProps> = ({
           skill.skill_type === "Ofrece" && skill.ability?.name === skillName
       );
 
+      console.log("🔍 Resultado búsqueda exacta:", !!postUserOfferedSkill);
+
       // Si no encuentra, intentar con trim y case-insensitive
       if (!postUserOfferedSkill) {
-        console.log("Búsqueda exacta falló, intentando con trim...");
+        console.log(
+          "🔄 Búsqueda exacta falló, intentando con trim y case-insensitive..."
+        );
         postUserOfferedSkill = postUserSkills.find(
           (skill: any) =>
             skill.skill_type === "Ofrece" &&
             skill.ability?.name?.trim().toLowerCase() ===
               skillName?.trim().toLowerCase()
         );
+        console.log("🔍 Resultado búsqueda flexible:", !!postUserOfferedSkill);
       }
-
-      console.log("postUserOfferedSkill encontrado:", postUserOfferedSkill);
-
       if (!postUserOfferedSkill) {
-        console.error(
-          "No se encontró la habilidad. Verificando alternativas..."
+        console.warn(
+          `⚠️ No se encontró exactamente la habilidad "${skillName}". Buscando alternativas...`
         );
 
-        // Intentar encontrar cualquier habilidad que ofrezca el usuario
-        const anyOfferedSkill = postUserSkills.find(
-          (skill: any) => skill.skill_type === "Ofrece"
+        // Intentar búsqueda más flexible (sin case sensitivity y sin espacios extra)
+        postUserOfferedSkill = postUserSkills.find(
+          (skill: any) =>
+            skill.skill_type === "Ofrece" &&
+            skill.ability?.name?.replace(/\s+/g, " ").trim().toLowerCase() ===
+              skillName?.replace(/\s+/g, " ").trim().toLowerCase()
         );
 
-        if (anyOfferedSkill) {
-          console.log("Habilidad alternativa encontrada:", anyOfferedSkill);
-          alert(
-            `Este usuario ofrece "${anyOfferedSkill.ability?.name}" pero no "${skillName}". ¿Quieres hacer match con esa habilidad?`
+        if (postUserOfferedSkill) {
+          console.log(
+            "✅ Habilidad encontrada con búsqueda flexible:",
+            postUserOfferedSkill
           );
-          return;
         } else {
-          alert("Este usuario no ofrece ninguna habilidad actualmente");
-          return;
-        }
-      }
+          // Intentar encontrar cualquier habilidad que ofrezca el usuario
+          const anyOfferedSkill = postUserSkills.find(
+            (skill: any) => skill.skill_type === "Ofrece"
+          );
 
-      // 5. Crear el match
+          if (anyOfferedSkill) {
+            console.log("Habilidad alternativa encontrada:", anyOfferedSkill);
+            const shouldContinue = confirm(
+              `Este usuario ofrece "${anyOfferedSkill.ability?.name}" pero no encontramos exactamente "${skillName}". ¿Quieres hacer match con "${anyOfferedSkill.ability?.name}" en su lugar?`
+            );
+
+            if (shouldContinue) {
+              postUserOfferedSkill = anyOfferedSkill;
+            } else {
+              return;
+            }
+          } else {
+            alert("Este usuario no ofrece ninguna habilidad actualmente");
+            return;
+          }
+        }
+      } // 5. Crear el match
       console.log("=== CREANDO MATCH ===");
-      console.log("Datos del match a crear:", {
+      const matchData = {
         user_id_1: user.id,
         user_id_2: id,
         ability_1_id: userOfferedSkill.ability_id,
         ability_2_id: postUserOfferedSkill.ability_id,
         matching_state: "pendiente",
-      });
+      };
+      console.log("📤 Datos del match a crear:", matchData);
+      console.log(
+        `📋 Intercambio: "${userOfferedSkill.ability?.name}" ↔️ "${postUserOfferedSkill.ability?.name}"`
+      );
 
       const matchResponse = await fetch(`${API_CONFIG.API_URL}/matches/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          user_id_1: user.id,
-          user_id_2: id,
-          ability_1_id: userOfferedSkill.ability_id,
-          ability_2_id: postUserOfferedSkill.ability_id,
-          matching_state: "pendiente",
-        }),
+        body: JSON.stringify(matchData),
       });
 
       console.log(
-        "Respuesta del match:",
+        "📡 Respuesta del servidor:",
         matchResponse.status,
         matchResponse.statusText
       );
 
       if (!matchResponse.ok) {
         const errorText = await matchResponse.text();
-        console.error("Error en la respuesta del match:", errorText);
+        console.error("❌ Error en la respuesta del match:", errorText);
         throw new Error(`Error al crear match: ${errorText}`);
       }
 
       const matchResult = await matchResponse.json();
-      console.log("Match creado exitosamente:", matchResult);
+      console.log("✅ Match creado exitosamente:", matchResult);
 
       // 6. Actualizar el estado local
-      setExistingMatch({ exists: true });
+      setExistingMatch({ exists: true, match_id: matchResult.id });
 
       alert(
-        `¡Solicitud de match enviada con éxito! Has solicitado intercambiar tu "${userOfferedSkill.ability?.name}" por "${skillName}" de ${author}.`
+        `🎉 ¡Solicitud de match enviada con éxito!\n\n` +
+          `Tu habilidad: "${userOfferedSkill.ability?.name}"\n` +
+          `Habilidad de ${author}: "${postUserOfferedSkill.ability?.name}"\n\n` +
+          `Tu solicitud está pendiente de aprobación.`
       );
     } catch (error) {
       console.error("Error al solicitar match:", error);
