@@ -15,13 +15,8 @@ export function useCurrentUserId(): number | null {
   useEffect(() => {
     // Función para obtener el userId actual
     const getCurrentId = () => {
-      const currentId = AuthService.getCurrentUserId();
-
-      // Si no hay userId en caché, crear uno de prueba para desarrollo
+      const currentId = AuthService.getCurrentUserId(); // Si no hay userId en caché, crear uno de prueba para desarrollo
       if (!currentId && typeof window !== "undefined") {
-        console.log(
-          "No se encontró userId en caché, creando usuario de prueba..."
-        );
         AuthService.setCurrentUserId(1); // Usar ID 1 como usuario de prueba
         setUserId(1);
         return;

@@ -290,7 +290,7 @@ func (c *Client) handleMessage(msg WebSocketMessage) {
 	case "comment_vote":
 		c.handleCommentVote(msg)
 	case "ping":
-		c.handlePing(msg)
+		c.handlePing()
 	default:
 		log.Printf("Tipo de mensaje no reconocido: %s", msg.Type)
 	}
@@ -480,7 +480,7 @@ func (c *Client) handleCommentVote(msg WebSocketMessage) {
 }
 
 // handlePing responde a pings del cliente
-func (c *Client) handlePing(msg WebSocketMessage) {
+func (c *Client) handlePing(	) {
 	response := WebSocketMessage{
 		Type: "pong",
 		Data: map[string]interface{}{

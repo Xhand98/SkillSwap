@@ -53,7 +53,7 @@ export const AuthService = {
       try {
         userId = sessionStorage.getItem("currentUserId");
       } catch (e) {
-        console.warn("No se pudo acceder a sessionStorage", e);
+        // Error silencioso en producción
       }
     }
 
@@ -78,9 +78,8 @@ export const AuthService = {
       // También guardar en sessionStorage para redundancia
       sessionStorage.setItem("currentUserId", userIdStr);
     } catch (e) {
-      console.warn("No se pudo guardar userId en sessionStorage", e);
+      // Error silencioso en producción
     }
-    console.log(`ID de usuario (${userId}) guardado en cache`);
   },
 
   // Iniciar sesión con email y contraseña
@@ -110,22 +109,14 @@ export const AuthService = {
 
       return data;
     } catch (error: any) {
-      console.error("Error de autenticación:", error);
+      // Error silencioso en producción
       throw error;
     }
   },
+
   // Registrar nuevo usuario
   async register(userData: RegisterData): Promise<User> {
     try {
-      console.log(
-        "AuthService.register: Enviando solicitud a",
-        `${API_URL}/users/`
-      );
-      console.log(
-        "AuthService.register: Datos a enviar:",
-        JSON.stringify(userData)
-      );
-
       const response = await fetch(`${API_URL}/users/`, {
         method: "POST",
         headers: {
@@ -134,43 +125,27 @@ export const AuthService = {
         body: JSON.stringify(userData),
       });
 
-      console.log(
-        "AuthService.register: Respuesta del servidor:",
-        response.status,
-        response.statusText
-      );
-
       if (!response.ok) {
         let errorMessage = "Error al registrar usuario";
 
         try {
           const errorData = await response.text();
-          console.error("AuthService.register: Error del servidor:", errorData);
           errorMessage = errorData || errorMessage;
         } catch (e) {
-          console.error(
-            "AuthService.register: Error al procesar respuesta de error:",
-            e
-          );
+          // Error silencioso en producción
         }
 
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log(
-        "AuthService.register: Usuario registrado correctamente:",
-        data
-      );
       return data;
     } catch (error: any) {
-      console.error(
-        "AuthService.register: Error durante el proceso de registro:",
-        error
-      );
+      // Error silencioso en producción
       throw error;
     }
   },
+
   // Cerrar sesión
   logout(): void {
     localStorage.removeItem("auth_token");
@@ -181,7 +156,7 @@ export const AuthService = {
     try {
       sessionStorage.removeItem("currentUserId");
     } catch (e) {
-      console.warn("No se pudo eliminar userId de sessionStorage", e);
+      // Error silencioso en producción
     }
   },
 
@@ -197,12 +172,13 @@ export const AuthService = {
       try {
         return JSON.parse(userJson);
       } catch (e) {
-        console.error("Error al parsear datos del usuario:", e);
+        // Error silencioso en producción
         return null;
       }
     }
     return null;
   },
+
   // Validar token del usuario
   async validateToken(): Promise<User | null> {
     const token = localStorage.getItem("auth_token");
@@ -229,9 +205,9 @@ export const AuthService = {
 
       return user;
     } catch (error) {
-      console.error("Error al validar token:", error);
+      // Error silencioso en producción
       this.logout();
       return null;
     }
-  },
+  }
 };

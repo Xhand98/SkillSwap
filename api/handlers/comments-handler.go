@@ -16,12 +16,16 @@ import (
 )
 
 type commentsHandler struct {
-	DB        *gorm.DB
-	WSHandler *WebSocketHandler
+	DB                  *gorm.DB
+	WSHandler           *WebSocketHandler
+	SocketIOBroadcaster *SocketIOBroadcaster
 }
 
 func NewCommentHandler(db *gorm.DB) *commentsHandler {
-	return &commentsHandler{DB: db}
+	return &commentsHandler{
+		DB:                  db,
+		SocketIOBroadcaster: NewSocketIOBroadcaster(),
+	}
 }
 
 // SetWebSocketHandler configura el handler de WebSocket para notificaciones en tiempo real
@@ -151,8 +155,27 @@ func (h *commentsHandler) CreateComment(w http.ResponseWriter, r *http.Request) 
 	h.DB.Table("vw_ComentariosCompletos").
 		Where("ComentarioID = ?", comentario.ComentarioID).
 		First(&comentarioCompleto)
+	// Enviar notificación Socket.IO si el broadcaster está configurado
+	if h.SocketIOBroadcaster != nil {
+		h.SocketIOBroadcaster.BroadcastNewComment(uint(postID), map[string]interface{}{
+			"comentario_id":       comentarioCompleto.ComentarioID,
+			"post_id":             comentarioCompleto.PostID,
+			"usuario_id":          comentarioCompleto.UsuarioID,
+			"nombre_usuario":      comentarioCompleto.NombreUsuario,
+			"primer_nombre":       comentarioCompleto.PrimerNombre,
+			"apellido":            comentarioCompleto.Apellido,
+			"contenido":           comentarioCompleto.Contenido,
+			"comentario_padre_id": comentarioCompleto.ComentarioPadreID,
+			"total_likes":         comentarioCompleto.TotalLikes,
+			"total_dislikes":      comentarioCompleto.TotalDislikes,
+			"total_respuestas":    comentarioCompleto.TotalRespuestas,
+			"created_at":          comentarioCompleto.CreatedAt,
+			"updated_at":          comentarioCompleto.UpdatedAt,
+			"activo":              comentarioCompleto.Activo,
+		})
+	}
 
-	// Enviar notificación WebSocket si el handler está configurado
+	// Mantener compatibilidad con WebSocket (temporal)
 	if h.WSHandler != nil {
 		h.WSHandler.BroadcastNewComment(comentarioCompleto)
 	}

@@ -39,7 +39,7 @@ func ConnectionString(c *DBConfig) []string {
 	}
 
 	// Formato para SQL Server: sqlserver://username:password@host:port?database=dbname&param=value
-	primary := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&trustServerCertificate=true&connection+timeout=3",
+	primary := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&trustServerCertificate=true&connection+timeout=5",
 		c.User, c.Password, c.Host, c.Port, c.DBName)
 
 	// Para el servidor secundario, usamos localhost si no está especificado ErrHost

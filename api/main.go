@@ -41,62 +41,7 @@ func main() {
 				}
 			}()
 
-			// Crear tabla de sesiones si no existe (solo si tenemos conexión a la BD)
-			tableSql := `
-		IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Sesiones')
-		BEGIN
-			CREATE TABLE Sesiones (
-				SesionID INT IDENTITY(1,1) PRIMARY KEY,
-				EmparejamientoID INT NOT NULL,
-				FechaHora DATETIME NOT NULL,
-				Ubicacion NVARCHAR(255) NOT NULL,
-				Notas NVARCHAR(500),
-				Estado NVARCHAR(50) NOT NULL DEFAULT 'scheduled',
-				FechaCreacion DATETIME DEFAULT GETDATE(),
-				FechaActualizacion DATETIME DEFAULT GETDATE(),
-				CONSTRAINT FK_Sesiones_Emparejamientos FOREIGN KEY (EmparejamientoID) REFERENCES Emparejamientos(EmparejamientoID)
-			);
-		END;
 
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_sesiones_emparejamiento')
-		BEGIN
-			CREATE INDEX idx_sesiones_emparejamiento ON Sesiones(EmparejamientoID);
-		END;
-
-		-- Crear tabla de notificaciones si no existe
-		IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Notificaciones')
-		BEGIN
-			CREATE TABLE Notificaciones (
-				NotificacionID INT IDENTITY(1,1) PRIMARY KEY,
-				UsuarioID INT NOT NULL,
-				Tipo NVARCHAR(50) NOT NULL,
-				Titulo NVARCHAR(100) NOT NULL,
-				Contenido NVARCHAR(500) NOT NULL,
-				ReferenciaID INT,
-				FechaCreacion DATETIME DEFAULT GETDATE(),
-				Leida BIT DEFAULT 0,
-				FechaLectura DATETIME,
-				CONSTRAINT FK_Notificaciones_Usuarios FOREIGN KEY (UsuarioID) REFERENCES Usuarios(UsuarioID)
-			);
-		END;
-
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_notificaciones_usuario')
-		BEGIN
-			CREATE INDEX idx_notificaciones_usuario ON Notificaciones(UsuarioID);
-		END;
-
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_notificaciones_tipo')
-		BEGIN
-			CREATE INDEX idx_notificaciones_tipo ON Notificaciones(Tipo);
-		END;	`
-
-			if !testMode && db != nil {
-				if err := db.Exec(tableSql).Error; err != nil {
-					log.Printf("ADVERTENCIA: Error al crear tabla Sesiones: %v", err)
-				} else {
-					log.Println("✅ Tabla Sesiones verificada/creada correctamente")
-				}
-			}
 		}
 	}
 

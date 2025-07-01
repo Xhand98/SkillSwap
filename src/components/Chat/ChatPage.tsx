@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, ArrowLeft, MoreVertical, Wifi, WifiOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import useWebSocket, { WebSocketMessage } from "@/hooks/useWebSocket";
+import useSocketIO, { SocketIOMessage } from "@/hooks/useSocketIO";
 
 interface Message {
   id: number;
@@ -46,10 +46,8 @@ export default function ChatPage({
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<number>>(new Set());
   const [isNearBottom, setIsNearBottom] = useState(true);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Configurar WebSocket con variables de control para evitar bucles
-  const joinedConversationRef = useRef(false);
-  const {
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Configurar WebSocket con variables de control para evitar bucles
+  const joinedConversationRef = useRef(false);  const {
     isConnected,
     isReconnecting,
     joinConversation,
@@ -58,36 +56,29 @@ export default function ChatPage({
     stopTyping,
     connectionError,
     reconnect,
-    isWebSocketEnabled,
-    toggleWebSocket,
-  } = useWebSocket({
+    isSocketIOEnabled,
+    toggleSocketIO,
+  } = useSocketIO({
     userId: currentUserId,
-    onMessage: handleWebSocketMessage,
+    onMessage: handleSocketIOMessage,
     onConnect: () => {
-      console.log(
-        "WebSocket connected, checking if need to join conversation:",
-        conversationId
-      );
-      if (!joinedConversationRef.current && isWebSocketEnabled) {
-        console.log("Joining conversation:", conversationId);
+      if (!joinedConversationRef.current && isSocketIOEnabled) {
         joinConversation(conversationId);
         joinedConversationRef.current = true;
       }
     },
     onDisconnect: () => {
-      console.log("WebSocket disconnected");
       // Al desconectar, marcamos que ya no estamos en la conversación
       joinedConversationRef.current = false;
     },
     onError: (error) => {
-      console.error("WebSocket error in ChatPage:", error);
+      // Error silencioso en producción
+      console.error('Socket.IO error:', error);
     },
   });
 
-  // Manejar mensajes WebSocket
-  function handleWebSocketMessage(message: WebSocketMessage) {
-    console.log("Received WebSocket message:", message);
-
+  // Manejar mensajes Socket.IO
+  function handleSocketIOMessage(message: SocketIOMessage) {
     switch (message.type) {
       case "new_message":
         // Solo actualizar si es un mensaje de esta conversación
@@ -101,24 +92,30 @@ export default function ChatPage({
             is_read: false,
             created_at: message.data.created_at,
             updated_at: message.data.created_at,
-          };          setMessages((prevMessages) => {
+          };
+          setMessages((prevMessages) => {
             // Evitar duplicados de mensajes con ID positivo (del servidor)
-            if (prevMessages.some((msg) => msg.id === newMsg.id && msg.id > 0)) {
+            if (
+              prevMessages.some((msg) => msg.id === newMsg.id && msg.id > 0)
+            ) {
               return prevMessages;
             }
-            
+
             // Si hay un mensaje temporal (ID negativo) que corresponde a este mensaje,
             // reemplazarlo en vez de agregar uno nuevo
             const tempIndex = prevMessages.findIndex(
-              msg => msg.id < 0 && msg.content === newMsg.content && msg.sender_id === newMsg.sender_id
+              (msg) =>
+                msg.id < 0 &&
+                msg.content === newMsg.content &&
+                msg.sender_id === newMsg.sender_id
             );
-            
+
             if (tempIndex >= 0) {
               const updatedMessages = [...prevMessages];
               updatedMessages[tempIndex] = newMsg;
               return updatedMessages;
             }
-            
+
             // Si no hay duplicado ni mensaje temporal, añadir el nuevo mensaje al inicio
             // ya que los mensajes del API están ordenados de más reciente a más antiguo
             return [newMsg, ...prevMessages];
@@ -144,13 +141,12 @@ export default function ChatPage({
           });
         }
         break;
-
       case "connection_established":
-        console.log("WebSocket connection established:", message.data);
+        // Conexión establecida con éxito
         break;
 
       default:
-        console.log("Unhandled message type:", message.type);
+      // Tipo de mensaje no manejado
     }
   }
 
@@ -164,11 +160,9 @@ export default function ChatPage({
         const data = await response.json();
         setMessages(data);
       } else {
-        console.error("Error en la respuesta:", response.status);
         setMessages([]); // Establecer como array vacío en caso de error
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
       setMessages([]); // Establecer como array vacío en caso de error
     }
   };
@@ -184,7 +178,7 @@ export default function ChatPage({
         setConversation(data);
       }
     } catch (error) {
-      console.error("Error fetching conversation:", error);
+      // Error silencioso en producción
     }
   };
   // Función para enviar un mensaje
@@ -213,10 +207,10 @@ export default function ChatPage({
       is_read: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };    // Agregar el mensaje temporal al estado al inicio del array
+    }; // Agregar el mensaje temporal al estado al inicio del array
     // ya que los mensajes del API están ordenados de más reciente a más antiguo
     setMessages((prevMessages) => [tempMessage, ...prevMessages]);
-    
+
     // Forzar el scroll hacia abajo cuando el usuario envía un mensaje
     setIsNearBottom(true);
 
@@ -236,7 +230,7 @@ export default function ChatPage({
       );
 
       if (response.ok) {
-        const data = await response.json();        // Reemplazar el mensaje temporal con el real (con ID del servidor)
+        const data = await response.json(); // Reemplazar el mensaje temporal con el real (con ID del servidor)
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === tempId
@@ -250,7 +244,6 @@ export default function ChatPage({
           )
         );
       } else {
-        console.error("Failed to send message");
         // Notificar al usuario que hubo un error
         alert("No se pudo enviar el mensaje. Inténtelo de nuevo.");
 
@@ -260,7 +253,6 @@ export default function ChatPage({
         );
       }
     } catch (error) {
-      console.error("Error sending message:", error);
       // Remover el mensaje temporal en caso de error
       setMessages((prevMessages) =>
         prevMessages.filter((msg) => msg.id !== tempId)
@@ -286,7 +278,7 @@ export default function ChatPage({
         }
       );
     } catch (error) {
-      console.error("Error marking messages as read:", error);
+      // Error silencioso en producción
     }
   };
   // Función para formatear la fecha
@@ -344,14 +336,20 @@ export default function ChatPage({
   // Detectar la posición del scroll para determinar si el usuario está cerca del fondo
   const handleScroll = () => {
     if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const { scrollTop, scrollHeight, clientHeight } =
+        messagesContainerRef.current;
       // Considerar "cerca del fondo" si está a menos de 100px del fondo
       const isBottom = scrollHeight - scrollTop - clientHeight < 100;
       setIsNearBottom(isBottom);
     }
   };
+  useEffect(() => {
+    // Reiniciar el estado cuando cambia el usuario o la conversación
+    setMessages([]);
+    setConversation(null);
+    joinedConversationRef.current = false;
 
-  useEffect(() => {    const loadData = async () => {
+    const loadData = async () => {
       setLoading(true);
       await Promise.all([fetchMessages(), fetchConversation()]);
       // Asegurarse de que al cargar los mensajes iniciales, siempre se desplace al fondo
@@ -362,21 +360,26 @@ export default function ChatPage({
     loadData();
     markAsRead();
 
-    // Cuando el componente se desmonta, dejar la conversación
+    // Si estamos conectados al WebSocket, unirse a la nueva conversación
+    if (isConnected && isSocketIOEnabled) {
+      joinConversation(conversationId);
+      joinedConversationRef.current = true;
+    }
+
+    // Cuando el componente se desmonta o cambia de conversación/usuario, dejar la conversación
     return () => {
-      console.log("Leaving conversation on unmount:", conversationId);
       if (joinedConversationRef.current) {
         leaveConversation(conversationId);
         joinedConversationRef.current = false;
       }
     };
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
   // Efecto para añadir/eliminar el evento de scroll
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
     }
   }, []);
 
@@ -400,21 +403,25 @@ export default function ChatPage({
       {" "}
       {/* Header */}
       <div className="bg-[#242424] border-b border-[#333333] px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center">          <button
+        <div className="flex items-center">
+          {" "}
+          <button
             onClick={() => router.back()}
             className="mr-3 p-2 rounded-full hover:bg-[#333333]"
           >
             <ArrowLeft className="h-5 w-5 text-gray-300" />
           </button>
           <div className="flex-1">
-            <div className="flex items-center">              <h1 className="text-lg font-semibold text-gray-100">
+            <div className="flex items-center">
+              {" "}
+              <h1 className="text-lg font-semibold text-gray-100">
                 {conversation?.title || "Conversación"}
               </h1>{" "}
               {/* Indicador de estado WebSocket */}{" "}
               <div className="ml-2 flex items-center">
-                {!isWebSocketEnabled ? (
+                {!isSocketIOEnabled ? (
                   <div
-                    title="WebSockets desactivados"
+                    title="Socket.IO desactivado"
                     className="flex items-center"
                   >
                     <WifiOff className="h-4 w-4 text-gray-500" />
@@ -424,7 +431,7 @@ export default function ChatPage({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleWebSocket(true);
+                        toggleSocketIO(true);
                       }}
                       className="ml-2 text-xs text-blue-500 hover:underline"
                       title="Activar WebSockets"
@@ -471,7 +478,7 @@ export default function ChatPage({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleWebSocket(false);
+                            toggleSocketIO(false);
                           }}
                           className="text-xs text-gray-500 hover:underline"
                           title="Desactivar WebSockets temporalmente"
@@ -502,7 +509,8 @@ export default function ChatPage({
               )}
             </div>
           </div>
-        </div>        <button className="p-2 rounded-full hover:bg-[#333333]">
+        </div>{" "}
+        <button className="p-2 rounded-full hover:bg-[#333333]">
           <MoreVertical className="h-5 w-5 text-gray-300" />
         </button>
       </div>
@@ -527,7 +535,8 @@ export default function ChatPage({
                   isOwnMessage ? "justify-end" : "justify-start"
                 }`}
               >
-                <div                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     isOwnMessage
                       ? "bg-blue-500 text-white"
                       : "bg-[#2a2a2a] text-gray-200 border border-[#333333]"
@@ -557,7 +566,8 @@ export default function ChatPage({
             );
           })
         )}
-        <div ref={messagesEndRef} />      </div>{" "}
+        <div ref={messagesEndRef} />{" "}
+      </div>{" "}
       {/* Message Input */}
       <div className="bg-[#242424] border-t border-[#333333] px-4 py-3">
         <form onSubmit={sendMessage} className="flex items-center space-x-3">
@@ -566,19 +576,19 @@ export default function ChatPage({
             value={newMessage}
             onChange={handleMessageChange}
             placeholder={
-              !isWebSocketEnabled
-                ? "WebSockets desactivados - Solo envío básico"
+              !isSocketIOEnabled
+                ? "Socket.IO desactivado - Solo envío básico"
                 : "Escribe un mensaje..."
             }
             className="flex-1 px-4 py-2 border border-[#444444] bg-[#333333] text-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={sending || (!isConnected && isWebSocketEnabled)}
+            disabled={sending || (!isConnected && isSocketIOEnabled)}
           />
           <button
             type="submit"
             disabled={
               !newMessage.trim() ||
               sending ||
-              (!isConnected && isWebSocketEnabled)
+              (!isConnected && isSocketIOEnabled)
             }
             className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
@@ -587,13 +597,13 @@ export default function ChatPage({
         </form>
 
         {/* Mostrar estado de conexión en el input */}
-        {!isWebSocketEnabled ? (
+        {!isSocketIOEnabled ? (
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-gray-500">
-              WebSockets desactivados - Algunas funciones no estarán disponibles
+              Socket.IO desactivado - Algunas funciones no estarán disponibles
             </p>
             <button
-              onClick={() => toggleWebSocket(true)}
+              onClick={() => toggleSocketIO(true)}
               className="text-xs text-blue-500 hover:underline"
             >
               Activar WebSockets
@@ -609,7 +619,7 @@ export default function ChatPage({
               </p>
               {connectionError && (
                 <button
-                  onClick={() => toggleWebSocket(false)}
+                  onClick={() => toggleSocketIO(false)}
                   className="text-xs text-gray-500 hover:underline"
                 >
                   Usar modo sin WebSockets

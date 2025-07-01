@@ -11,12 +11,16 @@ import (
 )
 
 type messagesHandler struct {
-	DB        *gorm.DB
-	WSHandler *WebSocketHandler
+	DB                 *gorm.DB
+	WSHandler          *WebSocketHandler
+	SocketIOBroadcaster *SocketIOBroadcaster
 }
 
 func NewMessagesHandler(db *gorm.DB) *messagesHandler {
-	return &messagesHandler{DB: db}
+	return &messagesHandler{
+		DB:                 db,
+		SocketIOBroadcaster: NewSocketIOBroadcaster(),
+	}
 }
 
 // SetWebSocketHandler configura el handler de WebSocket para notificaciones en tiempo real
@@ -326,14 +330,23 @@ func (h *messagesHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 	if result := h.DB.Create(&message); result.Error != nil {
 		http.Error(w, "Error creando mensaje: "+result.Error.Error(), http.StatusInternalServerError)
 		return
-	}
-	// Actualizar última actividad de la conversación
+	}	// Actualizar última actividad de la conversación
 	now := time.Now()
 	h.DB.Model(&conversation).Update("LastMessageAt", now)
 
-	// Enviar notificación WebSocket si el handler está configurado
-	if h.WSHandler != nil {
-		h.WSHandler.BroadcastNewMessage(message)
+	// Enviar notificación Socket.IO si el broadcaster está configurado
+	if h.SocketIOBroadcaster != nil {
+		h.SocketIOBroadcaster.BroadcastNewMessage(conversationID, map[string]interface{}{
+			"id":              message.ID,
+			"conversation_id": message.ConversationID,
+			"sender_id":       message.SenderID,
+			"content":         message.Content,
+			"message_type":    message.MessageType,
+			"is_read":         message.IsRead,
+			"read_at":         message.ReadAt,
+			"created_at":      message.CreatedAt,
+			"updated_at":      message.UpdatedAt,
+		})
 	}
 
 	response := models.MessageResponse{

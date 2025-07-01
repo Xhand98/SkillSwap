@@ -81,28 +81,21 @@ export const useWebSocketV2 = ({
   const reconnectAttempts = useRef(0);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
   const shouldReconnect = useRef(true);
-  const [isWebSocketEnabled, setIsWebSocketEnabled] = useState<boolean>(areWebSocketsEnabled());
+  const [isWebSocketEnabled, setIsWebSocketEnabled] = useState<boolean>(
+    areWebSocketsEnabled()
+  );
 
   // Variables para detección de bucles y errores
   const connectingRef = useRef(false);
   const connectionsInLastMinute = useRef(0);
   const lastConnectionTimes = useRef<number[]>([]);
-  const lastErrorRef = useRef<{time: number, error: any} | null>(null);
+  const lastErrorRef = useRef<{ time: number; error: any } | null>(null);
   const errorCountRef = useRef(0);
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Función para logging
+  // Función para logging (desactivada para producción)
   const debugLog = useCallback(
     (message: string, data?: any) => {
-      const isDebugMode =
-        typeof window !== "undefined" &&
-        localStorage.getItem("websocket_debug") === "true";
-      if (isDebugMode || WebSocketConfig.debug) {
-        console.log(
-          `[WebSocketV2][${componentName.current}:${userId}] ${message}`,
-          data || ""
-        );
-      }
+      // Debugging logs removed for production
     },
     [userId]
   );
@@ -111,22 +104,24 @@ export const useWebSocketV2 = ({
   const detectConnectionLoop = useCallback(() => {
     const now = Date.now();
     lastConnectionTimes.current.push(now);
-    
+
     // Solo mantener tiempos de conexión de los últimos 60 segundos
     lastConnectionTimes.current = lastConnectionTimes.current.filter(
       (time) => now - time < 60000
     );
-    
+
     connectionsInLastMinute.current = lastConnectionTimes.current.length;
-    
-    if (connectionsInLastMinute.current > WebSocketConfig.maxConnectionsPerMinute) {
+
+    if (
+      connectionsInLastMinute.current > WebSocketConfig.maxConnectionsPerMinute
+    ) {
       debugLog(
         `¡ALERTA! Bucle de conexión detectado: ${connectionsInLastMinute.current} intentos/min`
       );
       console.warn(
         `[WebSocketV2][${componentName.current}] Bucle de conexión detectado ` +
-        `(${connectionsInLastMinute.current} intentos en el último minuto). ` +
-        "Los WebSockets serán desactivados temporalmente."
+          `(${connectionsInLastMinute.current} intentos en el último minuto). ` +
+          "Los WebSockets serán desactivados temporalmente."
       );
       return true;
     }
@@ -188,21 +183,25 @@ export const useWebSocketV2 = ({
       connectionTimeoutRef.current = setTimeout(() => {
         if (ws.current && ws.current.readyState !== WebSocket.OPEN) {
           debugLog("Timeout de conexión alcanzado");
-          setConnectionError("Timeout de conexión - El servidor no respondió a tiempo");
-          
+          setConnectionError(
+            "Timeout de conexión - El servidor no respondió a tiempo"
+          );
+
           try {
             ws.current.close();
             ws.current = null;
           } catch (err) {
             debugLog("Error al cerrar WebSocket después de timeout:", err);
           }
-          
+
           // Incrementar contador de errores
           errorCountRef.current++;
-          
+
           // Desactivar WebSockets tras varios errores
           if (errorCountRef.current >= 3) {
-            debugLog("Demasiados errores consecutivos, desactivando WebSockets");
+            debugLog(
+              "Demasiados errores consecutivos, desactivando WebSockets"
+            );
             setIsWebSocketEnabled(false);
             setWebSocketsEnabled(false);
           }
@@ -219,7 +218,7 @@ export const useWebSocketV2 = ({
           clearTimeout(connectionTimeoutRef.current);
           connectionTimeoutRef.current = null;
         }
-        
+
         debugLog("WebSocket conectado exitosamente");
         setIsConnected(true);
         setIsReconnecting(false);
@@ -259,16 +258,16 @@ export const useWebSocketV2 = ({
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
           debugLog("Mensaje WebSocket recibido:", message);
-          
+
           // Si recibimos un mensaje, la conexión está activa
           errorCountRef.current = 0;
-          
+
           // No propagar mensajes de sistema
           if (message.type === "pong" || message.type === "system") {
             debugLog(`Mensaje de sistema "${message.type}" recibido`);
             return;
           }
-          
+
           onMessage?.(message);
         } catch (error) {
           debugLog("Error al parsear mensaje WebSocket:", error);
@@ -282,15 +281,15 @@ export const useWebSocketV2 = ({
           clearTimeout(connectionTimeoutRef.current);
           connectionTimeoutRef.current = null;
         }
-        
+
         console.log(
-          `[WebSocketV2][${componentName.current}] Conexión cerrada: Código ${event.code}${
-            event.reason ? ", Razón: " + event.reason : ""
-          }`
+          `[WebSocketV2][${componentName.current}] Conexión cerrada: Código ${
+            event.code
+          }${event.reason ? ", Razón: " + event.reason : ""}`
         );
-        
+
         setIsConnected(false);
-        
+
         // Establecer mensaje de error según código
         let errorMessage = "Conexión cerrada";
         if (event.code === 1000) {
@@ -303,11 +302,11 @@ export const useWebSocketV2 = ({
         } else if (event.code === 1011) {
           errorMessage = "Error interno en el servidor";
         }
-        
+
         if (event.code !== 1000) {
           setConnectionError(errorMessage);
         }
-        
+
         onDisconnect?.();
 
         // Reconexión automática
@@ -334,13 +333,16 @@ export const useWebSocketV2 = ({
           }
 
           // Backoff exponencial con máximo
-          const exponentialDelay = reconnectDelay * Math.pow(1.5, reconnectAttempts.current - 1);
+          const exponentialDelay =
+            reconnectDelay * Math.pow(1.5, reconnectAttempts.current - 1);
           const maxDelay = 30000; // 30 segundos máximo
           const cappedDelay = Math.min(exponentialDelay, maxDelay);
           const delayWithJitter = cappedDelay + Math.random() * 1000;
 
           console.log(
-            `Esperando ${Math.round(delayWithJitter)}ms para reconectar (intento ${
+            `Esperando ${Math.round(
+              delayWithJitter
+            )}ms para reconectar (intento ${
               reconnectAttempts.current
             }/${maxReconnectAttempts})`
           );
@@ -352,10 +354,14 @@ export const useWebSocketV2 = ({
             connect();
           }, delayWithJitter);
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
-          setConnectionError("Máximo número de intentos de reconexión alcanzado");
+          setConnectionError(
+            "Máximo número de intentos de reconexión alcanzado"
+          );
           setIsReconnecting(false);
-          console.log("Máximo de intentos alcanzado. Deteniendo reconexiones automáticas.");
-          
+          console.log(
+            "Máximo de intentos alcanzado. Deteniendo reconexiones automáticas."
+          );
+
           // Desactivar WebSockets tras muchos intentos fallidos
           if (errorCountRef.current >= 3) {
             setIsWebSocketEnabled(false);
@@ -373,9 +379,12 @@ export const useWebSocketV2 = ({
           clearTimeout(connectionTimeoutRef.current);
           connectionTimeoutRef.current = null;
         }
-        
-        console.error(`[WebSocketV2][${componentName.current}] Error WebSocket:`, error);
-        
+
+        console.error(
+          `[WebSocketV2][${componentName.current}] Error WebSocket:`,
+          error
+        );
+
         // Registrar error
         lastErrorRef.current = { time: Date.now(), error };
         errorCountRef.current++;
@@ -383,18 +392,27 @@ export const useWebSocketV2 = ({
 
         // Verificar si es un error vacío
         const isEmptyError = !error.type || Object.keys(error).length === 0;
-        
+
         if (isEmptyError) {
-          debugLog("Error vacío ({}) detectado, posible problema de red o CORS");
+          debugLog(
+            "Error vacío ({}) detectado, posible problema de red o CORS"
+          );
           setConnectionError("Error de red o conexión (posible problema CORS)");
           websocketHealth.recordEmptyError();
 
           // Desactivar WebSockets tras varios errores vacíos
-          if (websocketHealth.getHealthData().emptyErrors >= 3 && WebSocketConfig.autoDisableOnLoop) {
-            debugLog("Múltiples errores vacíos detectados, desactivando WebSockets");
+          if (
+            websocketHealth.getHealthData().emptyErrors >= 3 &&
+            WebSocketConfig.autoDisableOnLoop
+          ) {
+            debugLog(
+              "Múltiples errores vacíos detectados, desactivando WebSockets"
+            );
             setIsWebSocketEnabled(false);
             setWebSocketsEnabled(false);
-            setConnectionError("Múltiples errores de conexión - WebSockets desactivados");
+            setConnectionError(
+              "Múltiples errores de conexión - WebSockets desactivados"
+            );
           }
         } else {
           try {
@@ -417,7 +435,10 @@ export const useWebSocketV2 = ({
             debugLog("Detalles del error:", errorDetails);
             setConnectionError(`Error: ${error.type || "desconocido"}`);
           } catch (parseError) {
-            debugLog("Error analizando detalles del error WebSocket:", parseError);
+            debugLog(
+              "Error analizando detalles del error WebSocket:",
+              parseError
+            );
             setConnectionError("Error desconocido");
           }
         }
@@ -445,17 +466,17 @@ export const useWebSocketV2 = ({
   // Desconectar WebSocket
   const disconnect = useCallback(() => {
     shouldReconnect.current = false;
-    
+
     if (reconnectTimeout.current) {
       clearTimeout(reconnectTimeout.current);
       reconnectTimeout.current = null;
     }
-    
+
     if (connectionTimeoutRef.current) {
       clearTimeout(connectionTimeoutRef.current);
       connectionTimeoutRef.current = null;
     }
-    
+
     if (ws.current) {
       try {
         ws.current.close();
@@ -464,7 +485,7 @@ export const useWebSocketV2 = ({
       }
       ws.current = null;
     }
-    
+
     setIsConnected(false);
     setIsReconnecting(false);
   }, [debugLog]);
@@ -475,7 +496,7 @@ export const useWebSocketV2 = ({
     reconnectAttempts.current = 0;
     setConnectionError(null);
     websocketHealth.resetErrorState();
-    
+
     disconnect();
     setTimeout(connect, 100);
   }, [connect, disconnect]);
@@ -484,10 +505,13 @@ export const useWebSocketV2 = ({
   const sendMessage = useCallback(
     (message: Omit<WebSocketMessage, "time" | "user_id">) => {
       if (!isWebSocketEnabled) {
-        console.warn("WebSockets están desactivados. Mensaje no enviado:", message);
+        console.warn(
+          "WebSockets están desactivados. Mensaje no enviado:",
+          message
+        );
         return;
       }
-      
+
       if (ws.current?.readyState === WebSocket.OPEN) {
         try {
           const fullMessage: WebSocketMessage = {
@@ -600,10 +624,10 @@ export const useWebSocketV2 = ({
     }
 
     connectingRef.current = true;
-    
+
     debugLog("Iniciando conexión WebSocket al montar componente");
     connect();
-    
+
     // Liberar flag después de un delay para evitar múltiples intentos
     setTimeout(() => {
       connectingRef.current = false;

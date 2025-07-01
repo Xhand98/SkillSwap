@@ -77,7 +77,8 @@ interface Session {
 }
 
 export default function SessionDetailPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const router = useRouter();

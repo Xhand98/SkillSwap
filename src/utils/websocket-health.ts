@@ -97,16 +97,16 @@ class WebSocketHealthMonitor {
     }
   }
 
-  // Se llama cuando se detecta un error vacío {} 
+  // Se llama cuando se detecta un error vacío {}
   public recordEmptyError(): void {
     this.health.emptyErrors++;
-    
+
     // Si hay varios errores vacíos consecutivos, consideramos que estamos en un bucle
     if (this.health.emptyErrors >= 3) {
       this.health.isInErrorLoop = true;
     }
   }
-  
+
   // Resetear el estado de error (después de una reconexión exitosa)
   public resetErrorState(): void {
     this.health.reconnectAttempts = 0;
@@ -129,9 +129,6 @@ class WebSocketHealthMonitor {
       // Desactivar WebSockets automáticamente si el usuario ha habilitado esta característica
       if (WebSocketConfig.autoDisableOnLoop) {
         this.disableWebSockets();
-        this.logDebug(
-          "WebSockets desactivados automáticamente debido a un bucle de errores"
-        );
       }
     }
   }
@@ -167,13 +164,6 @@ class WebSocketHealthMonitor {
     if (this.errorCheckInterval) {
       clearInterval(this.errorCheckInterval);
       this.errorCheckInterval = null;
-    }
-  }
-
-  // Utilidad para registrar mensajes de depuración
-  private logDebug(message: string, data?: any): void {
-    if (WebSocketConfig.debug) {
-      console.log(`[WebSocketHealth] ${message}`, data || "");
     }
   }
 }

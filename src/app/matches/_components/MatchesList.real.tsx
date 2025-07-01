@@ -14,6 +14,7 @@ import {
   Mail,
   MapPin,
   Globe,
+  MessageCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -708,6 +709,22 @@ export default function MatchesList({ userId }: MatchesListProps) {
                               >
                                 <Mail size={14} className="mr-1" />
                                 Enviar Email
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (otherUser?.correo_electronico) {
+                                    window.open(
+                                      //`mailto:${otherUser.correo_electronico}?subject=SkillSwap - Intercambio de habilidades&body=Hola ${otherUser.primer_nombre},%0D%0A%0D%0AMe gustaría coordinar el intercambio de habilidades que acordamos en SkillSwap.%0D%0A%0D%0AYo te puedo enseñar: ${userAbility?.name}%0D%0ATú me puedes enseñar: ${otherUserAbility?.name}%0D%0A%0D%0A¿Cuándo te parece bien que nos pongamos en contacto?%0D%0A%0D%0ASaludos!`,
+                                      `messages/${otherUser.id}`,
+                                      "_blank"
+                                    );
+                                  }
+                                }}
+                                className="bg-primary hover:bg-primary/90 ml-2"
+                              >
+                                <MessageCircleIcon size={14} className="mr-1" />
+                                Enviar Mensaje
                               </Button>
                             </div>
                           </div>

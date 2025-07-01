@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	ID                uint      `json:"id" gorm:"primaryKey;column:UsuarioID"`
+	ID                uint      `json:"id" gorm:"primaryKey;column:UsuarioID;autoIncrement"`
 	CreatedAt         time.Time `json:"created_at" gorm:"column:FechaCreacion;autoCreateTime"`
 	UpdatedAt         time.Time `json:"updated_at" gorm:"-"` // No existe en la tabla Usuarios
 	NombreUsuario     string    `json:"nombre_usuario" gorm:"unique;not null;column:NombreUsuario"`

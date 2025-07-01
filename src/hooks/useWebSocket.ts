@@ -91,19 +91,10 @@ export const useWebSocket = ({
   // Añadir estado para seguimiento de errores
   const lastErrorRef = useRef<{ time: number; error: any } | null>(null);
   const errorCountRef = useRef(0);
-
-  // Añadir función de depuración
+  // Añadir función de depuración (desactivada para producción)
   const debugLog = useCallback(
     (message: string, data?: any) => {
-      const isDebugMode =
-        typeof window !== "undefined" &&
-        localStorage.getItem("websocket_debug") === "true";
-      if (isDebugMode) {
-        console.log(
-          `[WebSocket][${componentName.current}:${userId}] ${message}`,
-          data || ""
-        );
-      }
+      // Debugging logs removed for production
     },
     [userId]
   );

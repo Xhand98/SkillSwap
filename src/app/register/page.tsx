@@ -25,7 +25,7 @@ export default function Register() {
   } = useAuth();
   const currentUserId = useCurrentUserId();
 
-  // Redireccionar si el usuario ya está autenticado
+  // Redireccionar si el usuario ya está autenticado  useEffect(() => {
   useEffect(() => {
     if (isAuthenticated && currentUserId) {
       console.log("Usuario ya autenticado con ID:", currentUserId);
@@ -162,10 +162,8 @@ export default function Register() {
       }
       return;
     }
-
     try {
       setLoading(true);
-      console.log("Iniciando registro de usuario...");
 
       // Preparar datos para la API
       const userData: RegisterData = {
@@ -178,16 +176,12 @@ export default function Register() {
         hash_contrasena: formData.password,
       };
 
-      console.log("Datos a enviar a la API:", JSON.stringify(userData));
-
       // Usar el contexto de autenticación para el registro
       try {
-        // Registrar usuario mediante el servicio directo para obtener la respuesta completa
         const user = await AuthService.register(userData);
+        // Registrar usuario mediante el servicio directo para obtener la respuesta completa        const user = await AuthService.register(userData);
 
         if (user && user.id) {
-          console.log("Registro exitoso, usuario ID:", user.id);
-
           // Almacenar el ID del usuario para futuras referencias
           AuthService.setCurrentUserId(user.id);
 
@@ -211,8 +205,6 @@ export default function Register() {
         throw error; // Propagar el error para manejo uniforme
       }
     } catch (error: any) {
-      console.error("Error de registro:", error);
-
       // Mejorar el mensaje de error para ser más específico
       if (error.message && error.message.includes("correo_electronico")) {
         setApiError(
@@ -232,7 +224,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-
   // Verificar si todos los campos son válidos
   const allFieldsValid =
     // Verificar que todos los campos tengan contenido
@@ -254,26 +245,6 @@ export default function Register() {
     formData.password === formData.confirmPassword &&
     // Verificar longitud mínima de contraseña
     formData.password.length >= 8;
-
-  // Añadir console.log para depuración
-  console.log("Estado del formulario:", {
-    firstName: formData.firstName,
-    lastName: formData.lastName,
-    email: formData.email,
-    password: formData.password.length > 0 ? "Presente" : "No presente",
-    confirmPassword:
-      formData.confirmPassword.length > 0 ? "Presente" : "No presente",
-    passwordMatch: formData.password === formData.confirmPassword,
-    passwordLength: formData.password.length >= 8,
-    errors,
-    terms,
-    allFieldsValid,
-  });
-  // Debug de los campos que vienen del archivo JSON
-  console.log(
-    "Campos del JSON:",
-    locale.register.INPUTS.map((input) => input.LABEL)
-  );
 
   return (
     <Container className="flex min-h-[calc(100vh-140px)] items-center justify-center mt-8">
@@ -413,8 +384,7 @@ export default function Register() {
                   }
                 />
               )}
-              {(input.LABEL === "Correo Electrónico" ||
-                input.LABEL === "Correo electrónico") &&
+              {input.LABEL.toLowerCase() == "correo electrónico" &&
                 errors.email && (
                   <p className="text-sm text-red-500">
                     Introduce un correo electrónico válido
@@ -525,37 +495,6 @@ export default function Register() {
               continuar
             </p>
           )}
-
-          {/* Componente de depuración - Quitar después de resolver el problema */}
-          <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-            <p className="font-bold">Estado de validación:</p>
-            <ul className="list-disc pl-5 mt-1">
-              <li>Nombre: {formData.firstName.trim() !== "" ? "✓" : "✗"}</li>
-              <li>Apellido: {formData.lastName.trim() !== "" ? "✓" : "✗"}</li>
-              <li>
-                Email:{" "}
-                {formData.email.trim() !== "" && !errors.email ? "✓" : "✗"}
-              </li>
-              <li>
-                Contraseña:{" "}
-                {formData.password.trim() !== "" && !errors.passwordLength
-                  ? "✓"
-                  : "✗"}
-              </li>
-              <li>
-                Confirmar: {formData.confirmPassword.trim() !== "" ? "✓" : "✗"}
-              </li>
-              <li>
-                Contraseñas coinciden: {!errors.passwordMatch ? "✓" : "✗"}
-              </li>
-              <li>
-                Términos aceptados: {terms.service && terms.privacy ? "✓" : "✗"}
-              </li>
-              <li className="font-bold">
-                Estado final: {allFieldsValid ? "VÁLIDO ✓" : "INVÁLIDO ✗"}
-              </li>
-            </ul>
-          </div>
         </div>
 
         <Text as="p" className="text-center">
