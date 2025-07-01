@@ -38,6 +38,9 @@ export const WebSocketConfig = {
 export function setWebSocketDebug(enabled: boolean): void {
   if (typeof window !== "undefined") {
     localStorage.setItem("websocket_debug", enabled.toString());
+    console.log(
+      `Modo de depuración WebSocket ${enabled ? "activado" : "desactivado"}`
+    );
   }
 }
 

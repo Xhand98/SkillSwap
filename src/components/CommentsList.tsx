@@ -4,7 +4,7 @@ import { CommentItem } from "./CommentItem";
 import { CommentForm } from "./CommentForm";
 import { useComments } from "@/hooks/useComments";
 import { useToastContext } from "@/contexts/ToastContext";
-import { useSocketIO, SocketIOMessage } from "@/hooks/useSocketIO";
+import { useWebSocket, WebSocketMessage } from "@/hooks/useWebSocket";
 import LoadingSpinner from "./LoadingSpinner";
 import { Wifi, WifiOff } from "lucide-react";
 
@@ -48,8 +48,9 @@ export const CommentsList: React.FC<CommentsListProps> = ({ postId }) => {
     } else {
       setCurrentUserId(null);
     }
-  }, []);  // Función para manejar mensajes Socket.IO
-  const handleSocketIOMessage = (message: SocketIOMessage) => {
+  }, []);
+  // Función para manejar mensajes WebSocket
+  const handleWebSocketMessage = (message: WebSocketMessage) => {
     if (message.type === "new_comment" && message.data.post_id === postId) {
       // Agregar nuevo comentario a la lista
       const newComment = {
@@ -74,28 +75,33 @@ export const CommentsList: React.FC<CommentsListProps> = ({ postId }) => {
     }
   };
 
-  // Configurar Socket.IO si el usuario está autenticado
-  const { isConnected, isReconnecting, joinPost, leavePost } = useSocketIO({
-    userId: currentUserId || 0,
-    onMessage: handleSocketIOMessage,
-    onConnect: () => console.log("Socket.IO conectado para comentarios"),
-    onDisconnect: () => console.log("Socket.IO desconectado"),
-    onError: (error: Error) => console.error("Error Socket.IO:", error),
-  });
+  // Configurar WebSocket si el usuario está autenticado
+  const wsConfig = currentUserId
+    ? {
+        userId: currentUserId,
+        onMessage: handleWebSocketMessage,
+        onConnect: () => console.log("WebSocket conectado para comentarios"),
+        onDisconnect: () => console.log("WebSocket desconectado"),
+        onError: (error: Event) => console.error("Error WebSocket:", error),
+      }
+    : null;
+
+  const { isConnected, isReconnecting, joinConversation, leaveConversation } =
+    useWebSocket(wsConfig || { userId: 0 });
 
   // Unirse al "room" del post para recibir notificaciones
   useEffect(() => {
     if (isConnected && currentUserId) {
-      // Para comentarios usamos joinPost
-      joinPost(postId);
+      // Para comentarios usamos room "post_{postId}"
+      joinConversation(postId);
     }
 
     return () => {
       if (currentUserId) {
-        leavePost(postId);
+        leaveConversation(postId);
       }
     };
-  }, [isConnected, currentUserId, postId, joinPost, leavePost]);
+  }, [isConnected, currentUserId, postId, joinConversation, leaveConversation]);
 
   // Manejar creación de comentario
   const handleCreateComment = async (

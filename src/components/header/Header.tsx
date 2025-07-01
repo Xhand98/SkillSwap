@@ -127,8 +127,11 @@ const Header = forwardRef<
 >(({ className, children, ...rest }, ref) => {
   const path = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isAuthenticated, isLoading, logout } = useAuth(); // Usar nuestro hook para obtener el userId
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  // Usar nuestro hook para obtener el userId
   const currentUserId = useCurrentUserId();
+
+  console.log("Header - ID de usuario desde hook:", currentUserId);
 
   useMemo(() => {
     if (isMenuOpen) setIsMenuOpen(false);
@@ -140,9 +143,10 @@ const Header = forwardRef<
       ref={ref}
     >
       {children}
-      <div        className={cn(
+      <div
+        className={cn(
           "flex items-center justify-between h-16 min-h-16 px-4 sm:px-6",
-          path?.startsWith("/admin")
+          path.startsWith("/admin")
             ? "bg-[#1a1a1a]"
             : "bg-primary-100/50 backdrop-blur-sm border-b border-border",
           className

@@ -26,10 +26,10 @@ export default function ProtectedRoute({
       if (!isAuthenticated) {
         console.log(
           "Acceso no autorizado - Redirigiendo a login (no autenticado)"
-        );        // Guardar la ruta actual para redirigir después del login
-        if (pathname) {
-          localStorage.setItem("redirectAfterLogin", pathname);
-        }
+        );
+
+        // Guardar la ruta actual para redirigir después del login
+        localStorage.setItem("redirectAfterLogin", pathname);
 
         // Redirigir al login
         router.push("/login");
@@ -44,12 +44,11 @@ export default function ProtectedRoute({
         userIdTimeout = setTimeout(() => {
           const idFromStorage = AuthService.getCurrentUserId();
 
-          if (!idFromStorage) {            console.log(
+          if (!idFromStorage) {
+            console.log(
               "No se pudo obtener userId después de esperar - Redirigiendo a login"
             );
-            if (pathname) {
-              localStorage.setItem("redirectAfterLogin", pathname);
-            }
+            localStorage.setItem("redirectAfterLogin", pathname);
             router.push("/login");
           } else {
             console.log("UserId obtenido después de espera:", idFromStorage);
