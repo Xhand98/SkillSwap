@@ -1,7 +1,7 @@
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import locale from "@/locales/not-found.json";
-import { Button } from "@/components/ui/button";
+import { Button } from "@heroui/react";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -25,11 +25,9 @@ export default function NotFound() {
           alt={locale.IMAGE.ALT}
         />
         <div className="flex justify-center gap-4 pt-4">
-          <Link href="/">
-            <Button className="min-w-[200px]" color="primary">
-              {locale.GO_HOME}
-            </Button>
-          </Link>
+          <Button as={Link} href="/" className="min-w-[200px]" color="primary">
+            {locale.GO_HOME}
+          </Button>
         </div>
       </div>
     </Container>

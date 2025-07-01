@@ -1,5 +1,4 @@
 import locale from "@/locales/testimonials.json";
-import TestimonialCard from "./TestCard";
 
 export default function Testimonials() {
   return (
@@ -10,20 +9,34 @@ export default function Testimonials() {
             <h2 className="text-3xl md:text-4xl text-center font-extrabold text-purple-600 mb-4 w-screen">
               {locale.page.title}
             </h2>
-            <p className="text-lg text-gray-700 mb-6 leading-relaxed w-screen text-center">
+            <p className="text-lg text-gr ay-700 mb-6 leading-relaxed w-screen text-center">
               {locale.page.description}
             </p>
           </div>
         </div>
         <div className="mt-10 flex justify-center gap-10 flex-wrap">
-          {locale.testimonials.map((e, index) => (
-            <TestimonialCard
-              key={index}
-              id={index}
-              name={e.name}
-              title={e.title}
-              testimonial={e.testimonial}
-            />
+          {locale.testimonials.map((elemento) => (
+            <div
+              className="bg-gray-50 border border-gray-200 rounded-xl shadow-md p-6 max-w-md w-full"
+              key={elemento.id}
+            >
+              <p className="text-gray-700 italic mb-4">
+                {elemento.testimonial}
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-purple-700">
+                  {elemento.name[0].toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-900">
+                    {elemento.name}
+                  </span>
+                  <span className="font-normal text-gray-600  text-s">
+                    {elemento.title}
+                  </span>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </section>

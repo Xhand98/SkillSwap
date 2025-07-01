@@ -1,5 +1,3 @@
-"use client";
-
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";
@@ -507,6 +505,9 @@ export default function Register() {
           </a>
         </Text>
       </div>
+      <Text as={"p"} size="paragraph-xl" className="max-w-fit mt-6">
+        No tienes una cuenta? <a href="/register">Registrate</a>
+      </Text>
     </Container>
   );
 }

@@ -1,16 +1,18 @@
-import { ShadcnLink } from "@/components/ui/link";
+import { Link as NextLink } from "@heroui/link";
+import Link from "next/link";
 
 const FooterItem = ({ text, href }: { text: string; href: string }) => {
   return (
     <li>
-      <ShadcnLink
-        variant="underlineHover"
-        className="opacity-60 hover:opacity-100 hover:text-primary transition-opacity text-foreground"
-        href={href}
+      <NextLink
+        underline="hover"
+        className="hover:opacity-100 hover:text-primary opacity-60 transition-opacity text-foreground"
+        as={Link}
         aria-label={text}
+        href={href}
       >
         {text}
-      </ShadcnLink>
+      </NextLink>
     </li>
   );
 };

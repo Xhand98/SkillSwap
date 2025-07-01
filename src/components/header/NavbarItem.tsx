@@ -1,6 +1,7 @@
 import type { NavbarItemProps } from "./types.d";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { NavbarItem as NextNavbarItem } from "@heroui/react";
 
 /**
  * @typedef {object} NavbarItemProps
@@ -9,20 +10,13 @@ import { cn } from "@/lib/utils";
  * @property {boolean} [isImportant] - Whether to show an important indicator
  */
 const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
-  ({ classes, children, isImportant, isActive, ...rest }, ref) => {
+  ({ classes, children, isImportant, ...rest }, _) => {
     return (
-      <div
-        ref={ref}
+      <NextNavbarItem
         className={cn(
-          "flex relative h-full items-center justify-center",
-          "transition-colors duration-200",
-          "hover:text-primary-600",
-          isActive &&
-            "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-[2px] after:bg-primary",
-          "text-foreground font-medium cursor-pointer",
+          "flex flex-cols gap-1 justify-center items-center text-foreground font-medium cursor-pointer",
           classes
         )}
-        data-active={isActive}
         {...rest}
       >
         {children}
@@ -32,7 +26,7 @@ const NavbarItem = forwardRef<HTMLDivElement, NavbarItemProps>(
             className="size-1.5 bg-primary-500 rounded-full animate-pulse"
           />
         )}
-      </div>
+      </NextNavbarItem>
     );
   }
 );

@@ -1,4 +1,4 @@
-import { RectangleIconContent } from "@/types/types";
+import { RectangleIconContent } from "@/components/types";
 import * as React from "react";
 
 export default function RectangleIcon({

@@ -1,16 +1,15 @@
-import type { SkillSwapContent } from "@/types/types";
-import type { ReactNode } from "react";
+import type { SkillSwapContent } from "@/components/types.d";
+import type { NavbarItemProps as NextNavbarItemProps } from "@heroui/navbar";
 
 export interface NavbarProps extends SkillSwapContent {
   notify?: React.ReactNode;
 }
 
-export interface NavbarItemProps {
+export interface NavbarItemProps extends NextNavbarItemProps {
   isImportant?: boolean;
   children: ReactNode;
   isActive?: boolean;
   classes?: string;
-  href: string;
 }
 
 export interface NavbarNotifyProps extends SkillSwapContent {}
