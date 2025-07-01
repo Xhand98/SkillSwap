@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { API_CONFIG } from "@/lib/api-config";
+import { apiClient } from "@/lib/api-client";
+import { PREVIEW_MODE, debugLog } from "@/config/app-config";
+import { PreviewBanner } from "@/components/PreviewModeIndicator";
 import { Text } from "@/components/text";
 import {
   Card,
@@ -57,9 +59,11 @@ export default function Dashboard() {
       setError(null);
 
       try {
+        debugLog("Fetching user stats for dashboard", { userId: user.id });
+        
         // Obtener matches del usuario
-        const matchesResponse = await fetch(
-          `${API_CONFIG.API_URL}/users/${user.id}/matches/`,
+        const matchesResponse = await apiClient.get(
+          `/users/${user.id}/matches/`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
@@ -72,27 +76,29 @@ export default function Dashboard() {
         }
 
         const matchesData = await matchesResponse.json();
+        debugLog("Matches data received", matchesData);
 
         // Para cada match, buscamos sus sesiones
-        const sessionsPromises = matchesData.map((match: any) =>
-          fetch(`${API_CONFIG.API_URL}/matches/${match.id}/sessions/`, {
+        const sessionsPromises = matchesData.data?.map((match: any) =>
+          apiClient.get(`/matches/${match.id}/sessions/`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
             },
           }).then((res) => res.json())
-        );
+        ) || [];
 
         const sessionsArrays = await Promise.all(sessionsPromises);
-        const allSessions = sessionsArrays.flat();
+        const allSessions = sessionsArrays.flatMap(sessionResponse => sessionResponse.data || []);
+        debugLog("All sessions data", allSessions);
 
         // Calcular estadísticas
-        const totalMatches = matchesData.length;
+        const totalMatches = matchesData.data?.length || 0;
         const totalSessions = allSessions.length;
         const completedSessions = allSessions.filter(
           (s: any) => s.status === "completed"
         ).length;
         const pendingSessions = allSessions.filter(
-          (s: any) => s.status === "scheduled"
+          (s: any) => s.status === "scheduled" || s.status === "pending"
         ).length;
         const cancelledSessions = allSessions.filter(
           (s: any) => s.status === "cancelled"
@@ -101,6 +107,14 @@ export default function Dashboard() {
           totalSessions > 0
             ? Math.round((cancelledSessions / totalSessions) * 100)
             : 0;
+
+        debugLog("Calculated stats", {
+          totalMatches,
+          totalSessions,
+          completedSessions,
+          pendingSessions,
+          cancellationRate
+        });
 
         setStats({
           totalMatches,
@@ -147,12 +161,17 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      {" "}
+      <PreviewBanner />
       <div className="mb-8">
         <Text size="heading-3">Panel de Control</Text>
         <Text className="text-gray-500 mt-1">
           Bienvenido, {user?.nombre_usuario}. Aquí puedes ver un resumen de tu
           actividad.
+          {PREVIEW_MODE && (
+            <span className="block text-yellow-600 font-medium mt-1">
+              📊 Mostrando datos de demostración
+            </span>
+          )}
         </Text>
       </div>
       {isLoading && (
