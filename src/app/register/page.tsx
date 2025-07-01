@@ -277,7 +277,7 @@ export default function Register() {
   return (
     <Container className="flex min-h-[calc(100vh-140px)] items-center justify-center mt-8">
       <div className="w-full flex flex-col justify-center items-center max-w-md space-y-6 rounded-xl border p-8 shadow-sm border-zinc-400">
-        <SkillSwapFull size={270} className="-ml-10 -my-4" />
+        <SkillSwapFull className="-ml-10 -my-4" />
         <Text as="h1" size="heading-3" className="text-center">
           Registro
         </Text>
