@@ -123,16 +123,15 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     authHandler := handlers.NewAuthHandler(db)
     auditHandler := handlers.NewAuditHandler(db)
     messagesHandler := handlers.NewMessagesHandler(db)
-    commentsHandler := handlers.NewCommentHandler(db)    // Inicializar WebSocket hub y handler
+    commentsHandler := handlers.NewCommentHandler(db)
+
+    // Inicializar WebSocket hub y handler
     wsHub := handlers.NewHub(db)
     go wsHub.Run() // Ejecutar el hub en una goroutine separada
     wsHandler := handlers.NewWebSocketHandler(db, wsHub)
       // Configurar la conexión WebSocket en los handlers que la necesiten
     messagesHandler.SetWebSocketHandler(wsHandler)
     commentsHandler.SetWebSocketHandler(wsHandler)
-
-    // Inicializar handler de pruebas Socket.IO
-    socketIOTestHandler := handlers.NewSocketIOTestHandler()
 
     // Rutas para Usuarios
     // Para las solicitudes GET, definimos la ruta con y sin trailing slash
@@ -229,13 +228,6 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("GET /ws", webSocketCORS(wsHandler.ServeWS))
     router.HandleFunc("GET /ws/status", wsHandler.GetWebSocketStatus)
     router.HandleFunc("GET /ws/clients", wsHandler.GetConnectedClients)
-
-    // Rutas de prueba para Socket.IO
-    router.HandleFunc("POST /api/test/socketio/message", socketIOTestHandler.TestSocketIOConnection)
-    router.HandleFunc("POST /api/test/socketio/comment", socketIOTestHandler.TestSocketIOComment)
-    router.HandleFunc("POST /api/test/socketio/typing", socketIOTestHandler.TestSocketIOTyping)
-    router.HandleFunc("POST /api/test/socketio/custom", socketIOTestHandler.TestSocketIOCustomMessage)
-    router.HandleFunc("GET /api/test/socketio/status", socketIOTestHandler.GetSocketIOStatus)
 
     // Ruta para health check
     router.HandleFunc("GET /health", handlers.HealthCheckHandler)

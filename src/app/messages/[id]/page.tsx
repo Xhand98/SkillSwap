@@ -1,15 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import ChatPage from "@/components/Chat/ChatPage";
 import { User } from "lucide-react";
-import useCurrentUserId from "@/hooks/useCurrentUserId";
 
 export default function ConversationPage() {
   const params = useParams();
-  const currentUserId = useCurrentUserId();
-  const conversationId = params?.id ? parseInt(params.id as string) : null;
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const conversationId = params.id ? parseInt(params.id as string) : null;
+
+  useEffect(() => {
+    // En una aplicación real, obtendrías el ID del usuario del contexto de autenticación
+    const userId = localStorage.getItem("userId") || "1";
+    setCurrentUserId(parseInt(userId));
+  }, []);
 
   if (!currentUserId || !conversationId) {
     return (

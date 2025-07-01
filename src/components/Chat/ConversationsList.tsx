@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { MessageCircle, Search, Plus, Wifi, WifiOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import useSocketIO, { SocketIOMessage } from "@/hooks/useSocketIO";
+import useWebSocketV2, { WebSocketMessage } from "@/hooks/useWebSocketV2";
 
 interface ConversationWithLastMessage {
   id: number;
@@ -32,27 +32,28 @@ export default function ConversationsList({
   >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  // Usar Socket.IO para comunicación en tiempo real
+
+  // Usar el nuevo hook mejorado con mejor manejo de errores
   const {
     isConnected,
     isReconnecting,
     connectionError,
-    isSocketIOEnabled,
-    toggleSocketIO,
+    isWebSocketEnabled,
+    toggleWebSocket,
     reconnect,
     sendMessage,
-  } = useSocketIO({
+  } = useWebSocketV2({
     userId: currentUserId,
-    onMessage: handleSocketIOMessage,
+    onMessage: handleWebSocketMessage,
     // Configuración de reconexión más robusta
     autoReconnect: true,
     reconnectDelay: 2000,
     maxReconnectAttempts: 5,
   });
 
-  // Función para manejar mensajes recibidos por Socket.IO
-  function handleSocketIOMessage(message: SocketIOMessage) {
-    console.log("Mensaje Socket.IO recibido:", message);
+  // Función para manejar mensajes recibidos por WebSocket
+  function handleWebSocketMessage(message: WebSocketMessage) {
+    console.log("Mensaje WebSocket recibido:", message);
 
     // Procesar mensajes de conversaciones
     if (
