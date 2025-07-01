@@ -1,7 +1,7 @@
 /**
  * Componente que muestra el estado del modo PREVIEW
  */
-import { PREVIEW_MODE } from '@/config/app-config';
+import { PREVIEW_MODE } from '../config/app-config';
 
 export function PreviewModeIndicator() {
   if (!PREVIEW_MODE) {
@@ -32,7 +32,7 @@ export function PreviewBanner() {
         </div>
         <div className="ml-3">
           <p className="text-sm text-yellow-700">
-            <strong>Modo Vista Previa Activo:</strong> Estás viendo datos de demostración. 
+            <strong>Modo Vista Previa Activo:</strong> Estás viendo datos de demostración.
             Cambia <code className="bg-yellow-200 px-1 rounded">NEXT_PUBLIC_PREVIEW=FALSE</code> en tu archivo <code className="bg-yellow-200 px-1 rounded">.env.development</code> para usar la API real.
           </p>
         </div>

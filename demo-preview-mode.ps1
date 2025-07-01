@@ -1,5 +1,9 @@
 #!/usr/bin/env pwsh
-# Script para demostrar el modo PREVIEW
+# Script para demostrar el modo PREVIEW y preparar despliegue en Vercel
+
+param(
+    [switch]$PrepareVercel = $false
+)
 
 Write-Host "🧪 Demostrando PREVIEW MODE en SkillSwap" -ForegroundColor Yellow
 Write-Host "============================================" -ForegroundColor Yellow
@@ -42,3 +46,56 @@ Write-Host "  • Reinicia el servidor de desarrollo" -ForegroundColor White
 Write-Host ""
 
 Write-Host "✨ Modo PREVIEW configurado y listo para usar!" -ForegroundColor Green
+
+# Preparar configuración para despliegue en Vercel si se especifica
+if ($PrepareVercel) {
+    Write-Host ""
+    Write-Host "🚀 Preparando configuración para despliegue en Vercel" -ForegroundColor Magenta
+    Write-Host "=================================================" -ForegroundColor Magenta
+    
+    # Crear archivo .env.preview
+    $previewEnvContent = @"
+# Variables de entorno para modo preview en Vercel
+NEXT_PUBLIC_PREVIEW=TRUE
+NEXT_PUBLIC_SITE_URL=https://skillswap-preview.vercel.app
+NEXT_PUBLIC_API_URL=https://no-usado-en-preview.com
+"@
+
+    Set-Content -Path ".env.preview" -Value $previewEnvContent
+    Write-Host "✅ Archivo .env.preview creado para Vercel" -ForegroundColor Green
+    
+    # Verificar archivos necesarios
+    $requiredFiles = @(
+        "src\lib\preview-data.ts",
+        "src\lib\preview-api.ts", 
+        "src\lib\preview-fetch-interceptor.ts",
+        "src\components\PreviewModeInitializer.tsx",
+        "src\components\PreviewModeIndicator.tsx"
+    )
+    
+    $allFilesExist = $true
+    foreach ($file in $requiredFiles) {
+        if (-not (Test-Path $file)) {
+            Write-Host "❌ Falta archivo: $file" -ForegroundColor Red
+            $allFilesExist = $false
+        }
+    }
+    
+    if ($allFilesExist) {
+        Write-Host "✅ Todos los archivos necesarios para el modo preview están presentes" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Faltan algunos archivos necesarios para el modo preview (ver arriba)" -ForegroundColor Red
+    }
+    
+    Write-Host ""
+    Write-Host "📋 Instrucciones para desplegar en Vercel:" -ForegroundColor White
+    Write-Host ""
+    Write-Host "1. Crea un nuevo proyecto en Vercel conectado a tu repositorio" -ForegroundColor White
+    Write-Host "2. Configura las siguientes variables de entorno:" -ForegroundColor White
+    Write-Host "   NEXT_PUBLIC_PREVIEW=TRUE" -ForegroundColor Cyan
+    Write-Host "   NEXT_PUBLIC_SITE_URL=[URL-DE-TU-PROYECTO]" -ForegroundColor Cyan
+    Write-Host "3. Despliega el proyecto" -ForegroundColor White
+    Write-Host "4. Una vez desplegado, verifica que todo funciona navegando a /preview-debug" -ForegroundColor White
+    Write-Host ""
+    Write-Host "📚 Para más información, consulta PREVIEW_MODE_README.md y DEPLOY_README.md" -ForegroundColor White
+}
