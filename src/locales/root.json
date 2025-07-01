@@ -45,12 +45,14 @@
         ]
       },
       {
-        "TEXT": "Calendario",
-        "LINK": "/tecnicas"
+        "TEXT": "Mensajes",
+        "LINK": "/messages",
+        "ICON": "messages"
       },
       {
-        "TEXT": "Mensajes",
-        "LINK": "/messages"
+        "TEXT": "Explorar Habilidades",
+        "LINK": "/explore",
+        "ICON": "explore"
       }
     ]
   },

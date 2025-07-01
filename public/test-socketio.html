@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Socket.IO - SkillSwap</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message {
+            background-color: #e7f3ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Socket.IO - SkillSwap</h1>
+
+        <!-- Estado de la conexión -->
+        <div id="status" class="status disconnected">
+            ❌ Desconectado
+        </div>
+
+        <!-- Prueba de mensajes -->
+        <div class="test-section">
+            <h3>📨 Prueba de Mensajes</h3>
+            <input type="number" id="conversationId" placeholder="ID de Conversación" value="1">
+            <textarea id="messageContent" placeholder="Contenido del mensaje"></textarea>
+            <button onclick="testMessage()">Enviar Mensaje de Prueba</button>
+            <button onclick="joinConversation()">Unirse a Conversación</button>
+            <button onclick="leaveConversation()">Salir de Conversación</button>
+        </div>
+
+        <!-- Prueba de comentarios -->
+        <div class="test-section">
+            <h3>💬 Prueba de Comentarios</h3>
+            <input type="number" id="postId" placeholder="ID del Post" value="1">
+            <textarea id="commentContent" placeholder="Contenido del comentario"></textarea>
+            <button onclick="testComment()">Enviar Comentario de Prueba</button>
+            <button onclick="joinPost()">Unirse a Post</button>
+            <button onclick="leavePost()">Salir de Post</button>
+        </div>
+
+        <!-- Prueba de escritura -->
+        <div class="test-section">
+            <h3>⌨️ Prueba de Indicadores de Escritura</h3>
+            <button onclick="startTyping()">Iniciar Escritura</button>
+            <button onclick="stopTyping()">Detener Escritura</button>
+        </div>
+
+        <!-- Log de eventos -->
+        <div class="test-section">
+            <h3>📋 Log de Eventos</h3>
+            <button onclick="clearLog()">Limpiar Log</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+
+        // ID de usuario de prueba
+        const userId = 1;
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(connected, message) {
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.innerHTML = '✅ ' + message;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.innerHTML = '❌ ' + message;
+            }
+        }
+
+        // Inicializar Socket.IO
+        function initSocket() {
+            log('🔌 Iniciando conexión Socket.IO...');
+
+            socket = io({
+                path: '/api/socket',
+                auth: {
+                    userId: userId
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            // Eventos de conexión
+            socket.on('connect', () => {
+                log('✅ Conectado al servidor Socket.IO');
+                updateStatus(true, 'Conectado');
+            });
+
+            socket.on('disconnect', (reason) => {
+                log(`❌ Desconectado: ${reason}`);
+                updateStatus(false, 'Desconectado');
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`❌ Error de conexión: ${error.message}`);
+                updateStatus(false, 'Error de conexión');
+            });
+
+            // Eventos de mensajes
+            socket.on('new_message', (data) => {
+                log(`📨 Nuevo mensaje recibido: ${JSON.stringify(data)}`);
+            });
+
+            socket.on('user_typing_start', (data) => {
+                log(`⌨️ Usuario ${data.user_id} comenzó a escribir`);
+            });
+
+            socket.on('user_typing_stop', (data) => {
+                log(`⌨️ Usuario ${data.user_id} dejó de escribir`);
+            });
+
+            // Eventos de comentarios
+            socket.on('new_comment', (data) => {
+                log(`💬 Nuevo comentario recibido: ${JSON.stringify(data)}`);
+            });
+
+            // Eventos de salas
+            socket.on('user_joined_conversation', (data) => {
+                log(`👤 Usuario ${data.user_id} se unió a la conversación ${data.conversation_id}`);
+            });
+
+            socket.on('user_left_conversation', (data) => {
+                log(`👋 Usuario ${data.user_id} salió de la conversación ${data.conversation_id}`);
+            });
+
+            // Pong
+            socket.on('pong', (data) => {
+                log(`🏓 Pong recibido: ${data.timestamp}`);
+            });
+        }
+
+        // Funciones de prueba
+        function testMessage() {
+            const conversationId = document.getElementById('conversationId').value;
+            const content = document.getElementById('messageContent').value;
+
+            if (!content) {
+                alert('Por favor ingresa un contenido para el mensaje');
+                return;
+            }
+
+            log(`📤 Enviando mensaje de prueba a conversación ${conversationId}`);
+
+            // Simular envío através del backend
+            fetch('/api/socket-broadcast', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roomName: `conversation_${conversationId}`,
+                    eventName: 'new_message',
+                    data: {
+                        id: Date.now(),
+                        conversation_id: conversationId,
+                        sender_id: userId,
+                        content: content,
+                        created_at: new Date().toISOString()
+                    },
+                    authToken: 'skillswap-secure-token-2024'
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    log(`✅ Mensaje enviado: ${JSON.stringify(data)}`);
+                }).catch(error => {
+                    log(`❌ Error enviando mensaje: ${error.message}`);
+                });
+        }
+
+        function testComment() {
+            const postId = document.getElementById('postId').value;
+            const content = document.getElementById('commentContent').value;
+
+            if (!content) {
+                alert('Por favor ingresa un contenido para el comentario');
+                return;
+            }
+
+            log(`📤 Enviando comentario de prueba a post ${postId}`);
+
+            fetch('/api/socket-broadcast', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roomName: `post_${postId}`,
+                    eventName: 'new_comment',
+                    data: {
+                        comentario_id: Date.now(),
+                        post_id: postId,
+                        usuario_id: userId,
+                        contenido: content,
+                        created_at: new Date().toISOString()
+                    },
+                    authToken: 'skillswap-secure-token-2024'
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    log(`✅ Comentario enviado: ${JSON.stringify(data)}`);
+                }).catch(error => {
+                    log(`❌ Error enviando comentario: ${error.message}`);
+                });
+        }
+
+        function joinConversation() {
+            const conversationId = document.getElementById('conversationId').value;
+            log(`🏠 Uniéndose a conversación ${conversationId}`);
+            socket.emit('join_conversation', { conversation_id: conversationId });
+        }
+
+        function leaveConversation() {
+            const conversationId = document.getElementById('conversationId').value;
+            log(`🚪 Saliendo de conversación ${conversationId}`);
+            socket.emit('leave_conversation', { conversation_id: conversationId });
+        }
+
+        function joinPost() {
+            const postId = document.getElementById('postId').value;
+            log(`📄 Uniéndose a post ${postId}`);
+            socket.emit('join_post', { post_id: postId });
+        }
+
+        function leavePost() {
+            const postId = document.getElementById('postId').value;
+            log(`📄 Saliendo de post ${postId}`);
+            socket.emit('leave_post', { post_id: postId });
+        }
+
+        function startTyping() {
+            const conversationId = document.getElementById('conversationId').value;
+            log(`⌨️ Iniciando indicador de escritura en conversación ${conversationId}`);
+            socket.emit('typing_start', { conversation_id: conversationId });
+        }
+
+        function stopTyping() {
+            const conversationId = document.getElementById('conversationId').value;
+            log(`⌨️ Deteniendo indicador de escritura en conversación ${conversationId}`);
+            socket.emit('typing_stop', { conversation_id: conversationId });
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+
+        // Inicializar al cargar la página
+        window.onload = function () {
+            log('🚀 Iniciando prueba de Socket.IO...');
+            initSocket();
+        };
+    </script>
+</body>
+
+</html>

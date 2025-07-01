@@ -1,0 +1,61 @@
+{
+  "login": {
+    "INPUTS": [
+      {
+        "LABEL": "Correo Electrónico",
+        "TYPE": "email",
+        "PLACEHOLDER": "Ingresa tu correo electrónico"
+      },
+      {
+        "LABEL": "Contraseña",
+        "TYPE": "password",
+        "PLACEHOLDER": "Ingresa tu contraseña"
+      }
+    ],
+    "BUTTONS": [
+      {
+        "TEXT": "Iniciar Sesión",
+        "COLOR": "primary",
+        "CLASSES": "min-w-40 h-10 bg-[#5f21db] text-[white] rounded-[9px] hover:bg-purple-700 duration-200",
+        "LINK": "/login"
+      }
+    ]
+  },
+  "register": {
+    "INPUTS": [
+      {
+        "LABEL": "Primer Nombre",
+        "TYPE": "text",
+        "PLACEHOLDER": "ej: Juan"
+      },
+      {
+        "LABEL": "Primer Apellido",
+        "TYPE": "text",
+        "PLACEHOLDER": "ej: Gonazales"
+      },
+      {
+        "LABEL": "Correo Electrónico",
+        "TYPE": "email",
+        "PLACEHOLDER": "ej: correomio@gmail.com"
+      },
+      {
+        "LABEL": "Contraseña",
+        "TYPE": "password",
+        "PLACEHOLDER": "ej: ********"
+      },
+      {
+        "LABEL": "Confirmar Contraseña",
+        "TYPE": "password",
+        "PLACEHOLDER": "Confirma tu contraseña"
+      }
+    ],
+    "BUTTONS": [
+      {
+        "TEXT": "Entrar",
+        "COLOR": "primary",
+        "CLASSES": "min-w-40 h-10 bg-[#5f21db] text-[white] rounded-[9px] hover:bg-purple-700 duration-200",
+        "LINK": "/login"
+      }
+    ]
+  }
+}

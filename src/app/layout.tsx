@@ -6,6 +6,10 @@ import { HeroUIProvider } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import "./globals.css";
+import ThemeProvider from "@/components/theme/theme-provider";
+import { AuthProvider } from "@/lib/AuthContext";
+import GlobalToastProvider from "@/components/GlobalToastProvider";
+import { PreviewModeIndicator } from "@/components/PreviewModeIndicator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,11 +46,22 @@ export default function RootLayout({
           inter.className,
         )}
       >
-        <HeroUIProvider>
-          <Header />
-          {children}
-          <Footer />
-        </HeroUIProvider>
+        {" "}
+        <ThemeProvider
+          attribute={"class"}
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <GlobalToastProvider>
+              <PreviewModeIndicator />
+              <Header />
+              {children}
+              <Footer />
+            </GlobalToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

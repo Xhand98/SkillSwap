@@ -1,0 +1,27 @@
+{
+  "ACCOUNT_MENU": {
+    "TITLE": "Mi Cuenta",
+    "ITEMS": [
+      {
+        "TEXT": "Mi Perfil",
+        "LINK": "/profiles/1",
+        "ICON": "user"
+      },
+      {
+        "TEXT": "Mis Habilidades",
+        "LINK": "/skills",
+        "ICON": "skills"
+      },
+      {
+        "TEXT": "Configuración",
+        "LINK": "/settings",
+        "ICON": "settings"
+      },
+      {
+        "TEXT": "Cerrar Sesión",
+        "LINK": "/logout",
+        "ICON": "logout"
+      }
+    ]
+  }
+}
