@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { Text } from "@/components/text";
 import Link from "next/link";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
@@ -29,18 +29,19 @@ export default function HeroSection() {
         <div className="flex items-center justify-center content-center gap-40 mt-10 pt-20 min-w-screen ">
           {locale.SECTION1.BUTTONS.map((element) => (
             <Button
-              as={Link}
+              asChild
               className={element.CLASSES}
               key={element.ID}
-              href={element.LINK}
             >
-              {element.TEXT == "Ingresar" ? (
-                <Text as={"p"} className="flex items-center gap-2">
-                  {element.TEXT} <ArrowRightIcon />
-                </Text>
-              ) : (
-                <Text className="flex items-center gap-2">{element.TEXT}</Text>
-              )}
+              <Link href={element.LINK}>
+                {element.TEXT == "Ingresar" ? (
+                  <Text as={"p"} className="flex items-center gap-2">
+                    {element.TEXT} <ArrowRightIcon />
+                  </Text>
+                ) : (
+                  <Text className="flex items-center gap-2">{element.TEXT}</Text>
+                )}
+              </Link>
             </Button>
           ))}
         </div>

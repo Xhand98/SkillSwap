@@ -60,7 +60,7 @@ export default function Dashboard() {
 
       try {
         debugLog("Fetching user stats for dashboard", { userId: user.id });
-
+        
         // Obtener matches del usuario
         const matchesResponse = await apiClient.get(
           `/users/${user.id}/matches/`,
