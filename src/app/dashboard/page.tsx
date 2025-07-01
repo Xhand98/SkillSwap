@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { apiClient } from "@/lib/api-client";
-import { PREVIEW_MODE, debugLog } from "../../config/app-config";
+import { PREVIEW_MODE, debugLog } from "@/config/app-config";
 import { PreviewBanner } from "@/components/PreviewModeIndicator";
 import { Text } from "@/components/text";
 import {
@@ -60,18 +60,35 @@ export default function Dashboard() {
 
       try {
         debugLog("Fetching user stats for dashboard", { userId: user.id });
-
+        
         // Obtener matches del usuario
-        const matchesData = await apiClient.getUserMatches(user.id);
+        const matchesResponse = await apiClient.get(
+          `/users/${user.id}/matches/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          }
+        );
+
+        if (!matchesResponse.ok) {
+          throw new Error("No se pudieron cargar los matches");
+        }
+
+        const matchesData = await matchesResponse.json();
         debugLog("Matches data received", matchesData);
 
         // Para cada match, buscamos sus sesiones
         const sessionsPromises = matchesData.data?.map((match: any) =>
-          apiClient.getMatchSessions(match.id)
+          apiClient.get(`/matches/${match.id}/sessions/`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          }).then((res) => res.json())
         ) || [];
 
         const sessionsArrays = await Promise.all(sessionsPromises);
-        const allSessions = sessionsArrays.flatMap((sessionResponse: any) => sessionResponse.data || []);
+        const allSessions = sessionsArrays.flatMap(sessionResponse => sessionResponse.data || []);
         debugLog("All sessions data", allSessions);
 
         // Calcular estadísticas

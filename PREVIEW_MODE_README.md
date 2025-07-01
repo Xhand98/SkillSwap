@@ -1,42 +1,22 @@
-# 🔍 Modo Preview - SkillSwap
+# 🧪 Modo PREVIEW - SkillSwap
 
-El **Modo Preview** permite que la aplicación SkillSwap funcione completamente **sin conexión a base de datos**, utilizando datos simulados y APIs mock. Es ideal para desarrollo, demos y testing.
+El modo PREVIEW permite ejecutar la aplicación SkillSwap usando datos de demostración sin necesidad de tener un backend funcionando.
 
-## 🎯 ¿Qué es el Modo Preview?
+## 🚀 Configuración Rápida
 
-Cuando el modo preview está activado (`NEXT_PUBLIC_PREVIEW=TRUE`), la aplicación:
+### Activar Modo PREVIEW
 
-- ✅ **No se conecta a la base de datos**
-- ✅ **Usa datos simulados en memoria**
-- ✅ **Login/registro funcionan con cualquier credencial**
-- ✅ **WebSocket simulado para tiempo real**
-- ✅ **Todas las funcionalidades disponibles**
-- ✅ **Indicador visual activo**
-
-## 🚀 Activación Rápida
-
-### Usando el Script PowerShell (Recomendado)
-
-```powershell
-# Activar modo preview
-.\toggle-preview.ps1 on
-
-# Desactivar modo preview
-.\toggle-preview.ps1 off
-
-# Ver estado actual
-.\toggle-preview.ps1 status
-
-# Alternar entre estados
-.\toggle-preview.ps1
-
-# Ver ayuda completa
-.\toggle-preview.ps1 help
+```bash
+# En .env.development
+NEXT_PUBLIC_PREVIEW=TRUE
 ```
 
-### Configuración Manual
+### Desactivar Modo PREVIEW (usar API real)
 
-Edita el archivo `.env.development`:
+```bash
+# En .env.development  
+NEXT_PUBLIC_PREVIEW=FALSE
+```
 
 ## 📊 Características
 
@@ -48,33 +28,6 @@ Edita el archivo `.env.development`:
 - **Delay simulado**: Simula latencia de red realista (300-1000ms)
 - **Logging detallado**: Mensajes de debug en consola del navegador
 - **Banner informativo**: Aviso amarillo en páginas que usan API
-- **Generación dinámica**: Crea datos para usuarios sin actividad
-- **Interceptor de red**: Bloquea llamadas reales a APIs externas
-
-## 🌐 Despliegue en Vercel
-
-El modo preview es **ideal para desplegar en Vercel**, donde no es posible configurar un backend Go.
-
-### Configuración en Vercel
-
-1. Crea un nuevo proyecto conectado a tu repositorio
-2. Configura las siguientes variables de entorno:
-   ```
-   NEXT_PUBLIC_PREVIEW=TRUE
-   NEXT_PUBLIC_SITE_URL=https://tu-proyecto.vercel.app
-   ```
-3. Despliega la aplicación
-4. Verifica que todo funciona en la página `/preview-debug`
-
-### Ventajas para despliegue en Vercel
-
-- ✅ **Sin backend**: No necesitas configurar servidores adicionales
-- ✅ **Sin BD**: No requiere conexión a base de datos
-- ✅ **Rápido**: Deploys instantáneos sin preocupaciones de infraestructura
-- ✅ **Completo**: Todas las funcionalidades disponibles para demostración
-- ✅ **Seguro**: No expones credenciales de BD en el frontend
-
-> **⚠️ Nota importante**: El modo preview está diseñado solo para desarrollo y demostración. Para un entorno de producción real, deberás usar la configuración completa con backend Go y base de datos.
 
 ### ❌ Cuando PREVIEW=FALSE
 

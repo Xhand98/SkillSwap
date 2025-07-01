@@ -5,7 +5,7 @@ import MatchesListMock from "./_components/MatchesList";
 import MatchesListReal from "./_components/MatchesList.real";
 import PotentialMatchesMock from "./_components/PotentialMatches";
 import PotentialMatchesReal from "./_components/PotentialMatches.real";
-import { PREVIEW_MODE, debugLog } from "../../config/app-config";
+import { PREVIEW_MODE, debugLog } from "@/config/app-config";
 import { useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import useCurrentUserId from "@/hooks/useCurrentUserId";

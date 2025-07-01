@@ -90,35 +90,6 @@ Ejecuta el script de despliegue completo que compilará y preparará tanto el fr
    ./deploy-frontend.ps1
    ```
 
-## Despliegue en Vercel (Modo Preview)
-
-Si quieres desplegar solo el frontend en Vercel sin necesidad del backend Go, puedes usar el modo preview que funciona completamente con datos mock.
-
-### Configuración de Vercel
-
-1. **Variables de Entorno en Vercel**:
-
-   - `NEXT_PUBLIC_PREVIEW=TRUE` (Activar el modo preview)
-   - `NEXT_PUBLIC_SITE_URL=https://tu-proyecto.vercel.app` 
-
-2. **Despliegue**:
-
-   - Conecta tu repositorio a Vercel
-   - Configura las variables de entorno anteriores
-   - Despliega el proyecto
-
-3. **Verificación**:
-   - Navega a `https://tu-proyecto.vercel.app/preview-debug` para verificar el funcionamiento
-   
-### Características del Modo Preview
-
-En modo preview, la aplicación:
-- Bloquea todas las llamadas a la API real
-- Usa datos mock para todas las funcionalidades
-- Genera datos automáticamente cuando es necesario
-- Simula el login/registro sin requerir credenciales reales
-- Proporciona una experiencia completa sin backend
-
 ### Iniciar en Producción
 
 1. **Iniciar el Backend**:
