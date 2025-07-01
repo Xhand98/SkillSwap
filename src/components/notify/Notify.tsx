@@ -2,9 +2,8 @@
 
 import { type Notify, getNotify } from "@/app/_actions/notify";
 import { cn } from "@/lib/utils";
-import { Button } from "@heroui/button";
-import { Link as NextLink } from "@heroui/react";
-import { CloseIcon } from "@heroui/shared-icons";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { forwardRef, useEffect, useState } from "react";
 import type { SkillSwapContent } from "../types";
@@ -40,27 +39,22 @@ const NavbarNotify = forwardRef<HTMLDivElement, SkillSwapContent>(
         >
           <span className="inline-flex gap-2">
             {message.value}
-            <NextLink
-              as={Link}
+            <Link
               href={message.link.href}
-              underline="hover"
-              size="sm"
-              className="text-white"
+              className="text-white underline hover:no-underline text-sm"
             >
               {message.link.value}
-            </NextLink>
+            </Link>
           </span>
 
           <Button
             aria-label="Cerrar notificación"
-            name="close"
-            isIconOnly
-            variant="light"
-            color="primary"
-            className="text-white absolute right-4 mr-0 xss:sm:mr-10 max-h-full rounded-full"
+            variant="ghost"
+            size="icon"
+            className="text-white absolute right-4 mr-0 xss:sm:mr-10 max-h-full rounded-full hover:bg-white/20"
             onClick={handleClose}
           >
-            <CloseIcon />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       )

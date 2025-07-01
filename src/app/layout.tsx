@@ -2,7 +2,6 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { HeroUIProvider } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import locale from "@/locales/root.json";
 import "./globals.css";

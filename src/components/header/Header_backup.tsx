@@ -41,6 +41,72 @@ import NavbarMenu from "./NavbarMenu";
 import type { NavbarProps } from "./types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const Header = forwardRef<HTMLDivElement, NavbarProps>(
+  ({ className, children, as, ...rest }, ref) => {
+    const path = usePathname();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+<<<<<<< HEAD
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useMemo(() => {
+      if (isMenuOpen) setIsMenuOpen(false);
+    }, [path]);
+
+    return (
+      <div
+        className="fixed top-0 w-full max-w-screen z-50 mb-20 transition-all duration-300"
+        ref={ref}
+      >
+        {children}
+        <NextNavbar
+          isMenuOpen={isMenuOpen}
+          onMenuOpenChange={setIsMenuOpen}
+          isBordered
+          position="static"
+          isBlurred={true}
+          className={cn(
+            path.startsWith("/admin")
+              ? "bg-white border-0"
+              : "bg-primary-100/50 backdrop-blur-sm",
+            "h-16 min-h-[4rem] px-2 sm:px-4",
+            className
+          )}
+          classNames={{
+            base: "h-16 min-h-[4rem]",
+            wrapper: "mx-auto w-full h-full",
+            content: "gap-2 h-full",
+            brand: "gap-0 h-full",
+            item: [
+              "flex",
+              "relative",
+              "h-full",
+              "items-center",
+              "transition-colors duration-200",
+              "hover:text-primary-600",
+              "data-[active=true]:after:content-['']",
+              "data-[active=true]:after:absolute",
+              "data-[active=true]:after:bottom-0",
+              "data-[active=true]:after:left-0",
+              "data-[active=true]:after:right-0",
+              "data-[active=true]:after:h-[2px]",
+              "data-[active=true]:after:rounded-[2px]",
+              "data-[active=true]:after:bg-primary",
+            ],
+          }}
+          {...rest}
+        >
+          <NavbarBrand>
+            <Link href="/" type="button" className="flex items-center">
+              <SkillSwapFull
+                width={"120"}
+                height={"70"}
+                className="w-[120px] sm:w-[170px] h-auto"
+              />
+            </Link>
+          </NavbarBrand>
+          <NavbarMenu />
+          <NavbarContent justify="center" className="hidden  gap-2 lg:flex">
+=======
 const Header = forwardRef<
   HTMLDivElement,
   Omit<NavbarProps, "as" | "isBordered" | "isBlurred">
@@ -82,23 +148,24 @@ const Header = forwardRef<
         </Link>
         <NavigationMenu className="hidden lg:flex mx-auto">
           <NavigationMenuList>
+>>>>>>> recovered-branch
             {locale.NAVBAR.ITEMS.map((item) => {
               if (item.LINK) {
                 const itemIsActive = item.LINK === path;
                 return (
-                  <NavigationMenuItem key={item.LINK}>
-                    <NavigationMenuLink
-                      asChild
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        itemIsActive && "bg-accent text-accent-foreground"
-                      )}
+                  <NavbarItem
+                    key={item.LINK}
+                    isActive={itemIsActive}
+                    isImportant={item.IMPORTANT}
+                  >
+                    <Link
+                      href={item.LINK}
+                      scroll={false}
+                      className="flex items-center"
                     >
-                      <Link href={item.LINK} scroll={false}>
-                        {item.TEXT}
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
+                      {item.TEXT}
+                    </Link>
+                  </NavbarItem>
                 );
               }
 
@@ -108,44 +175,98 @@ const Header = forwardRef<
                 );
 
                 return (
-                  <NavigationMenuItem key={item.TEXT}>
-                    <NavigationMenuTrigger
-                      className={cn(
-                        itemIsActive && "bg-accent text-accent-foreground"
-                      )}
+                  <Dropdown
+                    showArrow
+                    shouldCloseOnBlur
+                    radius="sm"
+                    size="sm"
+                    key={item.TEXT}
+                    className="bg-default-100"
+                  >
+                    <NavbarItem isActive={itemIsActive}>
+                      <DropdownTrigger>
+                        <Button
+                          disableRipple
+                          className="p-0 bg-transparent data-[hover=true]:bg-transparent font-medium text-md"
+                          endContent={<ChevronIcon className="-rotate-90" />}
+                          radius="sm"
+                          variant="light"
+                        >
+                          {item.TEXT}
+                        </Button>
+                      </DropdownTrigger>
+                    </NavbarItem>
+                    <DropdownMenu
+                      aria-label={item.TEXT}
+                      items={item.SUB_ITEMS}
+                      className="max-w-[300px]"
+                      disabledKeys={item.SUB_ITEMS.filter(
+                        (sub) => sub.IS_DISABLED === true
+                      ).map((sub) => sub.LINK)}
                     >
-                      {item.TEXT}
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                        {item.SUB_ITEMS.map((sub) => (
-                          <NavigationMenuLink
-                            key={sub.LINK}
-                            asChild
-                            className={cn(
-                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                              sub.IS_DISABLED && "pointer-events-none opacity-50"
-                            )}
-                          >
-                            <Link href={sub.LINK}>
-                              <div className="text-sm font-medium leading-none text-primary">
-                                {sub.TEXT}
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                {sub.DESCRIPTION}
-                              </p>
-                            </Link>
-                          </NavigationMenuLink>
-                        ))}
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+                      {(sub) => (
+                        <DropdownItem
+                          description={sub.DESCRIPTION}
+                          as={Link}
+                          key={sub.LINK}
+                          href={sub.LINK}
+                        >
+                          <span className="text-primary font-semibold capitalize text-ellipsis overflow-hidden text-nowrap">
+                            {sub.TEXT}
+                          </span>
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
                 );
               }
             })}
+<<<<<<< HEAD
+          </NavbarContent>
+          <NavbarContent justify="end" className="gap-2">
+            <NavbarMenuToggle
+              aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
+              className="lg:hidden"
+            />
+            <Button
+              as={Link}
+              href={locale.NAVBAR.LINK}
+              className="hidden lg:inline-flex"
+              size="sm"
+              variant="light"
+              color="primary"
+              startContent={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                  />
+                </svg>
+              }
+            >
+              {locale.NAVBAR.BUTTON}
+            </Button>
+          </NavbarContent>
+        </NextNavbar>
+      </div>
+    );
+  }
+);
+
+Header.displayName = "skillSwap.Navbar";
+
+=======
           </NavigationMenuList>
           <NavigationMenuViewport />
-        </NavigationMenu>
+        </NavigationMenu>{" "}
         <div className="hidden lg:flex items-center gap-2">
           {isLoading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
@@ -172,7 +293,7 @@ const Header = forwardRef<
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />{" "}
                   <DropdownMenuItem asChild>
                     <Link
                       href={`/profiles/${currentUserId || user?.id}`}
@@ -199,7 +320,7 @@ const Header = forwardRef<
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Feed</span>
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem>{" "}
                   <DropdownMenuItem asChild>
                     <Link
                       href="/matches"
@@ -244,7 +365,7 @@ const Header = forwardRef<
         </div>
         <div className="lg:hidden">
           <Button
-            variant="ghost"
+            variant="link"
             size="icon"
             aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -275,5 +396,5 @@ const Header = forwardRef<
 });
 
 Header.displayName = "Header";
-
+>>>>>>> recovered-branch
 export default Header;

@@ -1,3 +1,4 @@
+"use client";
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import { Button } from "@/components/ui/button";

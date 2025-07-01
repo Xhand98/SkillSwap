@@ -3,7 +3,7 @@
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import locale from "@/locales/error-page.json";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -17,16 +17,14 @@ function ErrorPage() {
         </Text>
       </div>
       <div className="flex justify-center gap-4">
-        <Button as={Link} href="/" className="min-w-[200px]" color="primary">
-          {locale.GO_HOME}
+        <Button asChild className="min-w-[200px]">
+          <Link href="/">{locale.GO_HOME}</Link>
         </Button>
         <Button
-          as={"a"}
-          href="/"
-          onPress={() => {
+          variant="outline"
+          onClick={() => {
             router.back();
           }}
-          variant="flat"
         >
           {locale.GO_BACk}
         </Button>

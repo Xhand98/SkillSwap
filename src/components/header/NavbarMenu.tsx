@@ -3,8 +3,7 @@
 import { useNotify } from "@/components/notify";
 import { Text } from "@/components/text";
 import locale from "@/locales/root.json";
-import { NavbarItem, NavbarMenu as NextNavbarMenu } from "@heroui/react";
-import { ForwardIcon } from "@heroui/shared-icons";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,7 +15,7 @@ function NavbarMenu() {
   const { isOpen } = useNotify();
 
   return (
-    <NextNavbarMenu key={"navbar-menu-mobile"} className="gap-2">
+    <div className="flex flex-col gap-2 p-4">
       <div
         key={"spacing"}
         style={{
@@ -27,12 +26,15 @@ function NavbarMenu() {
         if (item.LINK) {
           const itemIsActive = item.LINK === path;
           return (
-            <NavbarItem
+            <div
               key={item.TEXT}
-              isActive={itemIsActive}
               className="h-max w-max inline-flex gap-1 items-center"
             >
-              <Link href={item.LINK} scroll={false}>
+              <Link 
+                href={item.LINK} 
+                scroll={false}
+                className={`text-foreground font-medium ${itemIsActive ? 'text-primary font-semibold' : ''}`}
+              >
                 {item.TEXT}
               </Link>
               {item.IMPORTANT && (
@@ -41,7 +43,7 @@ function NavbarMenu() {
                   className="size-1.5 bg-primary-500 rounded-full animate-pulse"
                 />
               )}
-            </NavbarItem>
+            </div>
           );
         }
 
@@ -58,35 +60,37 @@ function NavbarMenu() {
                 }}
                 className="inline-flex items-center gap-1 text-xs"
               >
-                <ForwardIcon />
+                <ChevronRight className="w-4 h-4" />
                 <Text className="py-1 text-foreground">{item.TEXT}</Text>
               </div>
-              <div className="pl-4 border-l-1 border-default-300">
+              <div className="pl-4 border-l border-border">
                 {item.SUB_ITEMS.map((sub) => (
-                  <NavbarItem
+                  <div
+                    key={sub.TEXT}
                     style={{
                       opacity: sub.IS_DISABLED ? 0.3 : 1,
-                      pointerEvents: sub.IS_DISABLED ? "none" : "visible",
+                      pointerEvents: sub.IS_DISABLED ? "none" : "auto",
                     }}
-                    aria-disabled={sub.IS_DISABLED}
-                    isActive={sub.LINK === path}
-                    className="items-center gap-1 h-max w-max !list-disc opacity-60"
-                    key={sub.TEXT}
+                    className="items-center gap-1 h-max w-max py-1"
                   >
-                    <Link href={sub.LINK} scroll={false}>
+                    <Link 
+                      href={sub.LINK} 
+                      scroll={false}
+                      className={`text-foreground ${sub.LINK === path ? 'text-primary font-semibold' : ''}`}
+                    >
                       {sub.TEXT}
                     </Link>
                     {sub.IS_DISABLED && (
                       <Text size="label-xs">Próximamente</Text>
                     )}
-                  </NavbarItem>
+                  </div>
                 ))}
               </div>
             </div>
           );
         }
       })}
-    </NextNavbarMenu>
+    </div>
   );
 }
 
