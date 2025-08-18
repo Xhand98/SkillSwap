@@ -30,7 +30,7 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
         json.NewEncoder(w).Encode(map[string]string{"error": "Método no permitido"})
         return
     }    // Responder con el estado de la API
-    testMode := os.Getenv("TEST_MODE") == "true"
+    // TEST_MODE eliminado; siempre en modo producción/desarrollo real
 
     response := map[string]interface{}{
         "status": "ok",
@@ -38,7 +38,7 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
         "cors": map[string]string{
             "allowed_origin": allowedOrigin,
         },
-        "test_mode": testMode,
+    "test_mode": false,
     }
 
     w.WriteHeader(http.StatusOK)

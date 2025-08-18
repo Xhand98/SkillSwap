@@ -93,28 +93,7 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router := http.NewServeMux()
 
     // Verificar si estamos en modo de prueba
-    testMode := os.Getenv("TEST_MODE") == "true"    // Si estamos en modo de prueba, usar handlers mock para datos de ejemplo
-    if testMode {
-        log.Println("Iniciando en modo TEST_MODE: usando datos de prueba")
-        mockHandler := handlers.NewMockDataHandler()
-
-        // Rutas para datos mock
-        router.HandleFunc("GET /posts/", mockHandler.GetMockPosts)
-        router.HandleFunc("GET /posts", mockHandler.GetMockPosts)
-        router.HandleFunc("GET /users/", mockHandler.GetMockUsers)
-        router.HandleFunc("GET /users", mockHandler.GetMockUsers)
-        router.HandleFunc("POST /users/", mockHandler.CreateMockUser)
-        router.HandleFunc("POST /users", mockHandler.CreateMockUser)
-
-        // Rutas para autenticación mock
-        router.HandleFunc("POST /auth/login", mockHandler.MockLogin)
-        router.HandleFunc("GET /auth/validate", mockHandler.MockValidateToken)
-
-        // Ruta para health check
-        router.HandleFunc("GET /health", handlers.HealthCheckHandler)
-
-        return enableCORS(loggingMiddleware(router))
-    }    // Inicialización de handlers normales cuando no estamos en modo de prueba
+    // Modo de prueba eliminado: siempre usar handlers reales
     usersHandler := handlers.NewUserHandler(db)
     abilitiesHandler := handlers.NewAbilityHandler(db)
     userAbilitiesHandler := handlers.NewUserAbilitiesHandler(db)
@@ -122,17 +101,14 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     postsHandler := handlers.NewPostsHandler(db)
     authHandler := handlers.NewAuthHandler(db)
     auditHandler := handlers.NewAuditHandler(db)
-    messagesHandler := handlers.NewMessagesHandler(db)
     commentsHandler := handlers.NewCommentHandler(db)    // Inicializar WebSocket hub y handler
     wsHub := handlers.NewHub(db)
     go wsHub.Run() // Ejecutar el hub en una goroutine separada
     wsHandler := handlers.NewWebSocketHandler(db, wsHub)
       // Configurar la conexión WebSocket en los handlers que la necesiten
-    messagesHandler.SetWebSocketHandler(wsHandler)
     commentsHandler.SetWebSocketHandler(wsHandler)
 
-    // Inicializar handler de pruebas Socket.IO
-    socketIOTestHandler := handlers.NewSocketIOTestHandler()
+    // Eliminado: handler de pruebas Socket.IO
 
     // Rutas para Usuarios
     // Para las solicitudes GET, definimos la ruta con y sin trailing slash
@@ -207,15 +183,7 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("POST /sessions/{sessionID}/send-reminder", notificationsHandler.SendSessionReminder)
     router.HandleFunc("GET /system/upcoming-session-reminders", notificationsHandler.GetUpcomingSessionsReminders)
 
-    // Rutas para Mensajería
-    router.HandleFunc("POST /conversations", messagesHandler.CreateConversation)
-    router.HandleFunc("POST /conversations/", messagesHandler.CreateConversation)
-    router.HandleFunc("GET /users/{userID}/conversations", messagesHandler.GetUserConversations)
-    router.HandleFunc("GET /conversations/{conversationID}", messagesHandler.GetConversation)
-    router.HandleFunc("GET /conversations/{conversationID}/messages", messagesHandler.GetConversationMessages)
-    router.HandleFunc("POST /conversations/{conversationID}/messages", messagesHandler.SendMessage)
-    router.HandleFunc("PUT /messages/{messageID}/read", messagesHandler.MarkMessageAsRead)
-    router.HandleFunc("PUT /conversations/{conversationID}/read", messagesHandler.MarkConversationAsRead)    // Rutas para Comentarios
+    // Rutas para Comentarios
     // GET no requiere autenticación, los demás sí
     router.HandleFunc("GET /posts/{postId}/comments", commentsHandler.GetPostComments)
     router.HandleFunc("GET /comments/{comentarioId}/replies", commentsHandler.GetCommentReplies)
@@ -230,12 +198,7 @@ func SetupRoutes(db *gorm.DB) http.Handler { // Cambiado para devolver http.Hand
     router.HandleFunc("GET /ws/status", wsHandler.GetWebSocketStatus)
     router.HandleFunc("GET /ws/clients", wsHandler.GetConnectedClients)
 
-    // Rutas de prueba para Socket.IO
-    router.HandleFunc("POST /api/test/socketio/message", socketIOTestHandler.TestSocketIOConnection)
-    router.HandleFunc("POST /api/test/socketio/comment", socketIOTestHandler.TestSocketIOComment)
-    router.HandleFunc("POST /api/test/socketio/typing", socketIOTestHandler.TestSocketIOTyping)
-    router.HandleFunc("POST /api/test/socketio/custom", socketIOTestHandler.TestSocketIOCustomMessage)
-    router.HandleFunc("GET /api/test/socketio/status", socketIOTestHandler.GetSocketIOStatus)
+    // Eliminadas rutas de prueba de Socket.IO
 
     // Ruta para health check
     router.HandleFunc("GET /health", handlers.HealthCheckHandler)

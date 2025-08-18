@@ -419,10 +419,10 @@ const FeedCard: React.FC<FeedCardProps> = ({
   };
 
   return (
-    <div className="rounded-lg p-4 bg-background border mb-4">
-      <div className="flex justify-between items-start">
-        <div className="flex items-center mb-3">
-          <Avatar className="mr-2 h-10 w-10">
+    <div className="group rounded-2xl p-5 bg-neutral-900/60 border border-gray-800/60 mb-4 shadow-sm hover:shadow-md transition-all duration-200 transform-gpu hover:-translate-y-px">
+      <div className="flex justify-between items-start mb-3 pb-3 border-b border-gray-800/60">
+        <div className="flex items-center">
+          <Avatar className="mr-3 h-10 w-10 ring-1 ring-gray-800/60">
             <AvatarImage
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`}
             />
@@ -432,11 +432,11 @@ const FeedCard: React.FC<FeedCardProps> = ({
           </Avatar>
           <div>
             <Link href={`/profiles/${id}`}>
-              <Text className="font-semibold hover:underline cursor-pointer">
+              <Text className="font-semibold text-gray-200 hover:text-primary transition-colors cursor-pointer">
                 {author}
               </Text>
-            </Link>{" "}
-            <Text className="text-xs text-muted-foreground">
+            </Link>
+            <Text className="text-xs text-gray-400">
               {formatTimeAgo(createdAt)}
             </Text>
           </div>
@@ -445,7 +445,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         {canDelete && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hover:bg-white/5 rounded-full">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -460,16 +460,16 @@ const FeedCard: React.FC<FeedCardProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </div>{" "}
+      </div>
       <Link href={`/posts/${postId}`}>
-        <Text className="text-lg font-semibold mb-1 hover:underline">
+        <Text className="text-lg font-semibold mb-1 hover:text-primary transition-colors">
           {title}
         </Text>
       </Link>
-      <Text className="mb-3">{description}</Text>
+      <Text className="mb-3 text-gray-300 leading-relaxed">{description}</Text>
       {/* Mostrar información de la habilidad */}
       {skillName && (
-        <div className="mb-3 p-2 bg-secondary/10 rounded-lg border border-secondary/20">
+        <div className="mb-3 p-2 bg-secondary/10 rounded-xl border border-secondary/20">
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">Habilidad:</span>
@@ -482,7 +482,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
           {tags.map((tag, index) => (
             <span
               key={index}
-              className="bg-secondary text-secondary-foreground rounded-full px-3 py-1 text-xs mr-2 mb-2"
+              className="bg-gray-800/60 text-gray-300 border border-gray-700/50 rounded-full px-3 py-1 text-xs mr-2 mb-2"
             >
               {tag}
             </span>
@@ -500,13 +500,13 @@ const FeedCard: React.FC<FeedCardProps> = ({
                   size="sm"
                   onClick={handleRequestMatch}
                   disabled={isRequestingMatch}
-                  className="border-blue-600 text-blue-500 hover:bg-blue-950/50 hover:text-blue-400"
+                  className="rounded-full border-blue-600/60 text-blue-400 hover:bg-blue-500/10 hover:border-blue-500 hover:text-blue-300 transition-colors"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
                   {isRequestingMatch ? "Enviando..." : "Hacer Match"}
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled className="rounded-full">
                   <UserPlus className="h-4 w-4 mr-2" />
                   Match solicitado
                 </Button>
@@ -514,7 +514,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
 
               {/* Botón de QuickSchedule o Sesión programada */}
               {hasScheduledSession ? (
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled className="rounded-full">
                   <Calendar className="h-4 w-4 mr-2" />
                   Sesión programada
                 </Button>

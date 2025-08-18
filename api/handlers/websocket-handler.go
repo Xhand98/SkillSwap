@@ -297,53 +297,16 @@ func (c *Client) handleMessage(msg WebSocketMessage) {
 }
 
 // handleJoinConversation permite al usuario unirse a una sala de conversación
+// handleJoinConversation - removed messaging functionality
 func (c *Client) handleJoinConversation(msg WebSocketMessage) {
-	data, ok := msg.Data.(map[string]interface{})
-	if !ok {
-		return
-	}
-
-	conversationID, ok := data["conversation_id"].(string)
-	if !ok {
-		return
-	}
-
-	roomID := "conversation_" + conversationID
-
-	// Verificar que el usuario tiene permiso para unirse a esta conversación
-	if !c.canJoinConversation(conversationID) {
-		response := WebSocketMessage{
-			Type: "error",
-			Data: map[string]interface{}{
-				"message": "No tienes permiso para unirte a esta conversación",
-			},
-			Time: time.Now(),
-		}
-		c.Send <- response
-		return
-	}
-
-	// Unir cliente a la sala
-	c.Hub.mu.Lock()
-	if c.Hub.Rooms[roomID] == nil {
-		c.Hub.Rooms[roomID] = make(map[*Client]bool)
-	}
-	c.Hub.Rooms[roomID][c] = true
-	c.Rooms[roomID] = true
-	c.Hub.mu.Unlock()
-
-	// Notificar al cliente
 	response := WebSocketMessage{
-		Type: "joined_conversation",
+		Type: "error",
 		Data: map[string]interface{}{
-			"conversation_id": conversationID,
-			"room_id": roomID,
+			"message": "Messaging functionality has been disabled",
 		},
 		Time: time.Now(),
 	}
 	c.Send <- response
-
-	log.Printf("Cliente %s se unió a la conversación %s", c.ID, conversationID)
 }
 
 // handleLeaveConversation permite al usuario salir de una sala de conversación
@@ -489,39 +452,6 @@ func (c *Client) handlePing(	) {
 		Time: time.Now(),
 	}
 	c.Send <- response
-}
-
-// canJoinConversation verifica si el usuario puede unirse a una conversación
-func (c *Client) canJoinConversation(conversationID string) bool {
-	var conversation models.Conversation
-
-	if err := c.Hub.DB.Where("id = ? AND (user1_id = ? OR user2_id = ?)",
-		conversationID, c.UserID, c.UserID).First(&conversation).Error; err != nil {
-		return false
-	}
-
-	return true
-}
-
-// BroadcastNewMessage envía una notificación de nuevo mensaje
-func (ws *WebSocketHandler) BroadcastNewMessage(message models.Message) {
-	roomID := fmt.Sprintf("conversation_%d", message.ConversationID)
-
-	broadcastMsg := WebSocketMessage{
-		Type: "new_message",
-		Data: map[string]interface{}{
-			"id": message.ID,
-			"conversation_id": message.ConversationID,
-			"sender_id": message.SenderID,
-			"content": message.Content,
-			"message_type": message.MessageType,
-			"created_at": message.CreatedAt,
-		},
-		RoomID: roomID,
-		Time: time.Now(),
-	}
-
-	ws.Hub.Broadcast <- broadcastMsg
 }
 
 // BroadcastNewComment envía una notificación de nuevo comentario

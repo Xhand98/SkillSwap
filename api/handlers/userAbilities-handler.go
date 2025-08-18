@@ -182,7 +182,22 @@ func (h *userAbilitiesHandler) GetUserAbilitiesByUserID(w http.ResponseWriter, r
     }
 
     var userAbilities []models.UserAbility
-    if result := h.DB.Preload("User").Preload("Ability").Where("UsuarioID = ?", userID).Find(&userAbilities); result.Error != nil {
+    if result := h.DB.Debug().Raw(`
+        SELECT 
+            uh.*,
+            u."UsuarioID" as "u_UsuarioID", u."NombreUsuario" as "u_NombreUsuario", 
+            u."PrimerNombre" as "u_PrimerNombre", u."PrimerApellido" as "u_PrimerApellido",
+            u."CorreoElectronico" as "u_CorreoElectronico", u."CiudadTrabajo" as "u_CiudadTrabajo",
+            u."Rol" as "u_Rol", u."IsBanned" as "u_IsBanned", u."FechaCreacion" as "u_FechaCreacion",
+            u."LinkedInLink" as "u_LinkedInLink", u."GithubLink" as "u_GithubLink",
+            h."HabilidadID" as "h_HabilidadID", h."NombreHabilidad" as "h_NombreHabilidad",
+            h."Categoria" as "h_Categoria", h."Descripcion" as "h_Descripcion"
+        FROM "UsuariosHabilidades" uh
+        LEFT JOIN "Usuarios" u ON uh."UsuarioID" = u."UsuarioID"
+        LEFT JOIN "Habilidades" h ON uh."HabilidadID" = h."HabilidadID"
+        WHERE uh."UsuarioID" = ?
+        ORDER BY uh."UsuarioHabilidadID"
+    `, userID).Scan(&userAbilities); result.Error != nil {
         http.Error(w, "Error al obtener habilidades del usuario: "+result.Error.Error(), http.StatusInternalServerError)
         return
     }

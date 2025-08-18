@@ -59,26 +59,55 @@ func (h *postsHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	var posts []models.PostFullInfo
 	var totalPosts int64
 
-	// Inicializar la consulta base
-	query := h.DB.Model(&models.PostFullInfo{})
-
-	// Aplicar filtros si están presentes
+	// Build WHERE clause for filters
+	whereClause := ""
+	args := []interface{}{}
+	
 	if tipoPost != "" {
-		query = query.Where("TipoPost = ?", tipoPost)
+		whereClause += ` AND p."TipoPost" = ?`
+		args = append(args, tipoPost)
 	}
 
 	if searchTerm != "" {
-		query = query.Where("NombreHabilidad LIKE ?", "%"+searchTerm+"%")
+		whereClause += ` AND h."NombreHabilidad" LIKE ?`
+		args = append(args, "%"+searchTerm+"%")
 	}
 
-	// Contar el total de posts filtrados
-	if err := query.Count(&totalPosts).Error; err != nil {
+	// Use raw SQL with JOIN instead of the missing view - Count query
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM "Posts" p
+		LEFT JOIN "Usuarios" u ON p."UsuarioID" = u."UsuarioID"
+		LEFT JOIN "Habilidades" h ON p."HabilidadID" = h."HabilidadID"
+		WHERE 1=1` + whereClause
+	
+	if err := h.DB.Raw(countQuery, args...).Scan(&totalPosts).Error; err != nil {
 		http.Error(w, "Error al contar posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Obtener posts paginados con filtros
-	if result := query.Limit(pageSize).Offset(offset).Find(&posts); result.Error != nil {
+	// Use raw SQL with JOIN instead of the missing view - Data query
+	dataQuery := `
+		SELECT 
+			p."PostID",
+			p."UsuarioID",
+			u."NombreUsuario",
+			h."NombreHabilidad",
+			p."TipoPost",
+			p."Descripcion",
+			p."CreatedAt",
+			p."UpdatedAt"
+		FROM "Posts" p
+		LEFT JOIN "Usuarios" u ON p."UsuarioID" = u."UsuarioID"
+		LEFT JOIN "Habilidades" h ON p."HabilidadID" = h."HabilidadID"
+		WHERE 1=1` + whereClause + `
+		ORDER BY p."CreatedAt" DESC
+		LIMIT ? OFFSET ?`
+
+	// Add pagination args
+	finalArgs := append(args, pageSize, offset)
+
+	if result := h.DB.Raw(dataQuery, finalArgs...).Scan(&posts); result.Error != nil {
 		http.Error(w, "Error al obtener posts: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -301,14 +330,40 @@ func (h *postsHandler) GetPostsByUserID(w http.ResponseWriter, r *http.Request) 
 
 	var posts []models.PostFullInfo
 	var totalPosts int64
-	query := h.DB.Model(&models.PostFullInfo{}).Where("UsuarioID = ?", userID) // <--- CAMBIO (necesita UsuarioID en la vista)
 
-	if err := query.Count(&totalPosts).Error; err != nil {
+	// Use raw SQL with JOIN instead of the missing view
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM "Posts" p
+		LEFT JOIN "Usuarios" u ON p."UsuarioID" = u."UsuarioID"
+		LEFT JOIN "Habilidades" h ON p."HabilidadID" = h."HabilidadID"
+		WHERE p."UsuarioID" = ?
+	`
+	
+	if err := h.DB.Raw(countQuery, userID).Scan(&totalPosts).Error; err != nil {
         http.Error(w, "Error al contar posts del usuario: "+err.Error(), http.StatusInternalServerError)
         return
     }
 
-    if result := query.Limit(pageSize).Offset(offset).Order("CreatedAt desc").Find(&posts); result.Error != nil { // <--- CAMBIO
+    dataQuery := `
+		SELECT 
+			p."PostID",
+			p."UsuarioID",
+			u."NombreUsuario",
+			h."NombreHabilidad",
+			p."TipoPost",
+			p."Descripcion",
+			p."CreatedAt",
+			p."UpdatedAt"
+		FROM "Posts" p
+		LEFT JOIN "Usuarios" u ON p."UsuarioID" = u."UsuarioID"
+		LEFT JOIN "Habilidades" h ON p."HabilidadID" = h."HabilidadID"
+		WHERE p."UsuarioID" = ?
+		ORDER BY p."CreatedAt" DESC
+		LIMIT ? OFFSET ?
+	`
+
+    if result := h.DB.Raw(dataQuery, userID, pageSize, offset).Scan(&posts); result.Error != nil {
         http.Error(w, "Error al obtener posts del usuario: "+result.Error.Error(), http.StatusInternalServerError)
         return
     }

@@ -5,18 +5,9 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { PREVIEW_MODE } from '@/config/app-config';
-import { ensurePreviewMode } from '@/utils/preview-initializer';
-
+// Preview initializer disabled. Keep a no-op component to avoid broken imports.
 export function PreviewModeInitializer() {
-  useEffect(() => {
-    if (PREVIEW_MODE) {
-      console.log('[PREVIEW] Inicializando modo preview...');
-      ensurePreviewMode();
-    }
-  }, []);
-
-  // Este componente no renderiza nada
   return null;
 }
+
+export default PreviewModeInitializer;

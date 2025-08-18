@@ -1,10 +1,9 @@
-/**
- * API Client que maneja automáticamente el modo PREVIEW
- * Cuando PREVIEW_MODE=true, usa el servicio mock en lugar de hacer llamadas reales
+ /**
+ * API Client para llamadas reales a la API (sin modo preview/mock)
  */
 import { API_CONFIG } from './api-config';
 import { debugLog } from '../config/app-config';
-import { previewApi, makeApiCall } from './preview-api';
+// Preview/mock eliminado
 
 // Clase principal del cliente API
 export class ApiClient {
@@ -57,256 +56,146 @@ export class ApiClient {
 
     // Health check
     async healthCheck() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/health'),
-            () => previewApi.healthCheck()
-        );
+        return this.makeRequest<any>('/health');
     }
 
     // Usuarios
     async getUsers() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/users'),
-            () => previewApi.getUsers()
-        );
+        return this.makeRequest<any>('/users');
     }
 
     async getUserById(id: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/users/${id}`),
-            () => previewApi.getUserById(id)
-        );
+        return this.makeRequest<any>(`/users/${id}`);
     }
 
     async updateUser(id: number, userData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/users/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(userData)
-            }),
-            () => previewApi.updateUser(id, userData)
-        );
+        return this.makeRequest<any>(`/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(userData)
+        });
     }
 
     // Posts
     async getPosts() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/posts'),
-            () => previewApi.getPosts()
-        );
+        return this.makeRequest<any>('/posts');
     }
 
     async getPostById(id: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/posts/${id}`),
-            () => previewApi.getPostById(id)
-        );
+        return this.makeRequest<any>(`/posts/${id}`);
     }
 
     async createPost(postData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>('/posts', {
-                method: 'POST',
-                body: JSON.stringify(postData)
-            }),
-            () => previewApi.createPost(postData)
-        );
+        return this.makeRequest<any>('/posts', {
+            method: 'POST',
+            body: JSON.stringify(postData)
+        });
     }
 
     async updatePost(id: number, postData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/posts/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(postData)
-            }),
-            () => previewApi.updatePost(id, postData)
-        );
+        return this.makeRequest<any>(`/posts/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(postData)
+        });
     }
 
     async deletePost(id: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/posts/${id}`, {
-                method: 'DELETE'
-            }),
-            () => previewApi.deletePost(id)
-        );
+        return this.makeRequest<any>(`/posts/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // Comentarios
     async getCommentsByPostId(postId: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/posts/${postId}/comments`),
-            () => previewApi.getCommentsByPostId(postId)
-        );
+        return this.makeRequest<any>(`/posts/${postId}/comments`);
     }
 
     async createComment(commentData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>('/comments', {
-                method: 'POST',
-                body: JSON.stringify(commentData)
-            }),
-            () => previewApi.createComment(commentData)
-        );
+        return this.makeRequest<any>('/comments', {
+            method: 'POST',
+            body: JSON.stringify(commentData)
+        });
     }
 
     async updateComment(id: number, commentData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/comments/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(commentData)
-            }),
-            () => previewApi.updateComment(id, commentData)
-        );
+        return this.makeRequest<any>(`/comments/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(commentData)
+        });
     }
 
     async deleteComment(id: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/comments/${id}`, {
-                method: 'DELETE'
-            }),
-            () => previewApi.deleteComment(id)
-        );
+        return this.makeRequest<any>(`/comments/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // Matches
     async getMatches() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/matches'),
-            () => previewApi.getMatches()
-        );
+        return this.makeRequest<any>('/matches');
     }
 
     async createMatch(matchData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>('/matches', {
-                method: 'POST',
-                body: JSON.stringify(matchData)
-            }),
-            () => previewApi.createMatch(matchData)
-        );
+        return this.makeRequest<any>('/matches', {
+            method: 'POST',
+            body: JSON.stringify(matchData)
+        });
     }
 
     async updateMatch(id: number, matchData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/matches/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(matchData)
-            }),
-            () => previewApi.updateMatch(id, matchData)
-        );
+        return this.makeRequest<any>(`/matches/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(matchData)
+        });
     }
 
     // Mensajes
     async getMessages(userId?: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(userId ? `/messages?user=${userId}` : '/messages'),
-            () => previewApi.getMessages(userId)
-        );
+        return this.makeRequest<any>(userId ? `/messages?user=${userId}` : '/messages');
     }
 
     async sendMessage(messageData: any) {
-        return makeApiCall(
-            () => this.makeRequest<any>('/messages', {
-                method: 'POST',
-                body: JSON.stringify(messageData)
-            }),
-            () => previewApi.sendMessage(messageData)
-        );
+        return this.makeRequest<any>('/messages', {
+            method: 'POST',
+            body: JSON.stringify(messageData)
+        });
     }
 
     // Notificaciones
     async getNotifications() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/notifications'),
-            () => previewApi.getNotifications()
-        );
+        return this.makeRequest<any>('/notifications');
     }
 
     async markNotificationAsRead(id: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/notifications/${id}/read`, {
-                method: 'PUT'
-            }),
-            () => previewApi.markNotificationAsRead(id)
-        );
+        return this.makeRequest<any>(`/notifications/${id}/read`, {
+            method: 'PUT'
+        });
     }
 
     // Métodos adicionales para compatibilidad con código existente
 
     // Dashboard stats
     async getUserMatches(userId: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/users/${userId}/matches`),
-            async () => ({
-                success: true,
-                data: [
-                    { id: 1, user1_id: 1, user2_id: 2, status: 'active', created_at: '2025-06-01' },
-                    { id: 2, user1_id: 1, user2_id: 3, status: 'active', created_at: '2025-06-02' },
-                    { id: 3, user1_id: 1, user2_id: 4, status: 'pending', created_at: '2025-06-03' }
-                ]
-            })
-        );
+        return this.makeRequest<any>(`/users/${userId}/matches`);
     }
 
     // Sessions
     async getMatchSessions(matchId: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/matches/${matchId}/sessions`),
-            async () => ({
-                success: true,
-                data: [
-                    { id: 1, match_id: matchId, status: 'completed', date: '2025-06-01', duration: 60 },
-                    { id: 2, match_id: matchId, status: 'pending', date: '2025-06-15', duration: 45 }
-                ]
-            })
-        );
+        return this.makeRequest<any>(`/matches/${matchId}/sessions`);
     }
 
     // User abilities
     async getUserAbilities(userId: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/userabilities/user/${userId}`),
-            async () => ({
-                success: true,
-                data: [
-                    { id: 1, user_id: userId, ability_id: 1, type: 'Ofrece', level: 'Experto', ability: { name: 'JavaScript', category: 'Tecnología' } },
-                    { id: 2, user_id: userId, ability_id: 2, type: 'Busca', level: 'Principiante', ability: { name: 'Python', category: 'Tecnología' } },
-                    { id: 3, user_id: userId, ability_id: 3, type: 'Ofrece', level: 'Intermedio', ability: { name: 'React', category: 'Tecnología' } }
-                ]
-            })
-        );
+        return this.makeRequest<any>(`/userabilities/user/${userId}`);
     }
 
     // Abilities list
     async getAbilities() {
-        return makeApiCall(
-            () => this.makeRequest<any>('/abilities'),
-            async () => ({
-                success: true,
-                data: [
-                    { id: 1, name: 'JavaScript', category: 'Tecnología', description: 'Lenguaje de programación' },
-                    { id: 2, name: 'Python', category: 'Tecnología', description: 'Lenguaje de programación' },
-                    { id: 3, name: 'React', category: 'Tecnología', description: 'Framework de JavaScript' },
-                    { id: 4, name: 'Cocina Italiana', category: 'Gastronomía', description: 'Arte culinario italiano' },
-                    { id: 5, name: 'Guitarra', category: 'Artes', description: 'Instrumento musical' }
-                ]
-            })
-        );
+        return this.makeRequest<any>('/abilities');
     }
 
     // Notificaciones (método adicional)
     async getUserNotifications(userId: number) {
-        return makeApiCall(
-            () => this.makeRequest<any>(`/notifications/user/${userId}`),
-            async () => ({
-                success: true,
-                data: [
-                    { id: 1, type: 'match', title: 'Nuevo match', message: 'Tienes un nuevo match con Juan', read: false, created_at: '2025-06-03T10:00:00Z' },
-                    { id: 2, type: 'session', title: 'Sesión programada', message: 'Tu sesión con María es mañana', read: true, created_at: '2025-06-02T15:30:00Z' }
-                ]
-            })
-        );
+        return this.makeRequest<any>(`/notifications/user/${userId}`);
     }
 }
 

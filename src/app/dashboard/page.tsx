@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { apiClient } from "@/lib/api-client";
-import { PREVIEW_MODE, debugLog } from "../../config/app-config";
-import { PreviewBanner } from "@/components/PreviewModeIndicator";
+import { debugLog } from "../../config/app-config";
 import { Text } from "@/components/text";
 import {
   Card,
@@ -144,17 +143,11 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      <PreviewBanner />
       <div className="mb-8">
         <Text size="heading-3">Panel de Control</Text>
         <Text className="text-gray-500 mt-1">
           Bienvenido, {user?.nombre_usuario}. Aquí puedes ver un resumen de tu
           actividad.
-          {PREVIEW_MODE && (
-            <span className="block text-yellow-600 font-medium mt-1">
-              📊 Mostrando datos de demostración
-            </span>
-          )}
         </Text>
       </div>
       {isLoading && (

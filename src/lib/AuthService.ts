@@ -37,8 +37,7 @@ export interface AuthResponse {
 
 // Importar configuración centralizada de la API
 import { API_CONFIG } from "./api-config";
-import { previewApi, makeApiCall } from "./preview-api";
-import { PREVIEW_MODE, debugLog } from "../config/app-config";
+import { debugLog } from "../config/app-config";
 
 // URL base de la API
 const API_URL = API_CONFIG.API_URL;
@@ -89,39 +88,29 @@ export const AuthService = {
         debugLog('AuthService.login called with:', credentials.email);
 
         try {
-            return await makeApiCall(
-                // Llamada real a la API
-                async () => {
-                    const response = await fetch(`${API_URL}/auth/login`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(credentials),
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || "Error al iniciar sesión");
-                    }
-
-                    const data = await response.json();
-
-                    // Guardar datos en localStorage
-                    localStorage.setItem("auth_token", data.token);
-                    localStorage.setItem("user", JSON.stringify(data.user));
-
-                    // Usar el nuevo método para almacenar el ID del usuario
-                    this.setCurrentUserId(data.user.id);
-
-                    return data;
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-                // Llamada mock para modo preview
-                async () => {
-                    const result = await previewApi.login(credentials.email, credentials.password);
-                    return result;
-                }
-            );
+                body: JSON.stringify(credentials),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Error al iniciar sesión");
+            }
+
+            const data = await response.json();
+
+            // Guardar datos en localStorage
+            localStorage.setItem("auth_token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            // Usar el nuevo método para almacenar el ID del usuario
+            this.setCurrentUserId(data.user.id);
+
+            return data;
         } catch (error: any) {
             debugLog('Login error:', error);
             throw error;
@@ -133,39 +122,29 @@ export const AuthService = {
         debugLog('AuthService.register called with:', userData.correo_electronico);
 
         try {
-            return await makeApiCall(
-                // Llamada real a la API
-                async () => {
-                    const response = await fetch(`${API_URL}/users/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(userData),
-                    });
-
-                    if (!response.ok) {
-                        let errorMessage = "Error al registrar usuario";
-
-                        try {
-                            const errorData = await response.text();
-                            errorMessage = errorData || errorMessage;
-                        } catch (e) {
-                            // Error silencioso en producción
-                        }
-
-                        throw new Error(errorMessage);
-                    }
-
-                    const data = await response.json();
-                    return data;
+            const response = await fetch(`${API_URL}/users/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-                // Llamada mock para modo preview
-                async () => {
-                    const result = await previewApi.register(userData);
-                    return result;
+                body: JSON.stringify(userData),
+            });
+
+            if (!response.ok) {
+                let errorMessage = "Error al registrar usuario";
+
+                try {
+                    const errorData = await response.text();
+                    errorMessage = errorData || errorMessage;
+                } catch (e) {
+                    // Error silencioso en producción
                 }
-            );
+
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            return data;
         } catch (error: any) {
             debugLog('Register error:', error);
             throw error;
@@ -175,10 +154,6 @@ export const AuthService = {
     // Cerrar sesión
     async logout(): Promise<void> {
         debugLog('AuthService.logout called');
-
-        if (PREVIEW_MODE) {
-            await previewApi.logout();
-        }
 
         // Limpiar localStorage en ambos modos
         localStorage.removeItem("auth_token");
@@ -214,18 +189,7 @@ export const AuthService = {
 
     // Validar token del usuario
     async validateToken(): Promise<User | null> {
-        debugLog('AuthService.validateToken called');
-
-        if (PREVIEW_MODE) {
-            const sessionResult = await previewApi.checkSession();
-            if (sessionResult.success) {
-                const user = sessionResult.data.user;
-                localStorage.setItem("user", JSON.stringify(user));
-                this.setCurrentUserId(user.id);
-                return user;
-            }
-            return null;
-        }
+    debugLog('AuthService.validateToken called');
 
         const token = localStorage.getItem("auth_token");
         if (!token) return null;
@@ -250,7 +214,7 @@ export const AuthService = {
             this.setCurrentUserId(user.id);
 
             return user;
-        } catch (error) {
+    } catch (error) {
             debugLog('Token validation error:', error);
             this.logout();
             return null;

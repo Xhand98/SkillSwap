@@ -8,8 +8,6 @@ import "./globals.css";
 import ThemeProvider from "@/components/theme/theme-provider";
 import { AuthProvider } from "@/lib/AuthContext";
 import GlobalToastProvider from "@/components/GlobalToastProvider";
-import { PreviewModeIndicator } from "@/components/PreviewModeIndicator";
-import { PreviewModeInitializer } from "@/components/PreviewModeInitializer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -50,8 +48,6 @@ export default function RootLayout({
         >
           <AuthProvider>
             <GlobalToastProvider>
-              <PreviewModeInitializer />
-              <PreviewModeIndicator />
               <Header />
               {children}
               <Footer />

@@ -9,18 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import useCurrentUserId from "@/hooks/useCurrentUserId";
-import {
-  Home,
-  Bell,
-  Bookmark,
-  MessageCircle,
-  User,
-  PenSquare,
-  Search,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { API_CONFIG } from "@/lib/api-config";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Post {
   id_usuario: number;
@@ -112,20 +104,30 @@ export default function FeedPage() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-[#1a1a1a] text-white min-h-screen pt-16 min-w-max">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[1fr,2fr] lg:grid-cols-[1fr,2fr,1fr]">
+      <div className="bg-[#1a1a1a] text-white min-h-screen pt-16">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[1fr,2fr] lg:grid-cols-[1fr,2fr,1fr] px-4 gap-4">
           {/* Feed principal */}
-          <main className="min-w-[60vw] border-x border-gray-800 min-h-screen">
-            {" "}
-            <header className="sticky top-0 bg-neutral-[#0a0a0a] backdrop-blur-md p-4 border-b border-gray-800 z-10">
+          <main className="border-x border-gray-800 min-h-screen col-span-1 md:col-span-2 lg:col-span-3">
+            <header className="sticky top-0 bg-[#0a0a0a] supports-[backdrop-filter]:bg-[#0a0a0a] backdrop-blur-md p-4 border-b border-gray-800 z-10">
               <div className="flex justify-between items-center">
                 <Text as="h1" size="heading-3" className="font-bold">
                   Feed de Habilidades
                 </Text>
-                <PageSizeSelector
-                  pageSize={pageSize}
-                  onPageSizeChange={(size) => setPageSize(size)}
-                />
+                <div className="flex items-center gap-3">
+                  <PageSizeSelector
+                    pageSize={pageSize}
+                    onPageSizeChange={(size) => setPageSize(size)}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-700"
+                    onClick={() => fetchPosts(currentPage)}
+                    aria-label="Refrescar publicaciones"
+                  >
+                    Refrescar
+                  </Button>
+                </div>
               </div>
             </header>
             {/* Componente para crear nuevos posts */}
@@ -133,7 +135,7 @@ export default function FeedPage() {
               onPostCreated={() => {
                 fetchPosts(1);
               }}
-            />{" "}
+            />
             {/* Opciones de filtrado */}
             <FilterOptions
               currentUserId={currentUserId}
@@ -144,22 +146,53 @@ export default function FeedPage() {
               }}
             />
             {loading ? (
-              <div className="flex flex-col justify-center items-center p-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                <Text className="text-gray-400">Cargando publicaciones...</Text>
+              <div className="space-y-4 p-4" aria-live="polite">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-xl border border-gray-800 bg-neutral-900 p-4"
+                  >
+                    <div className="h-4 w-32 bg-gray-800 rounded mb-3" />
+                    <div className="h-6 w-3/4 bg-gray-800 rounded mb-2" />
+                    <div className="h-4 w-2/3 bg-gray-800 rounded mb-2" />
+                    <div className="h-4 w-1/2 bg-gray-800 rounded" />
+                  </div>
+                ))}
               </div>
             ) : error ? (
-              <div className="p-4 text-red-500 text-center">{error}</div>
-            ) : posts.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                No hay publicaciones disponibles
+              <div className="p-4">
+                <Card className="border-red-900/40 bg-red-950/30">
+                  <CardContent className="pt-6 text-center">
+                    <Text className="text-red-400 font-semibold">
+                      {error}
+                    </Text>
+                    <Text className="text-gray-400 mt-1" size="paragraph-sm">
+                      Intenta refrescar o ajustar los filtros.
+                    </Text>
+                  </CardContent>
+                </Card>
               </div>
-            ) : (              <div>
-                {" "}                {posts.map((post) => (
+            ) : posts.length === 0 ? (
+              <div className="p-4">
+                <Card className="bg-neutral-900 border-gray-800">
+                  <CardContent className="py-10 text-center">
+                    <Text size="heading-4" className="text-gray-300 mb-2">
+                      No hay publicaciones disponibles
+                    </Text>
+                    <Text className="text-gray-500" size="paragraph-sm">
+                      Crea una nueva publicación o cambia los filtros.
+                    </Text>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="p-2 sm:p-4">
+                {posts.map((post) => (
                   <FeedCard
                     id={post.id_usuario}
                     postId={post.post_id}
-                    key={post.post_id}                    title={
+                    key={post.post_id}
+                    title={
                       post.tipo_post === "Ofrece"
                         ? `Ofrezco: ${post.nombre_habilidad}`
                         : `Busco: ${post.nombre_habilidad}`
@@ -173,60 +206,22 @@ export default function FeedPage() {
                   />
                 ))}
                 {/* Paginación */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={(page) => fetchPosts(page)}
-                  className="mt-4"
-                />
-                {/* Resumen de paginación */}
-                <div className="text-gray-500 text-center text-sm pb-4">
-                  Mostrando {posts.length} de {totalPosts} publicaciones (página{" "}
-                  {currentPage} de {totalPages})
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => fetchPosts(page)}
+                    className=""
+                  />
+                  {/* Resumen de paginación */}
                 </div>
               </div>
             )}
           </main>
-
-          {/* Sidebar derecho - Tendencias, etc */}
-          <aside className="hidden lg:block -my-4 -ml-3 p-4 min-w-[32rem] sticky top-0 h-screen">
-            <div className="bg-neutral-900 rounded-xl p-4">
-              <Text as="h2" size="heading-3" className="mb-4 font-bold">
-                Usuarios Destacados
-              </Text>
-              <div className="space-y-3">
-                {["Hendrick", "Janiel", "Dylan", "Onielkis"].map((name, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={`https://avatar.vercel.sh/${name}`}
-                          alt={name}
-                        />
-                        <AvatarFallback>{name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <Text className="font-bold" size="paragraph-sm">
-                          {name}
-                        </Text>
-                        <Text className="text-gray-500" size="paragraph-xs">
-                          @{name.toLowerCase()}
-                        </Text>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full text-xs"
-                    >
-                      Seguir
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
         </div>
+                  <div className="text-gray-500 text-center text-sm pb-4 mt-2">
+                    Mostrando {posts.length} de {totalPosts} publicaciones (página {currentPage} de {totalPages})
+                  </div>
       </div>
     </ProtectedRoute>
   );

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"skillswap/api/config" // Asegúrate que esta ruta coincide con tu go.mod
+	"skillswap/api/config"
 	"skillswap/api/routes" // Importar el paquete de rutas
 
 	"github.com/joho/godotenv"
@@ -19,30 +19,15 @@ func main() {
 		log.Println("Advertencia: No se pudo cargar el archivo .env:", err)
 	}
 
-	// Verificar si estamos en modo de prueba sin DB
-	testMode := os.Getenv("TEST_MODE") == "true"
-
 	var db *gorm.DB
-	var err error
-
-	if !testMode {
-		log.Println("Iniciando conexión a la base de datos...")
-		db, err = config.ConnectDB(config.NewDBConfig())
-		if err != nil {
-			log.Printf("Error al conectar con la base de datos: %v", err)
-			log.Println("Iniciando en modo de prueba sin base de datos...")
-			testMode = true
-			// Actualizar la variable de entorno para consistencia
-			os.Setenv("TEST_MODE", "true")
-		} else {
-			defer func() {
-				if sqlDB, err := db.DB(); err == nil {
-					sqlDB.Close()
-				}
-			}()
-
-
-		}
+	// Conectar a la base de datos PostgreSQL
+	dbCfg := config.NewDBConfig()
+	connectedDB, err := config.ConnectDB(dbCfg)
+	if err != nil {
+		log.Printf("❌ No se pudo conectar a la base de datos: %v", err)
+	} else {
+		db = connectedDB
+		log.Println("✅ Conexión a PostgreSQL establecida")
 	}
 
 	// Configurar las rutas utilizando el paquete routes
