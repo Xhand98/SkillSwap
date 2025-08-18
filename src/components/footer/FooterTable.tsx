@@ -5,9 +5,9 @@ const FooterTable = () => {
   return locale.FOOTER.map((table) => (
     <ul
       key={table.TITLE}
-      className="relative flex flex-col gap-1 w-fit h-fit pb-6"
+      className="relative flex flex-col gap-1 w-fit h-fit pb-0"
     >
-      <h3 className="font-bold text-base py-2">{table.TITLE}</h3>
+      <h3 className="font-bold text-base py-0">{table.TITLE}</h3>
       {table.ELEMENTS.map((element) => (
         <FooterItem
           key={element.LINK.trim()}

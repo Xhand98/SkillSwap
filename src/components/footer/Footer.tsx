@@ -6,11 +6,12 @@ import SkillSwap from "@/icons/logo";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   return (
-    <footer className="print:hidden shadow-xl border-t-2 bg[#1a1a1a] text-white py-4">
-      <div className="sm:flex-row flex flex-col justify-between mx-auto gap-6 min-h-[10rem] sm:p-20 p-10">
+    // <footer className="print:hidden shadow-xl border-t-2 bg[#1a1a1a] text-white py-0 {className}">
+   <footer className={`print:hidden shadow-xl border-t-2 bg[#1a1a1a] text-white py-0 mt-0`}>
+       <div className="sm:flex-row flex flex-col justify-between m-0 gap-6 min-h-32 sm:p-10 p-0 ">
         <div>
           <SkillSwap size={75} />
-          <div className="grid grid-cols-1 grid-flow-row place-content-center gap-6">
+          <div className="grid grid-cols-1 grid-flow-row place-content-center">
             <div>
               <Text
                 as={"h2"}

@@ -1,2 +1,2 @@
-// This file controls whether to use real API implementations or mock data
-export const USE_REAL_API = true;
+// Preview/test config removed. This file remains as a placeholder to avoid breaking imports.
+export {};

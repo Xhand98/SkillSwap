@@ -12,8 +12,19 @@ import {
   Check,
   AlertCircle,
   ChevronDown,
+  Mail,
+  MapPin,
+  Globe,
+  MessageCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Definición actualizada según la respuesta real de la API
 interface User {
@@ -24,6 +35,10 @@ interface User {
   segundo_apellido?: string;
   correo_electronico?: string;
   ciudad_trabajo?: string;
+  fecha_nacimiento?: string;
+  linkedin_link?: string;
+  github_link?: string;
+  website_link?: string;
   created_at?: string;
   updated_at?: string;
   rol?: string;
@@ -58,18 +73,17 @@ export default function MatchesList({ userId }: MatchesListProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUsingMockData, setIsUsingMockData] = useState(false);
   const [apiInfo, setApiInfo] = useState<any>({
     url: "",
     requestTime: 0,
     status: "idle",
     matchesCount: 0,
   });
+
   // Función para manejar el caso de fallo de la API
   const handleApiFailure = (error: any) => {
     console.error("Error en la conexión a la API:", error);
     setMatches([]);
-    setIsUsingMockData(false);
     setError(
       "Error de conexión a la API. Por favor, inténtalo de nuevo más tarde."
     );
@@ -86,8 +100,10 @@ export default function MatchesList({ userId }: MatchesListProps) {
         );
 
         // Guardamos el tiempo de inicio para calcular la duración de la petición
-        const startTime = performance.now(); // URL para obtener matches de la API real
-        const url = `${API_CONFIG.API_URL}/users/${userId}/matches`;
+  const startTime = performance.now();
+
+  // URL para obtener matches de la API real
+  const url = `${API_CONFIG.API_URL}/users/${userId}/matches`;
         setApiInfo((prev: any) => ({ ...prev, url }));
         console.log(`Realizando petición a: ${url}`);
 
@@ -110,9 +126,15 @@ export default function MatchesList({ userId }: MatchesListProps) {
           console.log(
             `Error en la petición: ${url}, status: ${response.status}`
           );
-          throw new Error(
-            `Error al cargar matches: ${response.status} ${response.statusText}`
-          );
+
+          let errorText = "Error al cargar matches";
+          try {
+            errorText = await response.text();
+          } catch (e) {
+            errorText = `Error al cargar matches: ${response.status} ${response.statusText}`;
+          }
+
+          throw new Error(errorText);
         }
 
         console.log(`Petición exitosa a: ${url}`);
@@ -137,8 +159,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
           console.warn("Formato de respuesta inesperado:", data);
           setMatches([]);
         }
-
-        setIsUsingMockData(false);
       } catch (err) {
         const errorMsg =
           err instanceof Error ? err.message : "Error desconocido";
@@ -149,7 +169,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
           ...prev,
           status: "error",
           errorMessage: errorMsg,
-        })); // Manejamos el error de la API
+        }));
         handleApiFailure(err);
       } finally {
         setLoading(false);
@@ -168,7 +188,7 @@ export default function MatchesList({ userId }: MatchesListProps) {
   const handleUpdateMatchStatus = async (matchId: number, status: string) => {
     try {
       console.log(`Actualizando estado del match ${matchId} a ${status}`);
-      const response = await fetch(`${API_CONFIG.API_URL}/matches/${matchId}`, {
+  const response = await fetch(`${API_CONFIG.API_URL}/matches/${matchId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +199,14 @@ export default function MatchesList({ userId }: MatchesListProps) {
       });
 
       if (!response.ok) {
-        throw new Error(`Error al actualizar el estado: ${response.status}`);
+        let errorText = "Error al actualizar el estado";
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          errorText = `Error al actualizar el estado: ${response.status}`;
+        }
+
+        throw new Error(errorText);
       }
 
       // Actualizamos la lista de matches localmente
@@ -219,6 +246,30 @@ export default function MatchesList({ userId }: MatchesListProps) {
         >
           Reintentar
         </Button>
+
+        {/* Panel de diagnóstico para problemas técnicos */}
+        {/* <div className="mt-6 text-xs text-left">
+          <details>
+            <summary className="cursor-pointer text-gray-500">
+              Información técnica
+            </summary>
+            <div className="p-2 mt-2 bg-gray-950 rounded text-gray-400">
+              <p>
+                <strong>URL API:</strong> {apiInfo.url}
+              </p>
+              <p>
+                <strong>Estado:</strong>{" "}
+                <span className="text-red-400">{apiInfo.status}</span>
+              </p>
+              {apiInfo.errorMessage && (
+                <p>
+                  <strong>Error:</strong>{" "}
+                  <span className="text-red-400">{apiInfo.errorMessage}</span>
+                </p>
+              )}
+            </div>
+          </details>
+        </div> */}
       </div>
     );
   }
@@ -249,7 +300,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
   console.log("DEBUG - Estado de matches:");
   console.log("- Total matches:", matches.length);
   console.log("- Hay matches para renderizar:", matches.length > 0);
-  console.log("- isUsingMockData:", isUsingMockData);
   console.log("- userId:", userId);
 
   // Filtramos los matches activos, pendientes y programados
@@ -334,13 +384,14 @@ export default function MatchesList({ userId }: MatchesListProps) {
 
   return (
     <div className="space-y-10">
-      {/* Indicador de datos fallback */}
-      {error && isUsingMockData && (
+      {/* Indicador de error pero con datos disponibles */}
+      {error && matches.length > 0 && (
         <div className="p-4 bg-amber-900/20 border border-amber-700 rounded-md mb-4">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 text-amber-500" />
             <p className="text-sm text-amber-500">
-              Error al conectar con la API, utilizando datos de respaldo.
+              Algunos datos podrían estar incompletos debido a errores en el
+              servidor.
             </p>
           </div>
           <p className="text-xs text-amber-400/70 mt-1">{error}</p>
@@ -512,6 +563,159 @@ export default function MatchesList({ userId }: MatchesListProps) {
                     </div>
 
                     <div className="flex justify-end gap-2">
+                      {" "}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-indigo-800 text-indigo-500 hover:bg-indigo-950/50 hover:text-indigo-400"
+                          >
+                            <MessageSquare size={16} className="mr-1" />
+                            Ver contacto
+                          </Button>
+                        </DialogTrigger>
+
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="text-lg font-semibold text-white">
+                              Información de Contacto
+                            </DialogTitle>
+                          </DialogHeader>
+
+                          <div className="space-y-4">
+                            {/* Información del usuario */}
+                            <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage
+                                  src={`https://avatar.vercel.sh/${
+                                    otherUser?.nombre_usuario || "user"
+                                  }`}
+                                />
+                                <AvatarFallback>
+                                  {otherUser?.primer_nombre?.[0] || "U"}
+                                  {otherUser?.primer_apellido?.[0] || "S"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <h3 className="font-medium text-white">
+                                  {otherUser?.primer_nombre}{" "}
+                                  {otherUser?.primer_apellido}
+                                </h3>
+                                <p className="text-sm text-gray-400">
+                                  @{otherUser?.nombre_usuario}
+                                </p>
+                              </div>
+                            </div>{" "}
+                            {/* Información de contacto */}
+                            <div className="space-y-3">
+                              {otherUser?.correo_electronico && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Mail size={16} className="text-gray-400" />
+                                  <span className="text-gray-300">
+                                    {otherUser.correo_electronico}
+                                  </span>
+                                </div>
+                              )}
+
+                              {otherUser?.ciudad_trabajo && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <MapPin size={16} className="text-gray-400" />
+                                  <span className="text-gray-300">
+                                    {otherUser.ciudad_trabajo}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            {/* Enlaces profesionales */}
+                            {(otherUser?.linkedin_link ||
+                              otherUser?.github_link ||
+                              otherUser?.website_link) && (
+                              <div className="space-y-3">
+                                <h4 className="text-sm font-medium text-gray-300">
+                                  Enlaces Profesionales
+                                </h4>
+                                <div className="space-y-2">
+                                  {otherUser?.linkedin_link && (
+                                    <a
+                                      href={otherUser.linkedin_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      LinkedIn
+                                    </a>
+                                  )}
+
+                                  {otherUser?.github_link && (
+                                    <a
+                                      href={otherUser.github_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      GitHub
+                                    </a>
+                                  )}
+
+                                  {otherUser?.website_link && (
+                                    <a
+                                      href={otherUser.website_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
+                                    >
+                                      <Globe size={16} />
+                                      Sitio Web
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {/* Información del intercambio */}
+                            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                              <h4 className="text-sm font-medium text-white mb-2">
+                                Intercambio de habilidades:
+                              </h4>
+                              <div className="text-xs text-gray-400 space-y-1">
+                                <p>
+                                  <span className="text-green-400">
+                                    Tú ofreces:
+                                  </span>{" "}
+                                  {userAbility?.name}
+                                </p>
+                                <p>
+                                  <span className="text-blue-400">
+                                    Ellos ofrecen:
+                                  </span>{" "}
+                                  {otherUserAbility?.name}
+                                </p>
+                              </div>
+                            </div>
+                            {/* Botón de acción */}
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (otherUser?.correo_electronico) {
+                                    window.open(
+                                      `mailto:${otherUser.correo_electronico}?subject=SkillSwap - Intercambio de habilidades&body=Hola ${otherUser.primer_nombre},%0D%0A%0D%0AMe gustaría coordinar el intercambio de habilidades que acordamos en SkillSwap.%0D%0A%0D%0AYo te puedo enseñar: ${userAbility?.name}%0D%0ATú me puedes enseñar: ${otherUserAbility?.name}%0D%0A%0D%0A¿Cuándo te parece bien que nos pongamos en contacto?%0D%0A%0D%0ASaludos!`,
+                                      "_blank"
+                                    );
+                                  }
+                                }}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <Mail size={14} className="mr-1" />
+                                Enviar Email
+                              </Button>
+                              {/* Mensajería deshabilitada: páginas de mensajes removidas */}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       <Button variant="outline" size="sm">
                         <Link
                           href={`/profiles/${otherUser?.id}`}
@@ -529,47 +733,6 @@ export default function MatchesList({ userId }: MatchesListProps) {
           </div>
         </div>
       )}
-
-      {/* Panel de diagnóstico */}
-      {/* <details className="mt-8 text-left border-t border-gray-800 pt-4 text-xs text-gray-500">
-        <summary className="cursor-pointer flex items-center">
-          <ChevronDown className="h-3 w-3 mr-1" />
-          Información técnica
-        </summary>
-        <div className="p-4 bg-gray-950 rounded mt-2">
-          <h4 className="font-medium mb-2">Estado de la API:</h4>
-          <ul className="list-disc list-inside space-y-1 pl-2">
-            <li>URL: {apiInfo.url}</li>
-            <li>
-              Estado:{" "}
-              <span
-                className={
-                  apiInfo.status === "success"
-                    ? "text-green-500"
-                    : "text-red-500"
-                }
-              >
-                {apiInfo.status}
-              </span>
-            </li>
-            {apiInfo.requestTime && (
-              <li>Tiempo de respuesta: {apiInfo.requestTime}ms</li>
-            )}
-            {apiInfo.errorMessage && (
-              <li className="text-red-500">Error: {apiInfo.errorMessage}</li>
-            )}
-          </ul>
-
-          <h4 className="font-medium mt-4 mb-2">Estado interno:</h4>
-          <ul className="list-disc list-inside space-y-1 pl-2">
-            <li>Usuario ID: {userId}</li>
-            <li>Total de matches: {matches.length}</li>
-            <li>Matches activos: {activeMatches.length}</li>
-            <li>Matches pendientes: {pendingMatches.length}</li>
-            <li>Usando datos simulados: {isUsingMockData ? "Sí" : "No"}</li>
-          </ul>
-        </div>
-      </details> */}
     </div>
   );
 }

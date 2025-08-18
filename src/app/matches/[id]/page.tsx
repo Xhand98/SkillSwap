@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { Text } from "@/components/text";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PotentialMatches from "../_components/PotentialMatches.real";
+import PotentialMatches from "../_components/PotentialMatches";
 import React from "react";
-// Importamos la versión que utiliza la API real
-import MatchesList from "../_components/MatchesList.real";
+import MatchesList from "../_components/MatchesList";
 
 interface PageProps {
   params: Promise<{ id: string }>;

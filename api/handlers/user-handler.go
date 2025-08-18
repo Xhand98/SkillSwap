@@ -174,7 +174,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	originalNombre := nombreUsuario
 	for i := 0; i < 100; i++ { // Máximo 100 intentos
 		var existingUser models.User
-		result := h.DB.Where("NombreUsuario = ?", nombreUsuario).First(&existingUser)
+		result := h.DB.Where(`"NombreUsuario" = ?`, nombreUsuario).First(&existingUser)
 		if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			// El nombre de usuario está disponible
 			break

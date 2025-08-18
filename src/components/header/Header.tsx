@@ -317,15 +317,7 @@ Header.displayName = "skillSwap.Navbar";
                       <span>Mi Perfil</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/messages"
-                      className="cursor-pointer flex items-center"
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      <span>Mensajes</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {/* Mensajes deshabilitado: páginas de mensajes removidas */}
                   <DropdownMenuItem asChild>
                     <Link
                       href="/feed"

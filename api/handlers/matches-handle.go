@@ -207,12 +207,27 @@ func (h *matchesHandler) GetMatchesByUserID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// First get the basic matches
 	var matches []models.Matches
-	if result := h.DB.Preload("User1").Preload("User2").Preload("Ability1").Preload("Ability2").
-		Where("Usuario1ID = ? OR Usuario2ID = ?", userID, userID).
-		Find(&matches); result.Error != nil {
+	if result := h.DB.Debug().Raw(`
+		SELECT * FROM "Emparejamientos" 
+		WHERE "Usuario1ID" = ? OR "Usuario2ID" = ? 
+		ORDER BY "FechaCreacion" DESC
+	`, userID, userID).Scan(&matches); result.Error != nil {
 		http.Error(w, "Error al obtener emparejamientos del usuario: "+result.Error.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Load related data for each match
+	for i := range matches {
+		// Load User1
+		h.DB.Raw(`SELECT * FROM "Usuarios" WHERE "UsuarioID" = ?`, matches[i].UserID1).Scan(&matches[i].User1)
+		// Load User2
+		h.DB.Raw(`SELECT * FROM "Usuarios" WHERE "UsuarioID" = ?`, matches[i].UserID2).Scan(&matches[i].User2)
+		// Load Ability1
+		h.DB.Raw(`SELECT * FROM "Habilidades" WHERE "HabilidadID" = ?`, matches[i].Habilidad1ID).Scan(&matches[i].Ability1)
+		// Load Ability2
+		h.DB.Raw(`SELECT * FROM "Habilidades" WHERE "HabilidadID" = ?`, matches[i].Habilidad2ID).Scan(&matches[i].Ability2)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

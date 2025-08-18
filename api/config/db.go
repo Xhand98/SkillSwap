@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"gorm.io/driver/sqlserver"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -34,23 +34,29 @@ func NewDBConfig() *DBConfig {
 
 func ConnectionString(c *DBConfig) []string {
 	// Validar que tengamos la información mínima necesaria
-	if c.User == "" || c.Password == "" || c.DBName == "" {
-		log.Printf("⚠️ Advertencia: Configuración de BD incompleta (usuario, contraseña o nombre de BD faltantes)")
+	if c.User == "" || c.DBName == "" {
+		log.Printf("⚠️ Advertencia: Configuración de BD incompleta (usuario o nombre de BD faltantes)")
 	}
 
-	// Formato para SQL Server: sqlserver://username:password@host:port?database=dbname&param=value
-	primary := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&trustServerCertificate=true&connection+timeout=3",
-		c.User, c.Password, c.Host, c.Port, c.DBName)
+	sslmode := os.Getenv("DB_SSLMODE")
+	if sslmode == "" {
+		sslmode = "disable"
+	}
+	tz := os.Getenv("DB_TIMEZONE")
+	if tz == "" {
+		tz = "UTC"
+	}
 
-	// Para el servidor secundario, usamos localhost si no está especificado ErrHost
-	secondary := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&trustServerCertificate=true&connection+timeout=5",
-		c.User, c.Password, c.ErrHost, c.Port, c.DBName)
+	// DSN para Postgres
+	primary := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=%s client_encoding=UTF8",
+		c.Host, c.Port, c.User, c.Password, c.DBName, sslmode, tz)
+	secondary := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=%s client_encoding=UTF8",
+		c.ErrHost, c.Port, c.User, c.Password, c.DBName, sslmode, tz)
 
-	// Loguear versiones ofuscadas de las cadenas de conexión para depuración
-	log.Printf("📌 Cadena de conexión principal: sqlserver://%s:****@%s:%s?database=%s",
-		c.User, c.Host, c.Port, c.DBName)
-	log.Printf("📌 Cadena de conexión secundaria: sqlserver://%s:****@%s:%s?database=%s",
-		c.User, c.ErrHost, c.Port, c.DBName)
+	log.Printf("📌 Postgres principal: host=%s port=%s dbname=%s sslmode=%s tz=%s", c.Host, c.Port, c.DBName, sslmode, tz)
+	if c.ErrHost != "" {
+		log.Printf("📌 Postgres secundario: host=%s port=%s dbname=%s sslmode=%s tz=%s", c.ErrHost, c.Port, c.DBName, sslmode, tz)
+	}
 
 	return []string{primary, secondary}
 }
@@ -97,7 +103,7 @@ func ConnectDB(config *DBConfig) (*gorm.DB, error) {
 	}
 
 	// 1. Intento con servidor principal
-	log.Println("Intentando conectar al servidor principal...")
+	log.Println("Intentando conectar a PostgreSQL (principal)...")
 	primaryConnStr := ConnectionString(config)[0]
 
 	// Hacer timeout corto para fallback más rápido en caso de host inexistente
@@ -105,7 +111,7 @@ func ConnectDB(config *DBConfig) (*gorm.DB, error) {
 	defer cancelPrimary()
 
 	// Usar el contexto con timeout para la conexión principal
-	db, err := gorm.Open(sqlserver.Open(primaryConnStr), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(primaryConnStr), &gorm.Config{})
 	if err == nil {
 		// La apertura principal de gorm.Open tuvo éxito, ahora verificar con timeout
 		sqlDB, sqlErr := db.DB()
@@ -141,7 +147,7 @@ func ConnectDB(config *DBConfig) (*gorm.DB, error) {
 	}
 
 	// 3. Intento con servidor secundario (fallback)
-	log.Println("Intentando conectar al servidor secundario...")
+	log.Println("Intentando conectar a PostgreSQL (secundario)...")
 	log.Printf("Usando host alternativo: %s", config.ErrHost)
 	secondaryConnStr := ConnectionString(config)[1]
 
@@ -149,7 +155,7 @@ func ConnectDB(config *DBConfig) (*gorm.DB, error) {
 	ctxSecondary, cancelSecondary := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelSecondary()
 
-	db, err = gorm.Open(sqlserver.Open(secondaryConnStr), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(secondaryConnStr), &gorm.Config{})
 	if err != nil {
 		// La conexión secundaria falló al abrir
 		return nil, fmt.Errorf("error al conectar a secundario (fallback): %w", err)

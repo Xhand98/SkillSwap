@@ -2,12 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"skillswap/api/models"
 	"strconv"
-
-	"gorm.io/gorm"
 )
 
 // CheckMatchJSON verifica si existe un match entre dos usuarios
@@ -49,26 +46,20 @@ func (h *matchesHandler) CheckMatchJSON(w http.ResponseWriter, r *http.Request) 
 	}	// Buscar match (considerando ambas direcciones: user1->user2 o user2->user1)
 	var matchID int
 	var exists bool
-	// Buscar el match de manera directa usando el modelo de GORM
+	
+	// Use raw SQL to avoid GORM column mapping issues
 	var match models.Matches
-	result := h.DB.Where(
-		"(Usuario1ID = ? AND Usuario2ID = ?) OR (Usuario1ID = ? AND Usuario2ID = ?)",
-		user1ID, user2ID, user2ID, user1ID,
-	).First(&match)
+	query := `
+		SELECT "EmparejamientoID", "Usuario1ID", "Usuario2ID", "Habilidad1ID", "Habilidad2ID", "EstadoEmparejamiento", "FechaCreacion"
+		FROM "Emparejamientos" 
+		WHERE ("Usuario1ID" = ? AND "Usuario2ID" = ?) OR ("Usuario1ID" = ? AND "Usuario2ID" = ?)
+		LIMIT 1
+	`
+	
+	result := h.DB.Raw(query, user1ID, user2ID, user2ID, user1ID).Scan(&match)
 
 	if result.Error != nil {
-		// Verificar si es un error de "record not found" (caso normal)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			// No encontrado - respuesta normal
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"exists":   false,
-				"match_id": nil,
-			})
-			return
-		}
-		// Otro tipo de error de base de datos
+		// Error de base de datos
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -78,8 +69,20 @@ func (h *matchesHandler) CheckMatchJSON(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// El match ID debería estar en match.ID
-	matchID = int(match.ID)// Match encontrado
+	// Check if any rows were returned
+	if result.RowsAffected == 0 || match.ID == 0 {
+		// No match found
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"exists":   false,
+			"match_id": nil,
+		})
+		return
+	}
+
+	// Match encontrado
+	matchID = int(match.ID)
 	exists = true
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

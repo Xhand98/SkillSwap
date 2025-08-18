@@ -19,22 +19,22 @@ type authHandler struct {
 	JWTExpires time.Duration
 }
 
-
 func NewAuthHandler(db *gorm.DB) *authHandler {
-    // Obtener clave desde variable de entorno, o usar una por defecto para desarrollo
-    jwtSecret := os.Getenv("JWT_SECRET_KEY")
-    if jwtSecret == "" {
-        // Solo para desarrollo, mostrar advertencia
-        log.Println("ADVERTENCIA: JWT_SECRET_KEY no está configurado. Usando clave por defecto (¡NO HACER ESTO EN PRODUCCIÓN!)")
-        jwtSecret = "8/4oxdZ6LwDpJ6R1nJgkVh4xtAwHE6mg+2kwj0RcyYw="
-    }
+	// Obtener clave desde variable de entorno, o usar una por defecto para desarrollo
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+	if jwtSecret == "" {
+		// Solo para desarrollo, mostrar advertencia
+		log.Println("ADVERTENCIA: JWT_SECRET_KEY no está configurado. Usando clave por defecto (¡NO HACER ESTO EN PRODUCCIÓN!)")
+		jwtSecret = "8/4oxdZ6LwDpJ6R1nJgkVh4xtAwHE6mg+2kwj0RcyYw="
+	}
 
-    return &authHandler{
-        DB:         db,
-        JWTSecret:  []byte(jwtSecret),
-        JWTExpires: 24 * time.Hour, // Token válido por 24 horas
-    }
+	return &authHandler{
+		DB:         db,
+		JWTSecret:  []byte(jwtSecret),
+		JWTExpires: 24 * time.Hour, // Token válido por 24 horas
+	}
 }
+
 // LoginRequest estructura para la solicitud de login
 type LoginRequest struct {
 	Email    string `json:"email"`
@@ -43,8 +43,8 @@ type LoginRequest struct {
 
 // LoginResponse estructura para la respuesta de login
 type LoginResponse struct {
-	Token    string       `json:"token"`
-	User     models.User  `json:"user"`
+	Token     string      `json:"token"`
+	User      models.User `json:"user"`
 	ExpiresAt time.Time   `json:"expires_at"`
 }
 
@@ -64,7 +64,7 @@ func (h *authHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Buscar usuario por email
 	var user models.User
-	result := h.DB.Where("CorreoElectronico = ?", loginReq.Email).First(&user)
+	result := h.DB.Where(&models.User{CorreoElectronico: loginReq.Email}).First(&user)
 	if result.Error != nil {
 		log.Printf("Usuario no encontrado para email %s: %v", loginReq.Email, result.Error)
 		http.Error(w, "Credenciales inválidas", http.StatusUnauthorized)
@@ -100,8 +100,8 @@ func (h *authHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Devolver token y datos del usuario
 	response := LoginResponse{
-		Token:    tokenString,
-		User:     user,
+		Token:     tokenString,
+		User:      user,
 		ExpiresAt: expiresAt,
 	}
 

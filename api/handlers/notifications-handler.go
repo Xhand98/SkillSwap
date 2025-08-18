@@ -48,7 +48,7 @@ func (h *notificationsHandler) GetUserNotifications(w http.ResponseWriter, r *ht
 	}
 
 	var notifications []models.Notification
-	if result := h.DB.Debug().Where("UsuarioID = ?", userID).Order("FechaCreacion DESC").Find(&notifications); result.Error != nil {
+	if result := h.DB.Debug().Raw("SELECT * FROM \"Notificaciones\" WHERE \"UsuarioID\" = ? ORDER BY \"FechaCreacion\" DESC", userID).Scan(&notifications); result.Error != nil {
 		http.Error(w, "Error al obtener notificaciones: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}

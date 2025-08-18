@@ -70,7 +70,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
   useEffect(() => {
     const fetchUserSkills = async () => {
       try {
-        const url = `${API_CONFIG.API_URL}/userabilities/user/${userId}`;
+  const url = `${API_CONFIG.API_URL}/userabilities/user/${userId}`;
         console.log(`Consultando API de habilidades: ${url}`);
 
         const response = await fetch(url);
@@ -304,7 +304,8 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
         );
         return;
       }
-      const response = await fetch(`${API_CONFIG.API_URL}/matches/`, {
+
+  const response = await fetch(`${API_CONFIG.API_URL}/matches/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -373,7 +374,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
         </Button>
 
         {/* Panel de diagnóstico para problemas técnicos */}
-        <div className="mt-6 text-xs text-left">
+        {/* <div className="mt-6 text-xs text-left">
           <details>
             <summary className="cursor-pointer text-gray-500">
               Información técnica
@@ -394,7 +395,7 @@ export default function PotentialMatches({ userId }: PotentialMatchesProps) {
               ))}
             </div>
           </details>
-        </div>
+        </div> */}
       </div>
     );
   }
